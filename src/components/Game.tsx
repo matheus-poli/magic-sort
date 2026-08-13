@@ -10,9 +10,14 @@ import type { Level } from '../domain/levels'
 
 interface GameProps {
   readonly level: Level
+  /** Which bench of the atelier this is, counted the way a player counts. */
+  readonly position: number
+  readonly total: number
+  /** Hands over the next bench, or null when this is the last one. */
+  readonly onNextLevel: (() => void) | null
 }
 
-export function Game({ level }: GameProps) {
+export function Game({ level, position, total, onNextLevel }: GameProps) {
   const game = useGame(level)
   useGameSounds(game)
 
@@ -24,6 +29,9 @@ export function Game({ level }: GameProps) {
     <main className='game'>
       <header className='game__header'>
         <h1 className='game__title'>Magic Sort</h1>
+        <p className='game__level'>
+          Level {position} of {total} · {level.name}
+        </p>
       </header>
 
       <ScoreBoard
@@ -77,9 +85,26 @@ export function Game({ level }: GameProps) {
                 Pours spent: {game.pours} · Fewest possible:{' '}
                 {level.minimumPours}
               </p>
-              <button type='button' className='button' onClick={game.restart}>
-                Play again
-              </button>
+              {onNextLevel === null && (
+                <p className='victory__closing'>
+                  Every bench in the atelier is sorted.
+                </p>
+              )}
+
+              <div className='victory__actions'>
+                {onNextLevel !== null && (
+                  <button
+                    type='button'
+                    className='button button--primary'
+                    onClick={onNextLevel}
+                  >
+                    Next level
+                  </button>
+                )}
+                <button type='button' className='button' onClick={game.restart}>
+                  Play again
+                </button>
+              </div>
             </motion.div>
           </motion.section>
         )}

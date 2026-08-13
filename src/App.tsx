@@ -1,6 +1,16 @@
 import { Game } from './components/Game'
-import { STARTER_LEVEL } from './domain/levels'
+import { useCampaign } from './hooks/useCampaign'
+import { LEVELS } from './domain/levels'
 
 export function App() {
-  return <Game level={STARTER_LEVEL} />
+  const campaign = useCampaign(LEVELS)
+
+  return (
+    <Game
+      level={campaign.level}
+      position={campaign.position}
+      total={campaign.total}
+      onNextLevel={campaign.hasNext ? campaign.advance : null}
+    />
+  )
 }

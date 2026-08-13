@@ -188,6 +188,22 @@ describe('useGame', () => {
     expect(result.current.lastTap.sequence).toBeGreaterThan(first.sequence)
   })
 
+  it('lays out a fresh bench when it is handed a different level', () => {
+    const { result, rerender } = renderHook(({ level }) => useGame(level), {
+      initialProps: { level: mixed }
+    })
+
+    act(() => result.current.tapFlask(0))
+    act(() => result.current.tapFlask(1))
+    rerender({ level: almostSolved })
+
+    expect(result.current).toMatchObject({
+      board: almostSolved.board,
+      pours: 0,
+      selectedIndex: null
+    })
+  })
+
   it('sends the bench back to its opening state on restart', () => {
     const { result } = renderHook(() => useGame(mixed))
 

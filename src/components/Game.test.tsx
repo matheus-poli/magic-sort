@@ -43,6 +43,11 @@ const finalPour: Level = {
   ]
 }
 
+const showBench = (level: Level, onNextLevel: (() => void) | null = null) =>
+  render(
+    <Game level={level} position={1} total={5} onNextLevel={onNextLevel} />
+  )
+
 const flask = (position: number) =>
   screen.getByRole('button', { name: new RegExp(`^Flask ${position}[,:]`) })
 
@@ -54,7 +59,7 @@ beforeEach(() => {
 describe('Game', () => {
   it('throws confetti over a flask once a pour fills it', async () => {
     const user = userEvent.setup()
-    render(<Game level={nearlyFull} />)
+    showBench(nearlyFull)
 
     await user.click(flask(2))
     await user.click(flask(1))
@@ -64,7 +69,7 @@ describe('Game', () => {
 
   it('leaves the confetti alone while flasks are still unfinished', async () => {
     const user = userEvent.setup()
-    render(<Game level={bench} />)
+    showBench(bench)
 
     await user.click(flask(1))
     await user.click(flask(2))
@@ -74,7 +79,7 @@ describe('Game', () => {
 
   it('throws confetti over the whole atelier once the level is solved', async () => {
     const user = userEvent.setup()
-    render(<Game level={finalPour} />)
+    showBench(finalPour)
 
     await user.click(flask(2))
     await user.click(flask(1))
@@ -83,7 +88,7 @@ describe('Game', () => {
   })
 
   it('shows every flask on the bench with the elixirs it holds', () => {
-    render(<Game level={bench} />)
+    showBench(bench)
 
     expect(flask(1)).toHaveAccessibleName(
       'Flask 1, holding crimson, azure from bottom to top'
@@ -93,7 +98,7 @@ describe('Game', () => {
 
   it('marks a flask as picked up when the apprentice taps it', async () => {
     const user = userEvent.setup()
-    render(<Game level={bench} />)
+    showBench(bench)
 
     await user.click(flask(1))
 
@@ -102,7 +107,7 @@ describe('Game', () => {
 
   it('pours between two flasks tapped in turn', async () => {
     const user = userEvent.setup()
-    render(<Game level={bench} />)
+    showBench(bench)
 
     await user.click(flask(1))
     await user.click(flask(2))
@@ -117,7 +122,7 @@ describe('Game', () => {
 
   it('counts the pours the apprentice has spent', async () => {
     const user = userEvent.setup()
-    render(<Game level={bench} />)
+    showBench(bench)
 
     await user.click(flask(1))
     await user.click(flask(2))
@@ -126,16 +131,51 @@ describe('Game', () => {
   })
 
   it('says in how few pours the bench can be sorted and what going over costs', () => {
-    render(<Game level={bench} />)
+    showBench(bench)
 
     expect(screen.getByText(/can be sorted in/i)).toHaveTextContent(
       'This bench can be sorted in 4 pours. Every pour past that costs 25 points.'
     )
   })
 
+  it('counts out which bench of the atelier this is', () => {
+    render(<Game level={bench} position={2} total={5} onNextLevel={null} />)
+
+    expect(screen.getByText(/level 2 of 5/i)).toHaveTextContent(
+      'Level 2 of 5 · Test Bench'
+    )
+  })
+
+  it('offers the next bench once this one is sorted', async () => {
+    const user = userEvent.setup()
+    const onNextLevel = vi.fn()
+    showBench(finalPour, onNextLevel)
+
+    await user.click(flask(2))
+    await user.click(flask(1))
+    await user.click(screen.getByRole('button', { name: 'Next level' }))
+
+    expect(onNextLevel).toHaveBeenCalled()
+  })
+
+  it('closes the atelier out on the last bench rather than offering another', async () => {
+    const user = userEvent.setup()
+    showBench(finalPour)
+
+    await user.click(flask(2))
+    await user.click(flask(1))
+
+    expect(
+      screen.queryByRole('button', { name: 'Next level' })
+    ).not.toBeInTheDocument()
+    expect(screen.getByText(/every bench/i)).toHaveTextContent(
+      'Every bench in the atelier is sorted.'
+    )
+  })
+
   it('celebrates once every elixir is sorted', async () => {
     const user = userEvent.setup()
-    render(<Game level={finalPour} />)
+    showBench(finalPour)
 
     await user.click(flask(2))
     await user.click(flask(1))
@@ -149,14 +189,14 @@ describe('Game', () => {
   })
 
   it('scores every bench out of the same 1000', () => {
-    render(<Game level={bench} />)
+    showBench(bench)
 
     expect(screen.getByLabelText('Score')).toHaveTextContent('0 / 1000')
   })
 
   it('pays a flawless run the full 1000', async () => {
     const user = userEvent.setup()
-    render(<Game level={finalPour} />)
+    showBench(finalPour)
 
     await user.click(flask(2))
     await user.click(flask(1))
@@ -166,7 +206,7 @@ describe('Game', () => {
 
   it('breaks the final score down against the fewest pours possible', async () => {
     const user = userEvent.setup()
-    render(<Game level={finalPour} />)
+    showBench(finalPour)
 
     await user.click(flask(2))
     await user.click(flask(1))
@@ -181,7 +221,7 @@ describe('Game', () => {
 
   it('puts the bench back the way it started when asked to restart', async () => {
     const user = userEvent.setup()
-    render(<Game level={bench} />)
+    showBench(bench)
 
     await user.click(flask(1))
     await user.click(flask(2))

@@ -15,6 +15,9 @@ target is empty, or its top layer matches what you are pouring, and it has room
 to take it. The whole unbroken run of the top elixir moves at once. Sort every
 flask to finish the level.
 
+Five benches make up the atelier, each one harder than the last: more elixirs in
+play, and fewer flasks left spare to pour into. Solving one opens the next.
+
 Every bench is scored out of 1000, so the number means the same thing wherever
 it was earned: 500 shared out across the flasks you sort, and 500 for solving in
 as few pours as the bench allows, minus 25 for every pour past that. Each bench
@@ -133,10 +136,11 @@ missing or too heavy, because both look perfect in a browser.
 
 ```
 src/
-  domain/       Pure TypeScript puzzle rules. No React, no DOM, no side effects.
+  domain/       Pure TypeScript puzzle rules and the level data. No React, no DOM.
   hooks/        React state orchestration over the domain.
   components/   Presentation, driven entirely by props.
   audio/        The one impure boundary, isolated so tests can stub it.
+  test/         Test support, including the search that proves each level's minimum.
 e2e/            A single Playwright smoke test.
 scripts/        Sound synthesis.
 infra/          The Cloudflare proxy that lends the game its path, and its test.
@@ -154,15 +158,18 @@ anyone to the source.
 
 The suite follows the pyramid — the bulk of the cost sits at the bottom:
 
-- **Unit (Vitest)** — the puzzle rules, exhaustively.
+- **Unit (Vitest)** — the puzzle rules, exhaustively. Every level is searched
+  breadth-first as well, so the pour count it shows the player is proven to be
+  the true minimum rather than the best route somebody happened to find.
 - **Integration (React Testing Library)** — one per meaningful interaction,
   querying by role and label the way a player perceives the UI. No test ids.
 - **E2E (Playwright)** — exactly one, solving the starter level in a real
-  browser. Anything a lower layer can cover belongs in a lower layer.
+  browser and moving on to the next. Anything a lower layer can cover belongs
+  in a lower layer.
 
-Current coverage: 90% of statements, 87% of branches. The gap is deliberate —
-it is the audio boundary, which only a real browser executes, and the animation
-callbacks, which are visual rather than behavioural.
+Current coverage: 85% of statements, 82% of branches. The gap is deliberate —
+it is the audio boundary and the confetti canvas, which only a real browser
+executes, and the animation callbacks, which are visual rather than behavioural.
 
 ### Dependencies
 
@@ -184,8 +191,9 @@ downloaded, which keeps the repository self-contained and licence-free.
 The game ships in vertical slices — each one playable on its own.
 
 - [x] **Slice 1** — one level, pouring, scoring, sound, animation, win state.
-- [ ] **Slice 2** — undo, level progression, persistence.
-- [ ] **Slice 3** — the alchemist character, ingredient collection, boosts.
+- [x] **Slice 2** — five levels, progression between them, a score out of 1000.
+- [ ] **Slice 3** — undo and persistence.
+- [ ] **Slice 4** — the alchemist character, ingredient collection, boosts.
 
 ## Conventions
 

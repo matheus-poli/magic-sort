@@ -1,7 +1,14 @@
 import confetti from 'canvas-confetti'
 
 /** The elixir palette, so the paper matches the potions. */
-const COLOURS = ['#ff4f6d', '#46b4ff', '#3fdba0', '#ffb340', '#d9bcff']
+const COLOURS = [
+  '#ff4f6d',
+  '#46b4ff',
+  '#3fdba0',
+  '#ffb340',
+  '#a374ff',
+  '#e8e4f7'
+]
 
 /** A modest puff over the flask that was just filled. */
 export function celebrateFlask(flask: Element): void {

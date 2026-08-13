@@ -1,5 +1,6 @@
 /** The elixirs an apprentice sorts. One colour per flask is the goal. */
-export type Elixir = 'crimson' | 'azure' | 'verdant' | 'amber'
+export type Elixir =
+  'crimson' | 'azure' | 'verdant' | 'amber' | 'violet' | 'pearl'
 
 /** Layers of elixir, bottom-most first. The last entry is the visible top. */
 export type Flask = readonly Elixir[]

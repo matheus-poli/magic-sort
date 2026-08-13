@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   canPourBetween,
   completedFlaskCount,
@@ -37,6 +37,8 @@ export interface Game {
 }
 
 interface Bench {
+  /** The level this bench was laid out from, so a new one can be spotted. */
+  readonly level: Level
   readonly board: Board
   readonly selectedIndex: number | null
   readonly pours: number
@@ -44,16 +46,19 @@ interface Bench {
 }
 
 export function useGame(level: Level): Game {
-  const openingBench = useMemo(() => benchFor(level), [level])
-  const [bench, setBench] = useState(openingBench)
+  const [bench, setBench] = useState(() => benchFor(level))
+
+  // A different level is a different bench, not a continuation of this one: the
+  // apprentice moving on has to arrive at a full board with no pours spent.
+  if (bench.level !== level) setBench(benchFor(level))
 
   const tapFlask = useCallback((index: number) => {
     setBench((current) => tap(current, index))
   }, [])
 
   const restart = useCallback(() => {
-    setBench(openingBench)
-  }, [openingBench])
+    setBench(benchFor(level))
+  }, [level])
 
   const solved = isSolved(bench.board)
   const score = scoreFor({
@@ -78,6 +83,7 @@ export function useGame(level: Level): Game {
 
 function benchFor(level: Level): Bench {
   return {
+    level,
     board: level.board,
     selectedIndex: null,
     pours: 0,
@@ -129,6 +135,7 @@ function tap(bench: Bench, index: number): Bench {
   const board = pourBetween(bench.board, bench.selectedIndex, index)
 
   return {
+    ...bench,
     board,
     selectedIndex: null,
     pours: bench.pours + 1,

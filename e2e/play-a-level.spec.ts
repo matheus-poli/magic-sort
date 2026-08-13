@@ -65,6 +65,9 @@ test('an apprentice sorts the starter level from first pour to last', async ({
   })
   expect(pointsCoveredByTheBench).toBe(0)
 
-  await page.getByRole('button', { name: 'Play again' }).click()
+  await page.getByRole('button', { name: 'Next level' }).click()
+  await expect(page.getByText(/^Level 2 of/)).toHaveText(
+    "Level 2 of 5 · The Herbalist's Shelf"
+  )
   await expect(page.getByLabel('Pours')).toHaveText('0')
 })

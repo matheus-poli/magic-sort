@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { STARTER_LEVEL } from './levels'
-import { isSolved } from './board'
-import { FLASK_CAPACITY } from './flask'
+import { LEVELS } from './levels'
+import { FLASK_CAPACITY, isComplete } from './flask'
 import { shortestSolution } from '../test/shortestSolution'
-import type { Elixir } from './flask'
+import type { Level } from './levels'
 
-function countByElixir(level: typeof STARTER_LEVEL): Record<string, number> {
+function elixirTally(level: Level): Record<string, number> {
   const tally: Record<string, number> = {}
   for (const flask of level.board) {
     for (const elixir of flask) {
@@ -15,32 +14,45 @@ function countByElixir(level: typeof STARTER_LEVEL): Record<string, number> {
   return tally
 }
 
-describe('STARTER_LEVEL', () => {
+describe('LEVELS', () => {
+  it('opens on the apprentice bench and works up through the atelier', () => {
+    expect(LEVELS.map((level) => level.name)).toEqual([
+      "The Apprentice's Bench",
+      "The Herbalist's Shelf",
+      'The Crowded Cupboard',
+      "The Alchemist's Table",
+      "The Archmage's Vault"
+    ])
+  })
+
+  it('never asks for fewer pours than the bench before it', () => {
+    const minima = LEVELS.map((level) => level.minimumPours)
+
+    expect(minima).toEqual([...minima].sort((first, second) => first - second))
+  })
+
+  it('gives every bench an id of its own, which React keys the board on', () => {
+    const ids = LEVELS.map((level) => level.id)
+
+    expect(ids).toEqual([...new Set(ids)])
+  })
+})
+
+describe.each(LEVELS)('$name', (level: Level) => {
   it('holds exactly one flask worth of every elixir it uses', () => {
-    const expected: Record<Elixir, number> = {
-      crimson: FLASK_CAPACITY,
-      azure: FLASK_CAPACITY,
-      verdant: FLASK_CAPACITY,
-      amber: FLASK_CAPACITY
-    }
-    expect(countByElixir(STARTER_LEVEL)).toEqual(expected)
-  })
-
-  it('offers two empty flasks to pour into', () => {
-    const emptyFlasks = STARTER_LEVEL.board.filter(
-      (flask) => flask.length === 0
+    const tally = elixirTally(level)
+    const oneFlaskEach = Object.fromEntries(
+      Object.keys(tally).map((elixir) => [elixir, FLASK_CAPACITY])
     )
-    expect(emptyFlasks).toHaveLength(2)
+
+    expect(tally).toEqual(oneFlaskEach)
   })
 
-  it('does not start already solved', () => {
-    expect(isSolved(STARTER_LEVEL.board)).toBe(false)
+  it('opens with no flask sorted for the player already', () => {
+    expect(level.board.filter(isComplete)).toEqual([])
   })
 
-  it('can be sorted in the fourteen pours it promises, and no fewer', () => {
-    expect(STARTER_LEVEL.minimumPours).toBe(14)
-    expect(shortestSolution(STARTER_LEVEL.board)).toHaveLength(
-      STARTER_LEVEL.minimumPours
-    )
+  it('can be sorted in the pours it promises, and in no fewer', () => {
+    expect(shortestSolution(level.board)).toHaveLength(level.minimumPours)
   })
 })
