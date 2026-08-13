@@ -15,15 +15,17 @@ target is empty, or its top layer matches what you are pouring, and it has room
 to take it. The whole unbroken run of the top elixir moves at once. Sort every
 flask to finish the level.
 
-Five benches make up the atelier, each one harder than the last: more elixirs in
-play, and fewer flasks left spare to pour into. Solving one opens the next.
+Ten benches make up the atelier, on two shelves of five. Each shelf works its
+way up: more elixirs in play, then fewer flasks left spare to pour into. The
+second shelf starts over with taller glass, five layers to a flask instead of
+four. Solving a bench opens the next.
 
 Every bench is scored out of 1000, so the number means the same thing wherever
 it was earned: 500 shared out across the flasks you sort, and 500 for solving in
 as few pours as the bench allows, minus 25 for every pour past that. Each bench
 states its own fewest-possible count up front, so the target is never a mystery.
 What a bench earned is banked when you move on, so the total climbs across the
-atelier towards 5000 — a thousand a bench. Starting a bench over is the way out
+atelier towards 10000 — a thousand a bench. Starting a bench over is the way out
 of a mistake, but it is not free: the button has to be held down while a bar
 fills, and it takes 100 points off the total. Throwing the whole run away is a
 separate button, and it asks first.
@@ -172,7 +174,7 @@ The suite follows the pyramid — the bulk of the cost sits at the bottom:
   browser and moving on to the next. Anything a lower layer can cover belongs
   in a lower layer.
 
-Current coverage: 89% of statements, 85% of branches. The gap is deliberate —
+Current coverage: 91% of statements, 85% of branches. The gap is deliberate —
 it is the audio boundary and the confetti canvas, which only a real browser
 executes, and the animation callbacks, which are visual rather than behavioural.
 
@@ -196,7 +198,8 @@ downloaded, which keeps the repository self-contained and licence-free.
 The game ships in vertical slices — each one playable on its own.
 
 - [x] **Slice 1** — one level, pouring, scoring, sound, animation, win state.
-- [x] **Slice 2** — five levels, progression between them, a score out of 1000.
+- [x] **Slice 2** — ten levels on two shelves, progression between them, a
+      score out of 1000.
 - [ ] **Slice 3** — undo and persistence.
 - [ ] **Slice 4** — the alchemist character, ingredient collection, boosts.
 

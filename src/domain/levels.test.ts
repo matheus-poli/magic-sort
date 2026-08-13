@@ -15,9 +15,10 @@ function elixirTally(level: Level): Record<string, number> {
   return tally
 }
 
-/** The two dials a bench is built from, named so a failure says which bench. */
+/** The dials a bench is built from, named so a failure says which bench. */
 interface Rung {
   readonly bench: string
+  readonly capacity: number
   readonly elixirs: number
   readonly spares: number
 }
@@ -25,18 +26,33 @@ interface Rung {
 function rungOf(level: Level): Rung {
   const elixirs = flasksToFill(level.board)
 
-  return { bench: level.name, elixirs, spares: level.board.length - elixirs }
+  return {
+    bench: level.name,
+    capacity: level.capacity,
+    elixirs,
+    spares: level.board.length - elixirs
+  }
 }
 
 /**
- * Harder means fewer spare flasks first, and only then more elixirs. Spares
- * outrank elixirs because they decide how much room the bench leaves: the
+ * Harder means, in order: taller glass, then fewer spare flasks, then more
+ * elixirs.
+ *
+ * Spares outrank elixirs because they decide how much room a bench leaves. The
  * five-elixir bench with one spare can only ever be arranged 65 ways, against
  * 3521 for the six-elixir bench with two, and players read that narrowness as
  * difficulty even though it takes fewer pours to sort.
+ *
+ * Taller glass outranks both because it starts a shelf over rather than
+ * continuing one: a five-layer flask is a new thing to learn, so the atelier
+ * hands back the room it had just taken away before tightening again.
  */
 function byDifficulty(first: Rung, second: Rung): number {
-  return second.spares - first.spares || first.elixirs - second.elixirs
+  return (
+    first.capacity - second.capacity ||
+    second.spares - first.spares ||
+    first.elixirs - second.elixirs
+  )
 }
 
 describe('LEVELS', () => {
@@ -46,7 +62,12 @@ describe('LEVELS', () => {
       "The Herbalist's Shelf",
       "The Alchemist's Table",
       'The Crowded Cupboard',
-      "The Archmage's Vault"
+      "The Archmage's Vault",
+      "The Glassblower's Gift",
+      "The Distiller's Row",
+      "The Apothecary's Wall",
+      'The Narrow Larder',
+      'The Grand Alembic'
     ])
   })
 
