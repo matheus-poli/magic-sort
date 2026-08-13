@@ -25,7 +25,8 @@ states its own fewest-possible count up front, so the target is never a mystery.
 What a bench earned is banked when you move on, so the total climbs across the
 atelier towards 5000 — a thousand a bench. Starting a bench over is the way out
 of a mistake, but it is not free: the button has to be held down while a bar
-fills, and it takes 100 points off the total.
+fills, and it takes 100 points off the total. Throwing the whole run away is a
+separate button, and it asks first.
 
 ## Getting set up
 

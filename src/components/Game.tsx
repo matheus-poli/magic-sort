@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Flask } from './Flask'
 import { HoldToRestart } from './HoldToRestart'
+import { StartOver } from './StartOver'
 import { ScoreBoard } from './ScoreBoard'
 import { useGame } from '../hooks/useGame'
 import { useGameSounds } from '../hooks/useGameSounds'
@@ -25,6 +26,8 @@ interface GameProps {
   readonly onNextLevel: ((score: number) => void) | null
   /** Tells the campaign a bench was thrown away, so it can charge for it. */
   readonly onRestart: () => void
+  /** Throws the whole run away and starts the atelier from the first bench. */
+  readonly onStartOver: () => void
 }
 
 export function Game({
@@ -34,7 +37,8 @@ export function Game({
   bankedScore,
   forfeited,
   onNextLevel,
-  onRestart
+  onRestart,
+  onStartOver
 }: GameProps) {
   const game = useGame(level)
   useGameSounds(game)
@@ -51,6 +55,22 @@ export function Game({
     game.restart()
     onRestart()
   }
+
+  // The campaign may already be on the first bench, in which case the level it
+  // hands back is the one in hand: the board has to be laid out again here.
+  const startOverFromTheTop = () => {
+    game.restart()
+    onStartOver()
+  }
+
+  const startOverControl = (
+    <StartOver
+      position={position}
+      levelCount={levelCount}
+      total={total}
+      onStartOver={startOverFromTheTop}
+    />
+  )
 
   return (
     <main className='game'>
@@ -87,7 +107,10 @@ export function Game({
         ))}
       </ol>
 
-      <HoldToRestart onRestart={restartBench} forfeited={forfeited} />
+      <div className='undo'>
+        <HoldToRestart onRestart={restartBench} forfeited={forfeited} />
+        {startOverControl}
+      </div>
 
       <AnimatePresence>
         {game.isSolved && (
@@ -155,6 +178,9 @@ export function Game({
                 >
                   Play again
                 </button>
+                {/* Reachable at the end too: the card covers the bench, and
+                    with it the only other way back to the first flask. */}
+                {isLastBench && startOverControl}
               </div>
             </motion.div>
           </motion.section>

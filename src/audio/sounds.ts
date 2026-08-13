@@ -5,10 +5,18 @@ import pickupUrl from './pickup.wav'
 import pourUrl from './pour.wav'
 import refusedUrl from './refused.wav'
 import resetUrl from './reset.wav'
+import reviveUrl from './revive.wav'
 import victoryUrl from './victory.wav'
 
 export type SoundName =
-  'pickup' | 'pour' | 'refused' | 'complete' | 'charge' | 'reset' | 'victory'
+  | 'pickup'
+  | 'pour'
+  | 'refused'
+  | 'complete'
+  | 'charge'
+  | 'reset'
+  | 'revive'
+  | 'victory'
 
 const sources: Record<SoundName, string> = {
   pickup: pickupUrl,
@@ -17,6 +25,7 @@ const sources: Record<SoundName, string> = {
   complete: completeUrl,
   charge: chargeUrl,
   reset: resetUrl,
+  revive: reviveUrl,
   victory: victoryUrl
 }
 

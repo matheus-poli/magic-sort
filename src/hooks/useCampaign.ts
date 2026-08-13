@@ -19,6 +19,8 @@ export interface Campaign {
   advance: (scoreEarned: number) => void
   /** Charges for throwing a bench away and starting it again. */
   chargeForRestart: () => void
+  /** Throws the whole run away: first bench again, nothing earned or owed. */
+  startOver: () => void
 }
 
 interface Progress {
@@ -58,6 +60,10 @@ export function useCampaign(levels: readonly Level[]): Campaign {
     }))
   }, [])
 
+  const startOver = useCallback(() => {
+    setProgress({ reached: 0, earned: 0, forfeited: 0 })
+  }, [])
+
   return {
     level: levels[progress.reached],
     position: progress.reached + 1,
@@ -66,6 +72,7 @@ export function useCampaign(levels: readonly Level[]): Campaign {
     bankedScore: progress.earned - progress.forfeited,
     forfeited: progress.forfeited,
     advance,
-    chargeForRestart
+    chargeForRestart,
+    startOver
   }
 }

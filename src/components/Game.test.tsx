@@ -48,6 +48,7 @@ interface Standing {
   readonly forfeited?: number
   readonly onNextLevel?: ((score: number) => void) | null
   readonly onRestart?: () => void
+  readonly onStartOver?: () => void
 }
 
 const showBench = (level: Level, standing: Standing = {}) =>
@@ -60,6 +61,7 @@ const showBench = (level: Level, standing: Standing = {}) =>
       forfeited={standing.forfeited ?? 0}
       onNextLevel={standing.onNextLevel ?? null}
       onRestart={standing.onRestart ?? (() => {})}
+      onStartOver={standing.onStartOver ?? (() => {})}
     />
   )
 
@@ -163,6 +165,7 @@ describe('Game', () => {
         forfeited={0}
         onNextLevel={null}
         onRestart={() => {}}
+        onStartOver={() => {}}
       />
     )
 
@@ -299,6 +302,20 @@ describe('Game', () => {
     await waitFor(() =>
       expect(screen.getByLabelText('Total')).toHaveTextContent('2750 / 5000')
     )
+  })
+
+  it('hands the whole run back when the apprentice starts over', async () => {
+    const user = userEvent.setup()
+    const onStartOver = vi.fn()
+    showBench(bench, { onStartOver })
+
+    await user.click(flask(1))
+    await user.click(flask(2))
+    await user.click(screen.getByRole('button', { name: 'Start over' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, start over' }))
+
+    expect(onStartOver).toHaveBeenCalledTimes(1)
+    expect(screen.getByLabelText('Pours')).toHaveTextContent('0')
   })
 
   it('puts the bench back the way it started once the restart is held', async () => {

@@ -117,4 +117,19 @@ describe('useCampaign', () => {
 
     expect(result.current.bankedScore).toBe(900)
   })
+
+  it('puts the apprentice back at the beginning with nothing to their name', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    act(() => result.current.advance(1000))
+    act(() => result.current.chargeForRestart())
+    act(() => result.current.startOver())
+
+    expect(result.current).toMatchObject({
+      level: atelier[0],
+      position: 1,
+      bankedScore: 0,
+      forfeited: 0
+    })
+  })
 })

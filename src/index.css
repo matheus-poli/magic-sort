@@ -558,6 +558,17 @@ body::before {
   font-size: 0.85rem;
 }
 
+.button--danger {
+  border-color: rgba(255, 79, 109, 0.55);
+  color: #ffd7de;
+  background: rgba(255, 79, 109, 0.18);
+}
+
+.button--danger:hover {
+  background: rgba(255, 79, 109, 0.32);
+  box-shadow: 0 8px 26px rgba(255, 79, 109, 0.4);
+}
+
 /* An escape hatch beside a call to action, not a rival to it. */
 .button--quiet {
   border-color: transparent;
@@ -572,7 +583,14 @@ body::before {
   box-shadow: none;
 }
 
-/* ---------- Hold to restart ---------- */
+/* ---------- Taking something back ---------- */
+
+.undo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
 
 .restart {
   display: flex;
@@ -620,6 +638,60 @@ body::before {
   transform-origin: left;
   background: linear-gradient(90deg, var(--rune-bright), var(--gold));
   box-shadow: 0 0 12px rgba(255, 200, 107, 0.7);
+}
+
+/* ---------- Confirming the irreversible ---------- */
+
+.veil {
+  position: fixed;
+  z-index: 30;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background: rgba(10, 6, 22, 0.78);
+  backdrop-filter: blur(10px);
+}
+
+.confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 26rem;
+  padding: clamp(1.75rem, 5vw, 2.5rem);
+  text-align: center;
+  border: 1px solid rgba(255, 79, 109, 0.4);
+  border-radius: 1.5rem;
+  background: linear-gradient(
+    165deg,
+    rgba(72, 28, 48, 0.92),
+    rgba(18, 10, 36, 0.94)
+  );
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.confirm__title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(1.4rem, 4.5vw, 1.85rem);
+  font-weight: 400;
+  color: #ffc2cd;
+}
+
+.confirm__detail {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--parchment-dim);
+}
+
+.confirm__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
 }
 
 /* ---------- Victory ---------- */
