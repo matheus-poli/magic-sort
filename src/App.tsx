@@ -11,7 +11,9 @@ export function App() {
       position={campaign.position}
       levelCount={campaign.levelCount}
       bankedScore={campaign.bankedScore}
+      forfeited={campaign.forfeited}
       onNextLevel={campaign.hasNext ? campaign.advance : null}
+      onRestart={campaign.chargeForRestart}
     />
   )
 }

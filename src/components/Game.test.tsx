@@ -45,7 +45,9 @@ const finalPour: Level = {
 
 interface Standing {
   readonly bankedScore?: number
+  readonly forfeited?: number
   readonly onNextLevel?: ((score: number) => void) | null
+  readonly onRestart?: () => void
 }
 
 const showBench = (level: Level, standing: Standing = {}) =>
@@ -55,7 +57,9 @@ const showBench = (level: Level, standing: Standing = {}) =>
       position={1}
       levelCount={5}
       bankedScore={standing.bankedScore ?? 0}
+      forfeited={standing.forfeited ?? 0}
       onNextLevel={standing.onNextLevel ?? null}
+      onRestart={standing.onRestart ?? (() => {})}
     />
   )
 
@@ -156,7 +160,9 @@ describe('Game', () => {
         position={2}
         levelCount={5}
         bankedScore={0}
+        forfeited={0}
         onNextLevel={null}
+        onRestart={() => {}}
       />
     )
 
@@ -263,7 +269,8 @@ describe('Game', () => {
 
   it('puts the bench back the way it started once the restart is held', async () => {
     const user = userEvent.setup()
-    showBench(bench)
+    const onRestart = vi.fn()
+    showBench(bench, { onRestart })
 
     await user.click(flask(1))
     await user.click(flask(2))
@@ -280,5 +287,7 @@ describe('Game', () => {
       { timeout: 3000 }
     )
     expect(screen.getByLabelText('Pours')).toHaveTextContent('0')
+    // And the campaign is told, because a restart is not free.
+    expect(onRestart).toHaveBeenCalledTimes(1)
   })
 })

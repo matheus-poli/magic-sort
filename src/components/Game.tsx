@@ -6,7 +6,7 @@ import { ScoreBoard } from './ScoreBoard'
 import { useGame } from '../hooks/useGame'
 import { useGameSounds } from '../hooks/useGameSounds'
 import { celebrateLevel } from '../effects/confetti'
-import { PERFECT_SCORE } from '../domain/scoring'
+import { PERFECT_SCORE, totalScore } from '../domain/scoring'
 import type { Level } from '../domain/levels'
 
 interface GameProps {
@@ -14,13 +14,17 @@ interface GameProps {
   /** Which bench of the atelier this is, counted the way a player counts. */
   readonly position: number
   readonly levelCount: number
-  /** Points earned on the benches before this one. */
+  /** Points earned on the benches before this one, less what restarts cost. */
   readonly bankedScore: number
+  /** What restarts have cost so far, which the restart button owns up to. */
+  readonly forfeited: number
   /**
    * Hands over the next bench, taking what this one scored so the campaign can
    * bank it. Null when this is the last bench.
    */
   readonly onNextLevel: ((score: number) => void) | null
+  /** Tells the campaign a bench was thrown away, so it can charge for it. */
+  readonly onRestart: () => void
 }
 
 export function Game({
@@ -28,7 +32,9 @@ export function Game({
   position,
   levelCount,
   bankedScore,
-  onNextLevel
+  forfeited,
+  onNextLevel,
+  onRestart
 }: GameProps) {
   const game = useGame(level)
   useGameSounds(game)
@@ -37,8 +43,13 @@ export function Game({
     if (game.isSolved) celebrateLevel()
   }, [game.isSolved])
 
-  const totalScore = bankedScore + game.score
+  const total = totalScore({ banked: bankedScore, bench: game.score })
   const perfectTotal = levelCount * PERFECT_SCORE
+
+  const restartBench = () => {
+    game.restart()
+    onRestart()
+  }
 
   return (
     <main className='game'>
@@ -51,7 +62,7 @@ export function Game({
 
       <ScoreBoard
         score={game.score}
-        totalScore={totalScore}
+        totalScore={total}
         perfectTotal={perfectTotal}
         pours={game.pours}
         minimumPours={level.minimumPours}
@@ -75,7 +86,7 @@ export function Game({
         ))}
       </ol>
 
-      <HoldToRestart onRestart={game.restart} />
+      <HoldToRestart onRestart={restartBench} forfeited={forfeited} />
 
       <AnimatePresence>
         {game.isSolved && (
@@ -102,7 +113,7 @@ export function Game({
               </p>
               {onNextLevel === null && (
                 <p className='victory__closing'>
-                  Every bench in the atelier is sorted, for {totalScore} of{' '}
+                  Every bench in the atelier is sorted, for {total} of{' '}
                   {perfectTotal}.
                 </p>
               )}

@@ -25,7 +25,8 @@ describe('useCampaign', () => {
       position: 1,
       levelCount: 3,
       hasNext: true,
-      bankedScore: 0
+      bankedScore: 0,
+      forfeited: 0
     })
   })
 
@@ -89,5 +90,31 @@ describe('useCampaign', () => {
     act(() => result.current.advance(1000))
 
     expect(result.current.bankedScore).toBe(1850)
+  })
+
+  it('takes points off the total when a bench is restarted', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    act(() => result.current.chargeForRestart())
+
+    expect(result.current.bankedScore).toBe(-100)
+  })
+
+  it('keeps a tally of what restarts have cost, to own up to it', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    act(() => result.current.chargeForRestart())
+    act(() => result.current.chargeForRestart())
+
+    expect(result.current).toMatchObject({ forfeited: 200, bankedScore: -200 })
+  })
+
+  it('charges for restarts out of what the benches earned', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    act(() => result.current.advance(1000))
+    act(() => result.current.chargeForRestart())
+
+    expect(result.current.bankedScore).toBe(900)
   })
 })

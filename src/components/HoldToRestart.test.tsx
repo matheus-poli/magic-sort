@@ -27,7 +27,7 @@ beforeEach(() => {
 describe('HoldToRestart', () => {
   it('charges up audibly while the button is held down', async () => {
     const user = userEvent.setup()
-    render(<HoldToRestart onRestart={vi.fn()} />)
+    render(<HoldToRestart onRestart={vi.fn()} forfeited={0} />)
 
     await user.pointer({ keys: '[MouseLeft>]', target: holdButton() })
 
@@ -37,7 +37,7 @@ describe('HoldToRestart', () => {
   it('calls the charge off on a plain click, leaving the bench alone', async () => {
     const user = userEvent.setup()
     const restart = vi.fn()
-    render(<HoldToRestart onRestart={restart} />)
+    render(<HoldToRestart onRestart={restart} forfeited={0} />)
 
     await user.click(holdButton())
 
@@ -47,7 +47,7 @@ describe('HoldToRestart', () => {
 
   it('calls it off when the pointer slides off the button', async () => {
     const user = userEvent.setup()
-    render(<HoldToRestart onRestart={vi.fn()} />)
+    render(<HoldToRestart onRestart={vi.fn()} forfeited={0} />)
 
     await user.pointer([
       { keys: '[MouseLeft>]', target: holdButton() },
@@ -59,7 +59,7 @@ describe('HoldToRestart', () => {
 
   it('charges from a key held down on the keyboard just the same', async () => {
     const user = userEvent.setup()
-    render(<HoldToRestart onRestart={vi.fn()} />)
+    render(<HoldToRestart onRestart={vi.fn()} forfeited={0} />)
 
     await user.tab()
     await user.keyboard('{Enter>}')
@@ -69,7 +69,7 @@ describe('HoldToRestart', () => {
 
   it('calls it off when the key is let go', async () => {
     const user = userEvent.setup()
-    render(<HoldToRestart onRestart={vi.fn()} />)
+    render(<HoldToRestart onRestart={vi.fn()} forfeited={0} />)
 
     await user.tab()
     await user.keyboard('{Enter>}')
@@ -81,12 +81,28 @@ describe('HoldToRestart', () => {
   it('restarts once the press has lasted long enough', async () => {
     const user = userEvent.setup()
     const restart = vi.fn()
-    render(<HoldToRestart onRestart={restart} />)
+    render(<HoldToRestart onRestart={restart} forfeited={0} />)
 
     await user.pointer({ keys: '[MouseLeft>]', target: holdButton() })
 
     await waitFor(() => expect(restart).toHaveBeenCalledTimes(1), {
       timeout: 3000
     })
+  })
+
+  it('says what a restart will cost before anyone holds it', () => {
+    render(<HoldToRestart onRestart={vi.fn()} forfeited={0} />)
+
+    expect(holdButton()).toHaveAccessibleDescription(
+      'Restarting costs 100 points.'
+    )
+  })
+
+  it('owns up to what restarts have cost so far', () => {
+    render(<HoldToRestart onRestart={vi.fn()} forfeited={200} />)
+
+    expect(holdButton()).toHaveAccessibleDescription(
+      'Restarting costs 100 points. Restarts have cost you 200 so far.'
+    )
   })
 })

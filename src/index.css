@@ -555,6 +555,21 @@ body::before {
 
 /* ---------- Hold to restart ---------- */
 
+.restart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.restart__cost {
+  max-width: 26rem;
+  margin: 0;
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--parchment-dim);
+}
+
 .hold {
   position: relative;
   overflow: hidden;

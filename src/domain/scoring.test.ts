@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PERFECT_SCORE, scoreFor } from './scoring'
+import { PERFECT_SCORE, scoreFor, totalScore } from './scoring'
 import type { RunProgress } from './scoring'
 
 /** A four-elixir bench, nothing sorted yet. */
@@ -70,5 +70,15 @@ describe('scoreFor', () => {
         solved: true
       })
     ).toBe(500)
+  })
+})
+
+describe('totalScore', () => {
+  it('adds what this bench is worth to what is already banked', () => {
+    expect(totalScore({ banked: 1750, bench: 250 })).toBe(2000)
+  })
+
+  it('never reads below zero, however much restarting has cost', () => {
+    expect(totalScore({ banked: -300, bench: 100 })).toBe(0)
   })
 })

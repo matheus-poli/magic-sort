@@ -23,7 +23,9 @@ it was earned: 500 shared out across the flasks you sort, and 500 for solving in
 as few pours as the bench allows, minus 25 for every pour past that. Each bench
 states its own fewest-possible count up front, so the target is never a mystery.
 What a bench earned is banked when you move on, so the total climbs across the
-atelier towards 5000 — a thousand a bench.
+atelier towards 5000 — a thousand a bench. Starting a bench over is the way out
+of a mistake, but it is not free: the button has to be held down while a bar
+fills, and it takes 100 points off the total.
 
 ## Getting set up
 
