@@ -3,15 +3,25 @@ import { PERFECT_SCORE, POINTS_LOST_PER_EXTRA_POUR } from '../domain/scoring'
 
 interface ScoreBoardProps {
   readonly score: number
+  /** The whole campaign so far, this bench included. */
+  readonly totalScore: number
+  readonly perfectTotal: number
   readonly pours: number
   readonly minimumPours: number
 }
 
-export function ScoreBoard({ score, pours, minimumPours }: ScoreBoardProps) {
+export function ScoreBoard({
+  score,
+  totalScore,
+  perfectTotal,
+  pours,
+  minimumPours
+}: ScoreBoardProps) {
   return (
     <div className='scoreboard'>
       <dl className='scoreboard__stats'>
         <Stat label='Score' value={score} outOf={PERFECT_SCORE} />
+        <Stat label='Total' value={totalScore} outOf={perfectTotal} />
         <Stat label='Pours' value={pours} />
       </dl>
 

@@ -43,9 +43,20 @@ const finalPour: Level = {
   ]
 }
 
-const showBench = (level: Level, onNextLevel: (() => void) | null = null) =>
+interface Standing {
+  readonly bankedScore?: number
+  readonly onNextLevel?: ((score: number) => void) | null
+}
+
+const showBench = (level: Level, standing: Standing = {}) =>
   render(
-    <Game level={level} position={1} total={5} onNextLevel={onNextLevel} />
+    <Game
+      level={level}
+      position={1}
+      levelCount={5}
+      bankedScore={standing.bankedScore ?? 0}
+      onNextLevel={standing.onNextLevel ?? null}
+    />
   )
 
 const flask = (position: number) =>
@@ -139,7 +150,15 @@ describe('Game', () => {
   })
 
   it('counts out which bench of the atelier this is', () => {
-    render(<Game level={bench} position={2} total={5} onNextLevel={null} />)
+    render(
+      <Game
+        level={bench}
+        position={2}
+        levelCount={5}
+        bankedScore={0}
+        onNextLevel={null}
+      />
+    )
 
     // Anchored: the bench name used to trail this line and read as clutter.
     expect(screen.getByText(/level 2 of 5/i)).toHaveTextContent(
@@ -150,13 +169,14 @@ describe('Game', () => {
   it('offers the next bench once this one is sorted', async () => {
     const user = userEvent.setup()
     const onNextLevel = vi.fn()
-    showBench(finalPour, onNextLevel)
+    showBench(finalPour, { onNextLevel })
 
     await user.click(flask(2))
     await user.click(flask(1))
     await user.click(screen.getByRole('button', { name: 'Next level' }))
 
-    expect(onNextLevel).toHaveBeenCalled()
+    // With the score, so the campaign can bank what this bench was worth.
+    expect(onNextLevel).toHaveBeenCalledWith(1000)
   })
 
   it('closes the atelier out on the last bench rather than offering another', async () => {
@@ -170,7 +190,7 @@ describe('Game', () => {
       screen.queryByRole('button', { name: 'Next level' })
     ).not.toBeInTheDocument()
     expect(screen.getByText(/every bench/i)).toHaveTextContent(
-      'Every bench in the atelier is sorted.'
+      'Every bench in the atelier is sorted, for 1000 of 5000.'
     )
   })
 
@@ -218,6 +238,22 @@ describe('Game', () => {
     expect(screen.getByText(/fewest possible/i)).toHaveTextContent(
       'Pours spent: 1 · Fewest possible: 1'
     )
+  })
+
+  it('carries the points banked on earlier benches into the total', () => {
+    showBench(bench, { bankedScore: 1750 })
+
+    expect(screen.getByLabelText('Total')).toHaveTextContent('1750 / 5000')
+  })
+
+  it('counts what this bench earns into the total as it is earned', async () => {
+    const user = userEvent.setup()
+    showBench(finalPour, { bankedScore: 1750 })
+
+    await user.click(flask(2))
+    await user.click(flask(1))
+
+    expect(screen.getByLabelText('Total')).toHaveTextContent('2750 / 5000')
   })
 
   it('puts the bench back the way it started when asked to restart', async () => {

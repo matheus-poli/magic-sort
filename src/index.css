@@ -143,6 +143,8 @@ body::before {
 
 .scoreboard__stats {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 0.75rem;
   margin: 0;
   padding: 0;

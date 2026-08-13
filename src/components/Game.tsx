@@ -12,12 +12,23 @@ interface GameProps {
   readonly level: Level
   /** Which bench of the atelier this is, counted the way a player counts. */
   readonly position: number
-  readonly total: number
-  /** Hands over the next bench, or null when this is the last one. */
-  readonly onNextLevel: (() => void) | null
+  readonly levelCount: number
+  /** Points earned on the benches before this one. */
+  readonly bankedScore: number
+  /**
+   * Hands over the next bench, taking what this one scored so the campaign can
+   * bank it. Null when this is the last bench.
+   */
+  readonly onNextLevel: ((score: number) => void) | null
 }
 
-export function Game({ level, position, total, onNextLevel }: GameProps) {
+export function Game({
+  level,
+  position,
+  levelCount,
+  bankedScore,
+  onNextLevel
+}: GameProps) {
   const game = useGame(level)
   useGameSounds(game)
 
@@ -25,17 +36,22 @@ export function Game({ level, position, total, onNextLevel }: GameProps) {
     if (game.isSolved) celebrateLevel()
   }, [game.isSolved])
 
+  const totalScore = bankedScore + game.score
+  const perfectTotal = levelCount * PERFECT_SCORE
+
   return (
     <main className='game'>
       <header className='game__header'>
         <h1 className='game__title'>Magic Sort</h1>
         <p className='game__level'>
-          Level {position} of {total}
+          Level {position} of {levelCount}
         </p>
       </header>
 
       <ScoreBoard
         score={game.score}
+        totalScore={totalScore}
+        perfectTotal={perfectTotal}
         pours={game.pours}
         minimumPours={level.minimumPours}
       />
@@ -87,7 +103,8 @@ export function Game({ level, position, total, onNextLevel }: GameProps) {
               </p>
               {onNextLevel === null && (
                 <p className='victory__closing'>
-                  Every bench in the atelier is sorted.
+                  Every bench in the atelier is sorted, for {totalScore} of{' '}
+                  {perfectTotal}.
                 </p>
               )}
 
@@ -96,7 +113,7 @@ export function Game({ level, position, total, onNextLevel }: GameProps) {
                   <button
                     type='button'
                     className='button button--primary'
-                    onClick={onNextLevel}
+                    onClick={() => onNextLevel(game.score)}
                   >
                     Next level
                   </button>

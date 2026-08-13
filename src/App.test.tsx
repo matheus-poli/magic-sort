@@ -12,6 +12,14 @@ describe('App', () => {
     )
   })
 
+  it('scores the whole atelier out of a thousand points a bench', () => {
+    render(<App />)
+
+    expect(screen.getByLabelText('Total')).toHaveTextContent(
+      `0 / ${LEVELS.length * 1000}`
+    )
+  })
+
   it('lays out every flask that first bench holds', () => {
     render(<App />)
 

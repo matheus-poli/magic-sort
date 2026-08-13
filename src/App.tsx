@@ -9,7 +9,8 @@ export function App() {
     <Game
       level={campaign.level}
       position={campaign.position}
-      total={campaign.total}
+      levelCount={campaign.levelCount}
+      bankedScore={campaign.bankedScore}
       onNextLevel={campaign.hasNext ? campaign.advance : null}
     />
   )
