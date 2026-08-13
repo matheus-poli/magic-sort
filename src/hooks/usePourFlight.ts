@@ -30,8 +30,13 @@ const STREAM_SECONDS = 0.15
 const DRAIN_SECONDS = 0.1
 const RETURN_SECONDS = 0.24
 const TILT_DEGREES = 104
-/** How far above the target's mouth the tipped flask hangs, in pixels. */
-const POURING_HEIGHT = 26
+/**
+ * How far the tipped flask clears the rim it is pouring into, in pixels. It is
+ * measured from the flask's middle, which is what it turns about, so a flask
+ * hangs over the bench with daylight under it rather than lying across the
+ * glass it is filling.
+ */
+const POURING_HEIGHT = 34
 
 interface Flight {
   readonly x: number
@@ -228,13 +233,15 @@ function flightBetween(
 
   return {
     x: lip - from.left - (fromTheRight ? 0 : from.width),
-    y: onto.top - from.top - POURING_HEIGHT,
+    y: onto.top - from.top - from.height / 2 - POURING_HEIGHT,
     rotate: fromTheRight ? -TILT_DEGREES : TILT_DEGREES,
+    // The elixir falls from the lip hanging above the rim, not from the rim
+    // itself, so the stream starts where the flask actually is.
     stream: {
       elixir,
       left: onto.left + onto.width / 2 - benchAt.left,
-      top: onto.top - benchAt.top,
-      height: onto.height * 0.6
+      top: onto.top - benchAt.top - POURING_HEIGHT,
+      height: onto.height * 0.6 + POURING_HEIGHT
     }
   }
 }

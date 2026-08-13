@@ -307,6 +307,9 @@ body::before {
   /* A flask on its way over another has to be drawn above it, and a stacking
      context is what lets the pouring flask claim that. */
   position: relative;
+  /* Above the falling elixir, so a pour lands inside the glass rather than
+     running down the front of it. */
+  z-index: 1;
 }
 
 /*
@@ -316,7 +319,9 @@ body::before {
  */
 .pour-stream {
   position: absolute;
-  z-index: 4;
+  /* Behind the bench's glass: the stretch above the rim falls in open air, and
+     the rest shows through the bottle it is filling. */
+  z-index: 0;
   width: 0.45rem;
   margin-left: -0.225rem;
   transform-origin: top center;
@@ -412,6 +417,13 @@ body::before {
   align-items: center;
 }
 
+/*
+ * A flask is corked when it is finished, never before: the cork is the seal on
+ * a sorted elixir, so a bottle still being worked on stands open. Its space is
+ * held all along and only its paint comes and goes, so nothing on the bench
+ * shifts at the moment one is stoppered — and it waits out the same settle
+ * delay as the golden rim, so the seal lands with the elixir.
+ */
 .flask__cork {
   width: 36%;
   height: 0.62rem;
@@ -420,6 +432,16 @@ body::before {
   box-shadow:
     inset 0 1px 0 rgba(255, 240, 210, 0.45),
     0 2px 5px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  transform: translateY(0.3rem) scale(0.8);
+  transition:
+    opacity 0.3s var(--ease-out) 0.19s,
+    transform 0.3s var(--ease-out) 0.19s;
+}
+
+.flask[data-sealed='true'] .flask__cork {
+  opacity: 1;
+  transform: none;
 }
 
 .flask__neck {
