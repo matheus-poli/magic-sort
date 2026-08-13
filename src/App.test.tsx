@@ -27,4 +27,13 @@ describe('App', () => {
       LEVELS[0].board.length
     )
   })
+
+  it('shows the way back to the blog the game is a project of', () => {
+    render(<App />)
+
+    expect(screen.getByRole('link', { name: 'Mat Poli' })).toHaveAttribute(
+      'href',
+      'https://matpoli.dev/'
+    )
+  })
 })

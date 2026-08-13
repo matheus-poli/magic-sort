@@ -19,6 +19,9 @@
   --violet: #a374ff;
   --pearl: #e8e4f7;
 
+  /* The blog's own accent, so its mark stays recognisably the blog's. */
+  --blog-accent: #60a5fa;
+
   --glass-edge: rgba(226, 214, 255, 0.35);
   --glass-fill: rgba(146, 122, 214, 0.1);
 
@@ -103,6 +106,36 @@ body::before {
   padding: clamp(1.5rem, 4vw, 3rem) 1.25rem;
   max-width: 60rem;
   margin-inline: auto;
+}
+
+/* ---------- The blog's mark ---------- */
+
+.wordmark {
+  position: fixed;
+  z-index: 10;
+  top: clamp(0.75rem, 2vw, 1.25rem);
+  left: clamp(0.75rem, 2vw, 1.25rem);
+  display: block;
+  color: var(--blog-accent);
+  opacity: 0.72;
+  border-radius: 0.5rem;
+  transition: opacity 0.25s var(--ease-out);
+}
+
+.wordmark:hover,
+.wordmark:focus-visible {
+  opacity: 1;
+}
+
+.wordmark:focus-visible {
+  outline: 2px solid var(--rune-bright);
+  outline-offset: 6px;
+}
+
+.wordmark__mark {
+  display: block;
+  width: auto;
+  height: clamp(2.1rem, 5.5vw, 2.9rem);
 }
 
 /* ---------- Header ---------- */
