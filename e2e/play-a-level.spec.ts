@@ -27,7 +27,8 @@ const PERFECT_RUN = [
 test('an apprentice sorts the starter level from first pour to last', async ({
   page
 }) => {
-  await page.goto('/')
+  // Relative, so it resolves against the base path rather than replacing it.
+  await page.goto('./')
 
   const flask = (position: number) =>
     page.getByRole('button', { name: new RegExp(`^Flask ${position},`) })

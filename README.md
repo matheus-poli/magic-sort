@@ -63,6 +63,48 @@ On Linux the e2e browser also needs a handful of system libraries, which are
 outside what mise manages. Install them once with
 `sudo npx playwright install-deps chromium`.
 
+## Deploying
+
+The game is played at **<https://www.matpoli.dev/magic-sort/>**, and it is free
+to host: static files on GitHub Pages, with Cloudflare lending the path.
+
+Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml),
+which verifies the commit and plays a whole level in a real browser before it
+builds `dist/` and hands it to Pages. Nothing reaches the public URL without
+passing the same gate a local push does.
+
+The path is on a domain the personal site already answers for, and that site is
+not on Pages — so something has to lend the path out. Cloudflare routes
+`/magic-sort*` on the zone to [`infra/magic-sort-worker.ts`](infra/magic-sort-worker.ts),
+a proxy that swaps the hostname for the Pages one and puts the visitor back on
+the custom domain when Pages answers with a redirect. Everything else on the
+zone is untouched by it. Deploy it after a change to that file or its routes:
+
+```bash
+npx wrangler deploy --config infra/wrangler.jsonc
+```
+
+Because the repository is named after the public path, that path is identical on
+both sides of the proxy, which is why the proxy has no path rewriting in it:
+Pages publishes a project site under the repository name, and `vite.config.ts`
+matches it with `base: '/magic-sort/'`. Without that base the browser would look
+for the bundle at the domain root, find nothing, and show a blank page. The e2e
+test drives the same subpath the deployment uses, so getting it wrong fails the
+build instead of the site.
+
+Renaming the repository, moving the game to another path, or dropping the proxy
+for a domain of its own means changing the base, the Playwright preview URL and
+the worker routes together — they encode the same one path.
+
+First-time setup, done once each:
+
+- **Settings → Pages → Source: GitHub Actions**, in the repository.
+- `npx wrangler login`, then the deploy command above.
+
+The Pages URL, <https://matheus-poli.github.io/magic-sort/>, keeps working and
+serves the same build. It is the origin the proxy reads from, so it cannot be
+hidden, only ignored.
+
 ## How it is built
 
 ```
@@ -73,6 +115,7 @@ src/
   audio/        The one impure boundary, isolated so tests can stub it.
 e2e/            A single Playwright smoke test.
 scripts/        Sound synthesis.
+infra/          The Cloudflare proxy that lends the game its path, and its test.
 ```
 
 Dependencies point one way: `components → hooks → domain`. The rules of the
