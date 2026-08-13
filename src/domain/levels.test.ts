@@ -23,6 +23,13 @@ interface Rung {
   readonly spares: number
 }
 
+/**
+ * The room a bench leaves: spare flasks to pour into. Two is room to think in,
+ * one is barely any, and the difference between them is what a player feels.
+ */
+const ROOM_TO_LEARN = 2
+const MINIMUM_ROOM = 1
+
 function rungOf(level: Level): Rung {
   const elixirs = flasksToFill(level.board)
 
@@ -32,6 +39,26 @@ function rungOf(level: Level): Rung {
     elixirs,
     spares: level.board.length - elixirs
   }
+}
+
+/**
+ * The benches grouped by the mechanic they share, in the order they are played.
+ * A new mechanic is new glass, so the size of the glass names the shelf.
+ */
+function shelvesOf(levels: readonly Level[]): Rung[][] {
+  const shelves: Rung[][] = []
+
+  for (const level of levels) {
+    const rung = rungOf(level)
+    const shelf = shelves.at(-1)
+
+    if (shelf === undefined || shelf[0].capacity !== rung.capacity) {
+      shelves.push([])
+    }
+    shelves[shelves.length - 1].push(rung)
+  }
+
+  return shelves
 }
 
 /**
@@ -64,8 +91,6 @@ describe('LEVELS', () => {
       'The Crowded Cupboard',
       "The Archmage's Vault",
       "The Glassblower's Gift",
-      "The Distiller's Row",
-      "The Apothecary's Wall",
       'The Narrow Larder',
       'The Grand Alembic'
     ])
@@ -75,6 +100,46 @@ describe('LEVELS', () => {
     const ladder = LEVELS.map(rungOf)
 
     expect(ladder).toEqual([...ladder].sort(byDifficulty))
+  })
+
+  /*
+   * The fix for the complaint that the atelier goes slack past the fifth bench:
+   * a new mechanic used to buy three roomy benches in a row, and players felt
+   * the game hand back everything it had just taught them to do without.
+   */
+  it('gives a new mechanic one roomy bench, then takes the room back', () => {
+    const [, ...shelves] = shelvesOf(LEVELS)
+
+    const room = shelves.map((shelf) => ({
+      shelf: shelf[0].capacity,
+      benches: shelf.map((rung) => `${rung.bench}: ${rung.spares} spare`)
+    }))
+
+    expect(room).toEqual(
+      shelves.map((shelf) => ({
+        shelf: shelf[0].capacity,
+        benches: shelf.map(
+          (rung, bench) =>
+            `${rung.bench}: ${bench === 0 ? ROOM_TO_LEARN : MINIMUM_ROOM} spare`
+        )
+      }))
+    )
+  })
+
+  /*
+   * The exception, and the only one: the opening shelf is teaching the game
+   * itself rather than a mechanic on top of it, so it climbs by the weaker dial
+   * before it starts taking flasks away.
+   */
+  it('lets the opening shelf teach the game before it takes any room away', () => {
+    const [onRamp] = shelvesOf(LEVELS)
+    const roomy = onRamp.filter((rung) => rung.spares === ROOM_TO_LEARN)
+
+    expect(roomy.map((rung) => rung.bench)).toEqual([
+      "The Apprentice's Bench",
+      "The Herbalist's Shelf",
+      "The Alchemist's Table"
+    ])
   })
 
   it('gives every bench an id of its own to be remembered by', () => {

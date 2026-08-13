@@ -66,16 +66,16 @@ test('an apprentice sorts the starter level from first pour to last', async ({
   expect(pointsCoveredByTheBench).toBe(0)
 
   await page.getByRole('button', { name: 'Next level' }).click()
-  await expect(page.getByText(/^Level 2 of/)).toHaveText('Level 2 of 10')
+  await expect(page.getByText(/^Level 2 of/)).toHaveText('Level 2 of 8')
   await expect(page.getByLabel('Pours')).toHaveText('0')
   // The bench resets; what it earned does not.
-  await expect(page.getByLabel('Total')).toHaveText('1000 / 10000')
+  await expect(page.getByLabel('Total')).toHaveText('1000 / 8000')
 
   // Restarting takes a press that is held, which only a real pointer proves,
   // and it costs the campaign 100 points. The assertion retries while the
   // press charges, so it is the hold itself being waited on.
   await page.getByRole('button', { name: 'Hold to restart' }).hover()
   await page.mouse.down()
-  await expect(page.getByLabel('Total')).toHaveText('900 / 10000')
+  await expect(page.getByLabel('Total')).toHaveText('900 / 8000')
   await page.mouse.up()
 })
