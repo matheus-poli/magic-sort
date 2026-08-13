@@ -16,7 +16,8 @@ to take it. The whole unbroken run of the top elixir moves at once. Sort every
 flask to finish the level.
 
 Score is 100 per completed flask, plus a 500 bonus for solving the level that
-loses 25 for every pour spent over par.
+loses 25 for every pour past the fewest possible. Each bench states that number
+up front, so the target is never a mystery.
 
 ## Getting set up
 

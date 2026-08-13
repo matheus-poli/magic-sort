@@ -1,18 +1,27 @@
 import { useId } from 'react'
+import { POINTS_LOST_PER_EXTRA_POUR } from '../domain/scoring'
 
 interface ScoreBoardProps {
   readonly score: number
-  readonly moves: number
-  readonly par: number
+  readonly pours: number
+  readonly minimumPours: number
 }
 
-export function ScoreBoard({ score, moves, par }: ScoreBoardProps) {
+export function ScoreBoard({ score, pours, minimumPours }: ScoreBoardProps) {
   return (
-    <dl className='scoreboard'>
-      <Stat label='Score' value={score} />
-      <Stat label='Pours' value={moves} />
-      <Stat label='Par' value={par} />
-    </dl>
+    <div className='scoreboard'>
+      <dl className='scoreboard__stats'>
+        <Stat label='Score' value={score} />
+        <Stat label='Pours' value={pours} />
+      </dl>
+
+      {/* This used to be a bare stat labelled "Par", which reads as golf to
+          everyone who has not played golf. Spell the rule out instead. */}
+      <p className='scoreboard__hint'>
+        This bench can be sorted in {minimumPours} pours. Every pour past that
+        costs {POINTS_LOST_PER_EXTRA_POUR} points.
+      </p>
+    </div>
   )
 }
 

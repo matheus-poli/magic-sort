@@ -14,7 +14,7 @@ vi.mock('../effects/confetti', () => ({
 const bench: Level = {
   id: 'test-bench',
   name: 'Test Bench',
-  par: 4,
+  minimumPours: 4,
   board: [['crimson', 'azure'], ['azure'], []]
 }
 
@@ -22,7 +22,7 @@ const bench: Level = {
 const nearlyFull: Level = {
   id: 'test-nearly-full',
   name: 'Nearly Full',
-  par: 2,
+  minimumPours: 2,
   board: [
     ['crimson', 'crimson', 'crimson'],
     ['crimson'],
@@ -35,7 +35,7 @@ const nearlyFull: Level = {
 const finalPour: Level = {
   id: 'test-final-pour',
   name: 'Final Pour',
-  par: 1,
+  minimumPours: 1,
   board: [
     ['crimson', 'crimson', 'crimson'],
     ['crimson'],
@@ -123,6 +123,14 @@ describe('Game', () => {
     await user.click(flask(2))
 
     expect(screen.getByLabelText('Pours')).toHaveTextContent('1')
+  })
+
+  it('says in how few pours the bench can be sorted and what going over costs', () => {
+    render(<Game level={bench} />)
+
+    expect(screen.getByText(/can be sorted in/i)).toHaveTextContent(
+      'This bench can be sorted in 4 pours. Every pour past that costs 25 points.'
+    )
   })
 
   it('celebrates once every elixir is sorted', async () => {

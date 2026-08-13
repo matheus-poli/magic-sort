@@ -25,7 +25,11 @@ export function Game({ level }: GameProps) {
         <h1 className='game__title'>Magic Sort</h1>
       </header>
 
-      <ScoreBoard score={game.score} moves={game.moves} par={level.par} />
+      <ScoreBoard
+        score={game.score}
+        pours={game.pours}
+        minimumPours={level.minimumPours}
+      />
 
       <ol className='bench' aria-label='Flask bench'>
         {game.board.map((contents, index) => (
@@ -66,7 +70,7 @@ export function Game({ level }: GameProps) {
             >
               <h2 className='victory__title'>Elixirs sorted!</h2>
               <p className='victory__detail'>
-                Final score {game.score} in {game.moves} pours.
+                Final score {game.score} in {game.pours} pours.
               </p>
               <button type='button' className='button' onClick={game.restart}>
                 Play again

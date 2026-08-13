@@ -7,7 +7,7 @@ import type { Level } from '../domain/levels'
 const almostSolved: Level = {
   id: 'test-bench',
   name: 'Test Bench',
-  par: 1,
+  minimumPours: 1,
   board: [
     ['crimson', 'crimson', 'crimson'],
     ['crimson'],
@@ -19,18 +19,18 @@ const almostSolved: Level = {
 const mixed: Level = {
   id: 'test-mixed',
   name: 'Mixed Bench',
-  par: 4,
+  minimumPours: 4,
   board: [['crimson', 'azure'], ['azure'], ['verdant'], []]
 }
 
 describe('useGame', () => {
-  it('starts on the given level with nothing selected and no moves spent', () => {
+  it('starts on the given level with nothing selected and no pours spent', () => {
     const { result } = renderHook(() => useGame(mixed))
 
     expect(result.current).toMatchObject({
       board: mixed.board,
       selectedIndex: null,
-      moves: 0,
+      pours: 0,
       isSolved: false
     })
   })
@@ -80,7 +80,7 @@ describe('useGame', () => {
     act(() => result.current.tapFlask(0))
     act(() => result.current.tapFlask(1))
 
-    expect(result.current).toMatchObject({ moves: 1, selectedIndex: null })
+    expect(result.current).toMatchObject({ pours: 1, selectedIndex: null })
   })
 
   it('leaves the board and move count alone when the pour is illegal', () => {
@@ -89,7 +89,7 @@ describe('useGame', () => {
     act(() => result.current.tapFlask(2))
     act(() => result.current.tapFlask(0))
 
-    expect(result.current).toMatchObject({ board: mixed.board, moves: 0 })
+    expect(result.current).toMatchObject({ board: mixed.board, pours: 0 })
   })
 
   it('puts both flasks down when the pour is illegal', () => {
@@ -119,7 +119,7 @@ describe('useGame', () => {
     expect(result.current.isSolved).toBe(true)
   })
 
-  it('scores completed flasks plus the solve bonus for a run within par', () => {
+  it('scores completed flasks plus the bonus for a run at the fewest pours', () => {
     const { result } = renderHook(() => useGame(almostSolved))
 
     act(() => result.current.tapFlask(1))
@@ -197,7 +197,7 @@ describe('useGame', () => {
 
     expect(result.current).toMatchObject({
       board: mixed.board,
-      moves: 0,
+      pours: 0,
       selectedIndex: null
     })
   })

@@ -26,7 +26,7 @@ export interface LastTap {
 export interface Game {
   readonly board: Board
   readonly selectedIndex: number | null
-  readonly moves: number
+  readonly pours: number
   readonly score: number
   readonly isSolved: boolean
   readonly lastTap: LastTap
@@ -38,7 +38,7 @@ export interface Game {
 interface Bench {
   readonly board: Board
   readonly selectedIndex: number | null
-  readonly moves: number
+  readonly pours: number
   readonly lastTap: LastTap
 }
 
@@ -57,15 +57,15 @@ export function useGame(level: Level): Game {
   const solved = isSolved(bench.board)
   const score = scoreFor({
     completedFlasks: completedFlaskCount(bench.board),
-    moves: bench.moves,
-    par: level.par,
+    pours: bench.pours,
+    minimumPours: level.minimumPours,
     solved
   })
 
   return {
     board: bench.board,
     selectedIndex: bench.selectedIndex,
-    moves: bench.moves,
+    pours: bench.pours,
     score,
     isSolved: solved,
     lastTap: bench.lastTap,
@@ -78,7 +78,7 @@ function benchFor(level: Level): Bench {
   return {
     board: level.board,
     selectedIndex: null,
-    moves: 0,
+    pours: 0,
     lastTap: {
       outcome: 'ignored',
       sequence: 0,
@@ -129,7 +129,7 @@ function tap(bench: Bench, index: number): Bench {
   return {
     board,
     selectedIndex: null,
-    moves: bench.moves + 1,
+    pours: bench.pours + 1,
     lastTap: {
       ...quietTap,
       outcome: 'poured',

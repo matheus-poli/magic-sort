@@ -36,7 +36,7 @@ describe('STARTER_LEVEL', () => {
     expect(isSolved(STARTER_LEVEL.board)).toBe(false)
   })
 
-  it('sets par to the shortest known solution', () => {
-    expect(STARTER_LEVEL.par).toBe(14)
+  it('takes fourteen pours at the very least', () => {
+    expect(STARTER_LEVEL.minimumPours).toBe(14)
   })
 })
