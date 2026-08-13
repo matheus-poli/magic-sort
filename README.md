@@ -57,11 +57,12 @@ npm run dev
 | `npm run format`        | Prettier                                         |
 | `npm run verify`        | Everything above except e2e — run before pushing |
 | `npm run sounds`        | Regenerate the sound effects                     |
+| `npm run social-card`   | Regenerate the link preview image                |
 | `npm run build`         | Production build                                 |
 
-On Linux the e2e browser also needs a handful of system libraries, which are
-outside what mise manages. Install them once with
-`sudo npx playwright install-deps chromium`.
+On Linux the browser also needs a handful of system libraries, which are outside
+what mise manages, and both the e2e test and the preview image depend on it.
+Install them once with `sudo npx playwright install-deps chromium`.
 
 ## Deploying
 
@@ -104,6 +105,27 @@ First-time setup, done once each:
 The Pages URL, <https://matheus-poli.github.io/magic-sort/>, keeps working and
 serves the same build. It is the origin the proxy reads from, so it cannot be
 hidden, only ignored.
+
+### Link previews
+
+A chat client or a crawler reads `index.html` and never runs the script that
+draws the game, so everything it can learn lives in that file's head: a
+description, Open Graph and Twitter tags, a `<noscript>` paragraph, and a
+canonical URL. Those URLs are absolute deliberately — an unfurler drops a
+relative one without a word, and the link then arrives bare.
+
+The canonical points at the apex, which is what the sitemap of the site that
+owns the domain uses. Three hostnames serve this same build, and naming one
+original keeps them from competing as three copies of one page — including the
+Pages URL, which advertises the custom domain because it serves the same file.
+
+The image is `public/social-card.jpg`, a screenshot of the real atelier taken by
+`npm run social-card` through the Chromium the e2e test already needs. It is
+generated rather than drawn so it cannot drift from the game it advertises, and
+committed, like the sound effects, so that deploying stays a plain build. Its
+weight is capped on purpose: past a few hundred kilobytes WhatsApp shows the
+link without a picture and says nothing. The test suite fails if the file is
+missing or too heavy, because both look perfect in a browser.
 
 ## How it is built
 

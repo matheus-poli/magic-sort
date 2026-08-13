@@ -17,6 +17,7 @@
     "verify": "npm run typecheck && npm run lint && npm run format:check && vitest run",
     "prepare": "lefthook install",
     "sounds": "node scripts/generate-sounds.mjs",
+    "social-card": "npm run build && node scripts/generate-social-card.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
