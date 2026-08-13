@@ -5,6 +5,7 @@ import { ScoreBoard } from './ScoreBoard'
 import { useGame } from '../hooks/useGame'
 import { useGameSounds } from '../hooks/useGameSounds'
 import { celebrateLevel } from '../effects/confetti'
+import { PERFECT_SCORE } from '../domain/scoring'
 import type { Level } from '../domain/levels'
 
 interface GameProps {
@@ -69,8 +70,12 @@ export function Game({ level }: GameProps) {
               transition={{ type: 'spring', stiffness: 260, damping: 20 }}
             >
               <h2 className='victory__title'>Elixirs sorted!</h2>
+              <p className='victory__score'>
+                Final score {game.score} of {PERFECT_SCORE}
+              </p>
               <p className='victory__detail'>
-                Final score {game.score} in {game.pours} pours.
+                Pours spent: {game.pours} · Fewest possible:{' '}
+                {level.minimumPours}
               </p>
               <button type='button' className='button' onClick={game.restart}>
                 Play again

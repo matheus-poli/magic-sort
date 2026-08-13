@@ -12,6 +12,11 @@ export function completedFlaskCount(board: Board): number {
   return board.filter(isComplete).length
 }
 
+/** How many flasks a sorted bench ends up with: one per elixir on it. */
+export function flasksToFill(board: Board): number {
+  return new Set(board.flat()).size
+}
+
 export function canPourBetween(
   board: Board,
   sourceIndex: number,

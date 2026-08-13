@@ -74,7 +74,7 @@ describe('useGame', () => {
     ])
   })
 
-  it('counts a successful pour as one move and clears the selection', () => {
+  it('counts a successful pour and clears the selection', () => {
     const { result } = renderHook(() => useGame(mixed))
 
     act(() => result.current.tapFlask(0))
@@ -83,7 +83,7 @@ describe('useGame', () => {
     expect(result.current).toMatchObject({ pours: 1, selectedIndex: null })
   })
 
-  it('leaves the board and move count alone when the pour is illegal', () => {
+  it('leaves the board and the pour count alone when the pour is illegal', () => {
     const { result } = renderHook(() => useGame(mixed))
 
     act(() => result.current.tapFlask(2))
@@ -125,13 +125,13 @@ describe('useGame', () => {
     act(() => result.current.tapFlask(1))
     act(() => result.current.tapFlask(0))
 
-    expect(result.current.score).toBe(700)
+    expect(result.current.score).toBe(1000)
   })
 
   it('scores completed flasks while the level is still in progress', () => {
     const { result } = renderHook(() => useGame(almostSolved))
 
-    expect(result.current.score).toBe(100)
+    expect(result.current.score).toBe(250)
   })
 
   it('reports picking a flask up so the UI can react to it', () => {

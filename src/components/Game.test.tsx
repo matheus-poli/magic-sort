@@ -148,14 +148,35 @@ describe('Game', () => {
     ).toBeInTheDocument()
   })
 
-  it('awards the solve bonus on top of the completed flasks', async () => {
+  it('scores every bench out of the same 1000', () => {
+    render(<Game level={bench} />)
+
+    expect(screen.getByLabelText('Score')).toHaveTextContent('0 / 1000')
+  })
+
+  it('pays a flawless run the full 1000', async () => {
     const user = userEvent.setup()
     render(<Game level={finalPour} />)
 
     await user.click(flask(2))
     await user.click(flask(1))
 
-    expect(screen.getByLabelText('Score')).toHaveTextContent('700')
+    expect(screen.getByLabelText('Score')).toHaveTextContent('1000 / 1000')
+  })
+
+  it('breaks the final score down against the fewest pours possible', async () => {
+    const user = userEvent.setup()
+    render(<Game level={finalPour} />)
+
+    await user.click(flask(2))
+    await user.click(flask(1))
+
+    expect(screen.getByText(/final score/i)).toHaveTextContent(
+      'Final score 1000 of 1000'
+    )
+    expect(screen.getByText(/fewest possible/i)).toHaveTextContent(
+      'Pours spent: 1 · Fewest possible: 1'
+    )
   })
 
   it('puts the bench back the way it started when asked to restart', async () => {

@@ -173,6 +173,12 @@ body::before {
   color: var(--parchment);
 }
 
+/* The ceiling is context, not the reading, so it stays quieter than the score. */
+.stat__ceiling {
+  font-size: 0.95rem;
+  color: var(--parchment-dim);
+}
+
 /* ---------- Bench ---------- */
 
 .bench {
@@ -553,8 +559,17 @@ body::before {
   text-shadow: 0 0 30px rgba(255, 200, 107, 0.5);
 }
 
+.victory__score {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--parchment);
+}
+
 .victory__detail {
   margin: 0 0 0.5rem;
+  font-size: 0.85rem;
   color: var(--parchment-dim);
 }
 

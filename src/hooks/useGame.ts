@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import {
   canPourBetween,
   completedFlaskCount,
+  flasksToFill,
   isSolved,
   pourBetween
 } from '../domain/board'
@@ -57,6 +58,7 @@ export function useGame(level: Level): Game {
   const solved = isSolved(bench.board)
   const score = scoreFor({
     completedFlasks: completedFlaskCount(bench.board),
+    flasksToFill: flasksToFill(bench.board),
     pours: bench.pours,
     minimumPours: level.minimumPours,
     solved

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   canPourBetween,
   completedFlaskCount,
+  flasksToFill,
   isSolved,
   pourBetween
 } from './board'
@@ -41,6 +42,23 @@ describe('completedFlaskCount', () => {
       []
     ]
     expect(completedFlaskCount(board)).toBe(2)
+  })
+})
+
+describe('flasksToFill', () => {
+  it('counts one flask for every elixir the bench holds', () => {
+    const board: Board = [
+      ['crimson', 'azure', 'verdant'],
+      ['azure', 'crimson'],
+      ['verdant'],
+      []
+    ]
+    expect(flasksToFill(board)).toBe(3)
+  })
+
+  it('ignores the empty flasks a sorted bench leaves behind', () => {
+    const board: Board = [['crimson', 'crimson', 'crimson', 'crimson'], [], []]
+    expect(flasksToFill(board)).toBe(1)
   })
 })
 

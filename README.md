@@ -15,9 +15,10 @@ target is empty, or its top layer matches what you are pouring, and it has room
 to take it. The whole unbroken run of the top elixir moves at once. Sort every
 flask to finish the level.
 
-Score is 100 per completed flask, plus a 500 bonus for solving the level that
-loses 25 for every pour past the fewest possible. Each bench states that number
-up front, so the target is never a mystery.
+Every bench is scored out of 1000, so the number means the same thing wherever
+it was earned: 500 shared out across the flasks you sort, and 500 for solving in
+as few pours as the bench allows, minus 25 for every pour past that. Each bench
+states its own fewest-possible count up front, so the target is never a mystery.
 
 ## Getting set up
 

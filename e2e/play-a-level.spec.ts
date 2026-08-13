@@ -41,7 +41,7 @@ test('an apprentice sorts the starter level from first pour to last', async ({
   await expect(
     page.getByRole('heading', { name: 'Elixirs sorted!' })
   ).toBeVisible()
-  await expect(page.getByLabel('Score')).toHaveText('900')
+  await expect(page.getByLabel('Score')).toHaveText('1000 / 1000')
 
   // The celebration covers the screen, so nothing from the bench may paint over
   // it. Only a real browser resolves stacking order, so this is checked here by
