@@ -18,7 +18,9 @@ const SIGILS: Record<Elixir, string> = {
   azure: '▼',
   verdant: '●',
   amber: '★',
-  violet: '◆',
+  // A square rather than a diamond: at the size a phone draws a layer, a
+  // diamond is another angular blob among the triangles.
+  violet: '■',
   pearl: '✚'
 }
 
