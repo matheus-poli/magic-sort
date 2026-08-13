@@ -141,8 +141,9 @@ describe('Game', () => {
   it('counts out which bench of the atelier this is', () => {
     render(<Game level={bench} position={2} total={5} onNextLevel={null} />)
 
+    // Anchored: the bench name used to trail this line and read as clutter.
     expect(screen.getByText(/level 2 of 5/i)).toHaveTextContent(
-      'Level 2 of 5 · Test Bench'
+      /^Level 2 of 5$/
     )
   })
 

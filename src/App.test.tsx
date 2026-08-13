@@ -8,7 +8,7 @@ describe('App', () => {
     render(<App />)
 
     expect(screen.getByText(/level 1 of/i)).toHaveTextContent(
-      `Level 1 of ${LEVELS.length} · ${LEVELS[0].name}`
+      `Level 1 of ${LEVELS.length}`
     )
   })
 

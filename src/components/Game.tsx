@@ -30,7 +30,7 @@ export function Game({ level, position, total, onNextLevel }: GameProps) {
       <header className='game__header'>
         <h1 className='game__title'>Magic Sort</h1>
         <p className='game__level'>
-          Level {position} of {total} · {level.name}
+          Level {position} of {total}
         </p>
       </header>
 
