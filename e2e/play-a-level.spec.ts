@@ -1,0 +1,69 @@
+import { expect, test } from '@playwright/test'
+
+/**
+ * The one end-to-end test in the suite. Everything below it — the pouring
+ * rules, the scoring, the wiring — is already covered by unit and integration
+ * tests; this exists only to prove the whole thing runs in a real browser.
+ *
+ * The shortest solution to the starter level, as pairs of flask numbers.
+ */
+const PERFECT_RUN = [
+  [1, 5],
+  [1, 6],
+  [2, 6],
+  [2, 5],
+  [3, 1],
+  [2, 3],
+  [1, 2],
+  [3, 1],
+  [3, 5],
+  [3, 6],
+  [4, 1],
+  [4, 2],
+  [4, 6],
+  [4, 5]
+]
+
+test('an apprentice sorts the starter level from first pour to last', async ({
+  page
+}) => {
+  await page.goto('/')
+
+  const flask = (position: number) =>
+    page.getByRole('button', { name: new RegExp(`^Flask ${position},`) })
+
+  for (const [source, target] of PERFECT_RUN) {
+    await flask(source).click()
+    await flask(target).click()
+  }
+
+  await expect(
+    page.getByRole('heading', { name: 'Elixirs sorted!' })
+  ).toBeVisible()
+  await expect(page.getByLabel('Score')).toHaveText('900')
+
+  // The celebration covers the screen, so nothing from the bench may paint over
+  // it. Only a real browser resolves stacking order, so this is checked here by
+  // hit-testing a grid of points and asking what is actually on top.
+  const celebration = page.getByRole('status')
+  const pointsCoveredByTheBench = await celebration.evaluate((banner) => {
+    const box = banner.getBoundingClientRect()
+    const samples = []
+    for (let column = 1; column <= 6; column++) {
+      for (let row = 1; row <= 6; row++) {
+        samples.push([
+          box.left + (box.width * column) / 7,
+          box.top + (box.height * row) / 7
+        ])
+      }
+    }
+    return samples.filter(([x, y]) => {
+      const onTop = document.elementFromPoint(x, y)
+      return onTop === null || !banner.contains(onTop)
+    }).length
+  })
+  expect(pointsCoveredByTheBench).toBe(0)
+
+  await page.getByRole('button', { name: 'Play again' }).click()
+  await expect(page.getByLabel('Pours')).toHaveText('0')
+})
