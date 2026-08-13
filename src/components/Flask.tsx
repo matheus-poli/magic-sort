@@ -95,10 +95,13 @@ export function Flask({
          in every one of them: taller glass reads as taller glass rather than as
          thinner elixir. The cast is what a custom property costs in TSX. */
       style={{ '--layers': capacity } as CSSProperties}
+      /* Girth and silhouette are the stylesheet's business, but which of the
+         three shapes to draw is this flask's own size. */
+      data-glass={capacity}
       data-selected={isSelected}
       data-sealed={sealed}
       aria-pressed={isSelected}
-      aria-label={describeFlask(position, contents)}
+      aria-label={describeFlask(position, contents, capacity)}
       onClick={onTap}
       animate={{ y: isSelected ? -22 : 0 }}
       whileHover={{ y: isSelected ? -26 : -6 }}
@@ -138,7 +141,19 @@ export function Flask({
   )
 }
 
-function describeFlask(position: number, contents: FlaskContents): string {
-  if (contents.length === 0) return `Flask ${position}, empty`
-  return `Flask ${position}, holding ${contents.join(', ')} from bottom to top`
+/*
+ * The size of the glass is part of what a flask is once the benches mix them:
+ * an elixir can only ever be sealed in a flask its layers exactly fill, so a
+ * player who cannot see the squat vial next to the tall one still has to know
+ * which of the two they are about to pour into.
+ */
+function describeFlask(
+  position: number,
+  contents: FlaskContents,
+  capacity: number
+): string {
+  const glass = `${capacity}-layer flask`
+
+  if (contents.length === 0) return `Flask ${position}, an empty ${glass}`
+  return `Flask ${position}, a ${glass} holding ${contents.join(', ')} from bottom to top`
 }

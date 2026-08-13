@@ -59,6 +59,17 @@ const tallGlass: Level = {
   )
 }
 
+/** Glass of two sizes on one bench, which is what the later shelves set out. */
+const mixedGlass: Level = {
+  id: 'test-mixed-glass',
+  name: 'Mixed Glass',
+  minimumPours: 1,
+  board: [
+    { capacity: 5, contents: ['crimson', 'azure'] },
+    { capacity: 3, contents: [] }
+  ]
+}
+
 /** One layer of each elixir, so their marks can be compared side by side. */
 const oneOfEach: Level = {
   id: 'test-one-of-each',
@@ -142,9 +153,23 @@ describe('Game', () => {
     showBench(bench)
 
     expect(flask(1)).toHaveAccessibleName(
-      'Flask 1, holding crimson, azure from bottom to top'
+      'Flask 1, a 4-layer flask holding crimson, azure from bottom to top'
     )
-    expect(flask(3)).toHaveAccessibleName('Flask 3, empty')
+    expect(flask(3)).toHaveAccessibleName('Flask 3, an empty 4-layer flask')
+  })
+
+  /*
+   * On a bench of mixed glass, size is the puzzle: an elixir can only be sealed
+   * in a flask its layers exactly fill. A player who cannot see the squat vial
+   * beside the tall one has to be told which is which.
+   */
+  it('names the size of the glass, which mixed benches turn into the puzzle', () => {
+    showBench(mixedGlass)
+
+    expect(flask(1)).toHaveAccessibleName(
+      'Flask 1, a 5-layer flask holding crimson, azure from bottom to top'
+    )
+    expect(flask(2)).toHaveAccessibleName('Flask 2, an empty 3-layer flask')
   })
 
   it('marks a flask as picked up when the apprentice taps it', async () => {
@@ -164,10 +189,10 @@ describe('Game', () => {
     await user.click(flask(2))
 
     expect(flask(1)).toHaveAccessibleName(
-      'Flask 1, holding crimson from bottom to top'
+      'Flask 1, a 4-layer flask holding crimson from bottom to top'
     )
     expect(flask(2)).toHaveAccessibleName(
-      'Flask 2, holding azure, azure from bottom to top'
+      'Flask 2, a 4-layer flask holding azure, azure from bottom to top'
     )
   })
 
@@ -200,7 +225,7 @@ describe('Game', () => {
     await user.click(flask(1))
 
     expect(flask(1)).toHaveAccessibleName(
-      'Flask 1, holding crimson, crimson, crimson, crimson, crimson from bottom to top'
+      'Flask 1, a 5-layer flask holding crimson, crimson, crimson, crimson, crimson from bottom to top'
     )
     expect(
       screen.getByRole('heading', { name: /elixirs sorted/i })
@@ -404,7 +429,7 @@ describe('Game', () => {
     await waitFor(
       () =>
         expect(flask(1)).toHaveAccessibleName(
-          'Flask 1, holding crimson, azure from bottom to top'
+          'Flask 1, a 4-layer flask holding crimson, azure from bottom to top'
         ),
       { timeout: 3000 }
     )

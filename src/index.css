@@ -307,10 +307,26 @@ body::before {
 }
 
 .flask {
-  --flask-width: clamp(3.5rem, 12vw, 4.75rem);
-  /* Layers of glass, which the bench overrides on its taller benches. */
+  --glass-base: clamp(3.5rem, 12vw, 4.75rem);
+  /* Layers of glass, which each flask sets from its own size. */
   --layers: 4;
-  --layer-height: calc(var(--flask-width) * 0.43);
+  /*
+   * Measured off the base rather than off the finished width, so a layer is
+   * the same thickness in every glass on the bench. A flask that holds more
+   * has to be taller, not more finely divided.
+   */
+  --layer-height: calc(var(--glass-base) * 0.43);
+  /*
+   * A glassblower given the same gather of glass blows a short vial fat and a
+   * tall flask slender, so the two are told apart by shape before anyone counts
+   * layers. The four-layer flask is the shape the atelier is drawn around, and
+   * the others lean away from it.
+   */
+  --glass-girth: 1;
+  --flask-width: calc(var(--glass-base) * var(--glass-girth));
+  /* The belly: rounder and lower-slung on the vials, straighter on the tall. */
+  --glass-belly: 46% 46% 44% 44% / 32% 32% 42% 42%;
+  --glass-shoulder: 66%;
 
   position: relative;
   /* Keeps the bottle's internal layering to itself, so a belly stacked above a
@@ -328,6 +344,20 @@ body::before {
   outline: 2px solid var(--rune-bright);
   outline-offset: 6px;
   border-radius: 1.5rem;
+}
+
+/* The stout vial: wide, round-bellied, and barely taller than it is broad. */
+.flask[data-glass='3'] {
+  --glass-girth: 1.18;
+  --glass-belly: 50% 50% 48% 48% / 26% 26% 52% 52%;
+  --glass-shoulder: 60%;
+}
+
+/* The tall flask: drawn in, with a long straight belly. */
+.flask[data-glass='5'] {
+  --glass-girth: 0.87;
+  --glass-belly: 42% 42% 40% 40% / 24% 24% 32% 32%;
+  --glass-shoulder: 72%;
 }
 
 /* Cork, neck, shoulder and belly, stacked into a potion bottle. */
@@ -366,7 +396,7 @@ body::before {
 .flask__shoulder {
   position: relative;
   z-index: 0;
-  width: 66%;
+  width: var(--glass-shoulder);
   height: 0.9rem;
   margin-bottom: -0.6rem;
   background: linear-gradient(
@@ -386,7 +416,7 @@ body::before {
   height: calc(var(--layer-height) * var(--layers));
   overflow: hidden;
   border: 2px solid var(--glass-edge);
-  border-radius: 46% 46% 44% 44% / 32% 32% 42% 42%;
+  border-radius: var(--glass-belly);
   background: var(--glass-fill);
   box-shadow:
     inset 0 -14px 30px rgba(0, 0, 0, 0.42),
