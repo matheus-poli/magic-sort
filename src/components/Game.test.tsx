@@ -59,9 +59,19 @@ const tallGlass: Level = {
   ]
 }
 
+/** One layer of each elixir, so their marks can be compared side by side. */
+const oneOfEach: Level = {
+  id: 'test-one-of-each',
+  name: 'One of Each',
+  capacity: 4,
+  minimumPours: 1,
+  board: [['crimson'], ['azure'], ['verdant'], ['amber'], ['violet'], ['pearl']]
+}
+
 interface Standing {
   readonly bankedScore?: number
   readonly forfeited?: number
+  readonly colourBlind?: boolean
   readonly onNextLevel?: ((score: number) => void) | null
   readonly onRestart?: () => void
   readonly onStartOver?: () => void
@@ -75,6 +85,7 @@ const showBench = (level: Level, standing: Standing = {}) =>
       levelCount={5}
       bankedScore={standing.bankedScore ?? 0}
       forfeited={standing.forfeited ?? 0}
+      colourBlind={standing.colourBlind ?? false}
       onNextLevel={standing.onNextLevel ?? null}
       onRestart={standing.onRestart ?? (() => {})}
       onStartOver={standing.onStartOver ?? (() => {})}
@@ -153,6 +164,27 @@ describe('Game', () => {
     )
   })
 
+  it('gives every elixir a mark of its own in colour-blind mode', () => {
+    showBench(oneOfEach, { colourBlind: true })
+
+    // Each flask holds one layer, so what it shows is that elixir's mark.
+    const marks = oneOfEach.board.map(
+      (_, index) => flask(index + 1).textContent
+    )
+
+    expect(marks).toEqual([...new Set(marks)])
+  })
+
+  it('leaves the elixirs unmarked while the colours are enough', () => {
+    showBench(oneOfEach)
+
+    const marks = oneOfEach.board.map(
+      (_, index) => flask(index + 1).textContent
+    )
+
+    expect(marks).toEqual(['', '', '', '', '', ''])
+  })
+
   it('keeps pouring into a four-layer flask on a bench of taller glass', async () => {
     const user = userEvent.setup()
     showBench(tallGlass)
@@ -194,6 +226,7 @@ describe('Game', () => {
         levelCount={5}
         bankedScore={0}
         forfeited={0}
+        colourBlind={false}
         onNextLevel={null}
         onRestart={() => {}}
         onStartOver={() => {}}

@@ -19,6 +19,8 @@ interface GameProps {
   readonly bankedScore: number
   /** What restarts have cost so far, which the restart button owns up to. */
   readonly forfeited: number
+  /** Show the elixirs the accessible way: tuned colours, and a sigil each. */
+  readonly colourBlind: boolean
   /**
    * Hands over the next bench, taking what this one scored so the campaign can
    * bank it. Null when this is the last bench.
@@ -36,6 +38,7 @@ export function Game({
   levelCount,
   bankedScore,
   forfeited,
+  colourBlind,
   onNextLevel,
   onRestart,
   onStartOver
@@ -73,7 +76,7 @@ export function Game({
   )
 
   return (
-    <main className='game'>
+    <main className='game' data-colour-blind={colourBlind}>
       <header className='game__header'>
         <h1 className='game__title'>Magic Sort</h1>
         <p className='game__level'>
@@ -96,6 +99,7 @@ export function Game({
               position={index + 1}
               contents={contents}
               capacity={level.capacity}
+              sigils={colourBlind}
               isSelected={game.selectedIndex === index}
               refusedAt={
                 game.lastTap.refusedFlaskIndex === index

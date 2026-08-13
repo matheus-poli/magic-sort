@@ -30,6 +30,13 @@ of a mistake, but it is not free: the button has to be held down while a bar
 fills, and it takes 100 points off the total. Throwing the whole run away is a
 separate button, and it asks first.
 
+Colour-blind mode is in the top-right corner, and the game remembers it. It
+retunes the elixirs to a palette measured against protanopia, deuteranopia and
+tritanopia — the closest pair anyone then sees is ΔE 17.7, against 7.7 for the
+atelier's own colours, where a deuteranope sees azure and violet as very nearly
+one colour — and marks every layer with a sigil of its own, because six colours
+cannot be told apart by colour alone whatever the palette.
+
 ## Getting set up
 
 The toolchain is pinned with [mise](https://mise.jdx.dev), so everyone builds
@@ -170,11 +177,13 @@ The suite follows the pyramid — the bulk of the cost sits at the bottom:
   the true minimum rather than the best route somebody happened to find.
 - **Integration (React Testing Library)** — one per meaningful interaction,
   querying by role and label the way a player perceives the UI. No test ids.
-- **E2E (Playwright)** — exactly one, solving the starter level in a real
-  browser and moving on to the next. Anything a lower layer can cover belongs
-  in a lower layer.
+- **E2E (Playwright)** — two, and only because no lower layer can hold them.
+  One solves the starter level in a real browser and moves on to the next; the
+  other proves colour-blind mode is still on after a reload, which needs a
+  browser with working storage, and the test environment has none. Anything a
+  lower layer can cover belongs in a lower layer.
 
-Current coverage: 91% of statements, 85% of branches. The gap is deliberate —
+Current coverage: 91% of statements, 86% of branches. The gap is deliberate —
 it is the audio boundary and the confetti canvas, which only a real browser
 executes, and the animation callbacks, which are visual rather than behavioural.
 

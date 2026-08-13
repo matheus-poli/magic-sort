@@ -3,7 +3,24 @@ import { AnimatePresence, motion, useAnimate } from 'motion/react'
 import { isComplete } from '../domain/flask'
 import { celebrateFlask } from '../effects/confetti'
 import type { CSSProperties } from 'react'
-import type { Flask as FlaskContents } from '../domain/flask'
+import type { Elixir, Flask as FlaskContents } from '../domain/flask'
+
+/**
+ * A shape for every elixir, for the players no palette can serve. Six colours
+ * cannot all be kept apart by colour alone: the closest pair a deuteranope sees
+ * on this bench is ΔE 7.7, and the best palette that still lets each elixir
+ * answer to its own name only reaches 17.7 — while a player with no colour
+ * vision at all is left with two pairs at almost the same lightness. A
+ * silhouette has none of those failure modes.
+ */
+const SIGILS: Record<Elixir, string> = {
+  crimson: '▲',
+  azure: '▼',
+  verdant: '●',
+  amber: '★',
+  violet: '◆',
+  pearl: '✚'
+}
 
 /**
  * How long poured elixir takes to settle. The confetti and the wobble wait for
@@ -18,6 +35,8 @@ interface FlaskProps {
   readonly contents: FlaskContents
   /** Layers this bench's glass holds when full, which sets how tall it is. */
   readonly capacity: number
+  /** Whether each layer carries its elixir's sigil as well as its colour. */
+  readonly sigils: boolean
   readonly isSelected: boolean
   /** Tap sequence of the pour this flask just refused, or null. */
   readonly refusedAt: number | null
@@ -28,6 +47,7 @@ export function Flask({
   position,
   contents,
   capacity,
+  sigils,
   isSelected,
   refusedAt,
   onTap
@@ -95,7 +115,15 @@ export function Flask({
                 animate={{ height: layerHeight }}
                 exit={{ height: 0 }}
                 transition={{ duration: 0.19, ease: [0.3, 0.9, 0.4, 1] }}
-              />
+              >
+                {/* Hidden from screen readers: the flask's own label already
+                    names every elixir it holds, in order. */}
+                {sigils && (
+                  <span className='flask__sigil' aria-hidden='true'>
+                    {SIGILS[elixir]}
+                  </span>
+                )}
+              </motion.span>
             ))}
           </AnimatePresence>
         </span>
