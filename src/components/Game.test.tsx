@@ -222,7 +222,10 @@ describe('Game', () => {
     await user.click(flask(2))
     await user.click(flask(1))
 
-    expect(screen.getByLabelText('Score')).toHaveTextContent('1000 / 1000')
+    // Awaited because the number climbs to it rather than appearing on it.
+    await waitFor(() =>
+      expect(screen.getByLabelText('Score')).toHaveTextContent('1000 / 1000')
+    )
   })
 
   it('breaks the final score down against the fewest pours possible', async () => {
@@ -253,7 +256,9 @@ describe('Game', () => {
     await user.click(flask(2))
     await user.click(flask(1))
 
-    expect(screen.getByLabelText('Total')).toHaveTextContent('2750 / 5000')
+    await waitFor(() =>
+      expect(screen.getByLabelText('Total')).toHaveTextContent('2750 / 5000')
+    )
   })
 
   it('puts the bench back the way it started when asked to restart', async () => {

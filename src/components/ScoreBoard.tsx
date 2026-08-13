@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { CountingNumber } from './CountingNumber'
 import { PERFECT_SCORE, POINTS_LOST_PER_EXTRA_POUR } from '../domain/scoring'
 
 interface ScoreBoardProps {
@@ -20,8 +21,8 @@ export function ScoreBoard({
   return (
     <div className='scoreboard'>
       <dl className='scoreboard__stats'>
-        <Stat label='Score' value={score} outOf={PERFECT_SCORE} />
-        <Stat label='Total' value={totalScore} outOf={perfectTotal} />
+        <Stat label='Score' value={score} outOf={PERFECT_SCORE} counting />
+        <Stat label='Total' value={totalScore} outOf={perfectTotal} counting />
         <Stat label='Pours' value={pours} />
       </dl>
 
@@ -40,9 +41,15 @@ interface StatProps {
   readonly value: number
   /** The most this stat can reach, for a stat that has a ceiling. */
   readonly outOf?: number
+  /**
+   * Climbs to a new value instead of snapping to it. For points, where the
+   * climb is part of the reward — not for the pour count, which is the player's
+   * own action and has to land the instant they tap.
+   */
+  readonly counting?: boolean
 }
 
-function Stat({ label, value, outOf }: StatProps) {
+function Stat({ label, value, outOf, counting = false }: StatProps) {
   const labelId = useId()
 
   return (
@@ -51,7 +58,7 @@ function Stat({ label, value, outOf }: StatProps) {
         {label}
       </dt>
       <dd className='stat__value' aria-labelledby={labelId}>
-        {value}
+        {counting ? <CountingNumber value={value} /> : value}
         {outOf !== undefined && (
           <span className='stat__ceiling'> / {outOf}</span>
         )}
