@@ -1,6 +1,10 @@
 import type { Board } from './board'
 
 export interface Level {
+  /**
+   * A stable handle for the bench, deliberately carrying no position: the order
+   * of the atelier is the order of this list, and has already changed once.
+   */
   readonly id: string
   readonly name: string
   /**
@@ -16,12 +20,17 @@ export interface Level {
 /**
  * The atelier, in the order an apprentice earns it. Difficulty comes from two
  * dials: how many elixirs are in play, and how many flasks are left spare to
- * pour into. A bench with one spare flask refuses far more pours than one with
- * two, which is why the tight benches come last.
+ * pour into. Spares are the stronger dial by far — a bench with one leaves the
+ * player almost no room to manoeuvre, refusing most pours outright — so every
+ * elixir is introduced with two spares to play with before the bench tightens.
+ *
+ * Pour count is not the dial, which players proved: they found the five-elixir
+ * bench with one spare harder than the six-elixir bench with two, though it
+ * needs three fewer pours to sort.
  */
 export const LEVELS: readonly Level[] = [
   {
-    id: 'apprentice-1',
+    id: 'apprentice',
     name: "The Apprentice's Bench",
     minimumPours: 14,
     board: [
@@ -34,7 +43,7 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'herbalist-2',
+    id: 'herbalist',
     name: "The Herbalist's Shelf",
     minimumPours: 16,
     board: [
@@ -48,20 +57,7 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'cupboard-3',
-    name: 'The Crowded Cupboard',
-    minimumPours: 18,
-    board: [
-      ['violet', 'amber', 'verdant', 'crimson'],
-      ['verdant', 'crimson', 'amber', 'azure'],
-      ['amber', 'violet', 'azure', 'violet'],
-      ['verdant', 'azure', 'violet', 'crimson'],
-      ['verdant', 'crimson', 'azure', 'amber'],
-      []
-    ]
-  },
-  {
-    id: 'alchemist-4',
+    id: 'alchemist',
     name: "The Alchemist's Table",
     minimumPours: 21,
     board: [
@@ -76,7 +72,20 @@ export const LEVELS: readonly Level[] = [
     ]
   },
   {
-    id: 'archmage-5',
+    id: 'cupboard',
+    name: 'The Crowded Cupboard',
+    minimumPours: 18,
+    board: [
+      ['violet', 'amber', 'verdant', 'crimson'],
+      ['verdant', 'crimson', 'amber', 'azure'],
+      ['amber', 'violet', 'azure', 'violet'],
+      ['verdant', 'azure', 'violet', 'crimson'],
+      ['verdant', 'crimson', 'azure', 'amber'],
+      []
+    ]
+  },
+  {
+    id: 'archmage',
     name: "The Archmage's Vault",
     minimumPours: 22,
     board: [
