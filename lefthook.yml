@@ -1,0 +1,25 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: format
+      glob: '*.{ts,tsx,js,jsx,css,json,md}'
+      run: npx prettier --write {staged_files}
+      stage_fixed: true
+
+    - name: lint
+      glob: '*.{ts,tsx,js,jsx}'
+      run: npx eslint --max-warnings 0 {staged_files}
+
+    - name: typecheck
+      glob: '*.{ts,tsx}'
+      run: npm run typecheck
+
+pre-push:
+  jobs:
+    - name: unit-and-integration-tests
+      run: npm run test -- --run
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: npx commitlint --edit {1}

@@ -1,0 +1,15 @@
+# Toolchain for this project, managed by mise (https://mise.jdx.dev).
+#
+# The Node version is pinned exactly rather than to a range: it is the version
+# the test suite and the production build are verified against, and a puzzle
+# game is not worth debugging across runtimes.
+
+[tools]
+node = "25.5.0"
+
+# Day-to-day commands live in package.json, so that anyone with plain npm can
+# run them. Only the one-time bootstrap lives here, because it reaches past npm
+# to fetch the browser Playwright drives.
+[tasks.setup]
+description = "Install dependencies and the browser the e2e test needs"
+run = ["npm ci", "npx playwright install chromium"]
