@@ -45,6 +45,7 @@ export function Game({
 
   const total = totalScore({ banked: bankedScore, bench: game.score })
   const perfectTotal = levelCount * PERFECT_SCORE
+  const isLastBench = onNextLevel === null
 
   const restartBench = () => {
     game.restart()
@@ -104,31 +105,54 @@ export function Game({
               transition={{ type: 'spring', stiffness: 260, damping: 20 }}
             >
               <h2 className='victory__title'>Elixirs sorted!</h2>
+
+              {/* "Final" only when it is: the word was telling players on the
+                  first bench that they had reached the end of the game. */}
               <p className='victory__score'>
-                Final score {game.score} of {PERFECT_SCORE}
+                {isLastBench ? 'Final score' : 'Score'} {game.score} of{' '}
+                {PERFECT_SCORE}
               </p>
               <p className='victory__detail'>
                 Pours spent: {game.pours} · Fewest possible:{' '}
                 {level.minimumPours}
               </p>
-              {onNextLevel === null && (
+
+              {/* The card covers the whole atelier, so it has to carry the
+                  progress the header behind it would otherwise show. */}
+              <div className='victory__progress'>
+                <ol className='pips' aria-hidden='true'>
+                  {Array.from({ length: levelCount }, (_, bench) => (
+                    <li
+                      key={bench}
+                      className='pips__pip'
+                      data-sorted={bench < position}
+                    />
+                  ))}
+                </ol>
                 <p className='victory__closing'>
-                  Every bench in the atelier is sorted, for {total} of{' '}
-                  {perfectTotal}.
+                  {isLastBench
+                    ? `Every bench in the atelier is sorted, for ${total} of ${perfectTotal}.`
+                    : `${levelCount - position} more to sort.`}
                 </p>
-              )}
+              </div>
 
               <div className='victory__actions'>
                 {onNextLevel !== null && (
                   <button
                     type='button'
-                    className='button button--primary'
+                    className='button button--primary button--wide'
+                    autoFocus
                     onClick={() => onNextLevel(game.score)}
                   >
-                    Next level
+                    Next level <span aria-hidden='true'>→</span>
                   </button>
                 )}
-                <button type='button' className='button' onClick={game.restart}>
+                <button
+                  type='button'
+                  className='button button--quiet'
+                  autoFocus={isLastBench}
+                  onClick={game.restart}
+                >
                   Play again
                 </button>
               </div>

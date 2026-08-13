@@ -200,6 +200,40 @@ describe('Game', () => {
     )
   })
 
+  it('does not call the score final while there are benches left', async () => {
+    const user = userEvent.setup()
+    showBench(finalPour, { onNextLevel: vi.fn() })
+
+    await user.click(flask(2))
+    await user.click(flask(1))
+
+    expect(screen.getByText(/score 1000 of 1000/i)).toHaveTextContent(
+      /^Score 1000 of 1000$/
+    )
+  })
+
+  it('counts out how much of the atelier is still to sort', async () => {
+    const user = userEvent.setup()
+    showBench(finalPour, { onNextLevel: vi.fn() })
+
+    await user.click(flask(2))
+    await user.click(flask(1))
+
+    expect(screen.getByText(/more to sort/i)).toHaveTextContent(
+      '4 more to sort.'
+    )
+  })
+
+  it('puts the next bench under the apprentice\u2019s finger', async () => {
+    const user = userEvent.setup()
+    showBench(finalPour, { onNextLevel: vi.fn() })
+
+    await user.click(flask(2))
+    await user.click(flask(1))
+
+    expect(screen.getByRole('button', { name: 'Next level' })).toHaveFocus()
+  })
+
   it('celebrates once every elixir is sorted', async () => {
     const user = userEvent.setup()
     showBench(finalPour)
