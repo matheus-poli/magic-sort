@@ -56,6 +56,11 @@ jobs:
       - run: npm run build
 
       - uses: actions/configure-pages@v6
+
+      # Recover a failed deploy with a fresh run — from the Actions tab or a
+      # push — never with "Re-run failed jobs". Re-running this job inside a run
+      # that already uploaded leaves two artifacts under the same name, and the
+      # deploy below refuses to guess which of them to publish.
       - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
