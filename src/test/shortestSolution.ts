@@ -23,7 +23,10 @@ interface Visit {
  * they are explored once — without that, the search is too slow to run over
  * every level on every test run.
  */
-export function shortestSolution(board: Board): readonly Pour[] | null {
+export function shortestSolution(
+  board: Board,
+  capacity: number
+): readonly Pour[] | null {
   const opening: Visit = {
     bench: benchFingerprint(board),
     board,
@@ -34,13 +37,13 @@ export function shortestSolution(board: Board): readonly Pour[] | null {
   let frontier: Visit[] = [opening]
 
   while (frontier.length > 0) {
-    const sorted = frontier.find((visit) => isSolved(visit.board))
+    const sorted = frontier.find((visit) => isSolved(visit.board, capacity))
     if (sorted !== undefined) return routeTo(sorted, visited)
 
     const next: Visit[] = []
     for (const visit of frontier) {
-      for (const pour of legalPours(visit.board)) {
-        const poured = pourBetween(visit.board, pour[0], pour[1])
+      for (const pour of legalPours(visit.board, capacity)) {
+        const poured = pourBetween(visit.board, pour[0], pour[1], capacity)
         const bench = benchFingerprint(poured)
         if (visited.has(bench)) continue
 
@@ -61,12 +64,14 @@ export function shortestSolution(board: Board): readonly Pour[] | null {
   return null
 }
 
-function legalPours(board: Board): Pour[] {
+function legalPours(board: Board, capacity: number): Pour[] {
   const pours: Pour[] = []
 
   for (let source = 0; source < board.length; source++) {
     for (let target = 0; target < board.length; target++) {
-      if (canPourBetween(board, source, target)) pours.push([source, target])
+      if (canPourBetween(board, source, target, capacity)) {
+        pours.push([source, target])
+      }
     }
   }
 

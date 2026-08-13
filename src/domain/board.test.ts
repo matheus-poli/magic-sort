@@ -15,7 +15,7 @@ describe('isSolved', () => {
       ['azure', 'azure', 'azure', 'azure'],
       []
     ]
-    expect(isSolved(board)).toBe(true)
+    expect(isSolved(board, 4)).toBe(true)
   })
 
   it('is false while any flask still holds mixed elixirs', () => {
@@ -24,12 +24,17 @@ describe('isSolved', () => {
       ['azure', 'azure', 'azure', 'crimson'],
       []
     ]
-    expect(isSolved(board)).toBe(false)
+    expect(isSolved(board, 4)).toBe(false)
   })
 
   it('is false when an elixir is pure but not yet gathered into one flask', () => {
     const board: Board = [['crimson', 'crimson'], ['crimson', 'crimson'], []]
-    expect(isSolved(board)).toBe(false)
+    expect(isSolved(board, 4)).toBe(false)
+  })
+
+  it('is false while a taller flask is still a layer short of its brim', () => {
+    const board: Board = [['crimson', 'crimson', 'crimson', 'crimson'], []]
+    expect(isSolved(board, 5)).toBe(false)
   })
 })
 
@@ -41,7 +46,15 @@ describe('completedFlaskCount', () => {
       ['verdant', 'verdant', 'verdant', 'verdant'],
       []
     ]
-    expect(completedFlaskCount(board)).toBe(2)
+    expect(completedFlaskCount(board, 4)).toBe(2)
+  })
+
+  it('counts only what a bench of taller flasks calls filled', () => {
+    const board: Board = [
+      ['crimson', 'crimson', 'crimson', 'crimson', 'crimson'],
+      ['azure', 'azure', 'azure', 'azure']
+    ]
+    expect(completedFlaskCount(board, 5)).toBe(1)
   })
 })
 
@@ -66,15 +79,15 @@ describe('canPourBetween', () => {
   const board: Board = [['crimson'], ['crimson', 'azure'], []]
 
   it('allows a pour the flasks themselves accept', () => {
-    expect(canPourBetween(board, 0, 2)).toBe(true)
+    expect(canPourBetween(board, 0, 2, 4)).toBe(true)
   })
 
   it('rejects a pour onto a mismatched top layer', () => {
-    expect(canPourBetween(board, 0, 1)).toBe(false)
+    expect(canPourBetween(board, 0, 1, 4)).toBe(false)
   })
 
   it('rejects pouring a flask into itself', () => {
-    expect(canPourBetween(board, 0, 0)).toBe(false)
+    expect(canPourBetween(board, 0, 0, 4)).toBe(false)
   })
 })
 
@@ -82,7 +95,7 @@ describe('pourBetween', () => {
   it('moves the elixir and leaves every other flask untouched', () => {
     const board: Board = [['azure', 'crimson'], ['crimson'], ['verdant']]
 
-    expect(pourBetween(board, 0, 1)).toEqual([
+    expect(pourBetween(board, 0, 1, 4)).toEqual([
       ['azure'],
       ['crimson', 'crimson'],
       ['verdant']
@@ -92,19 +105,31 @@ describe('pourBetween', () => {
   it('returns a new board instead of mutating the one it was given', () => {
     const board: Board = [['crimson'], []]
 
-    pourBetween(board, 0, 1)
+    pourBetween(board, 0, 1, 4)
 
     expect(board).toEqual([['crimson'], []])
   })
 
+  it('pours into a flask that only a taller bench still has room in', () => {
+    const board: Board = [
+      ['crimson'],
+      ['crimson', 'crimson', 'crimson', 'crimson']
+    ]
+
+    expect(pourBetween(board, 0, 1, 5)).toEqual([
+      [],
+      ['crimson', 'crimson', 'crimson', 'crimson', 'crimson']
+    ])
+  })
+
   it('refuses to pour a flask into itself', () => {
-    expect(() => pourBetween([['crimson']], 0, 0)).toThrow(
+    expect(() => pourBetween([['crimson']], 0, 0, 4)).toThrow(
       'Cannot pour a flask into itself'
     )
   })
 
   it('refuses a pour onto a mismatched elixir', () => {
-    expect(() => pourBetween([['crimson'], ['azure']], 0, 1)).toThrow(
+    expect(() => pourBetween([['crimson'], ['azure']], 0, 1, 4)).toThrow(
       'Cannot pour crimson onto azure'
     )
   })

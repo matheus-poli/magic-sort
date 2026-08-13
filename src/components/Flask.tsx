@@ -1,10 +1,9 @@
 import { useEffect } from 'react'
 import { AnimatePresence, motion, useAnimate } from 'motion/react'
-import { FLASK_CAPACITY, isComplete } from '../domain/flask'
+import { isComplete } from '../domain/flask'
 import { celebrateFlask } from '../effects/confetti'
+import type { CSSProperties } from 'react'
 import type { Flask as FlaskContents } from '../domain/flask'
-
-const LAYER_HEIGHT = `${100 / FLASK_CAPACITY}%`
 
 /**
  * How long poured elixir takes to settle. The confetti and the wobble wait for
@@ -17,6 +16,8 @@ interface FlaskProps {
   /** What the player sees on the label: flasks are numbered from one. */
   readonly position: number
   readonly contents: FlaskContents
+  /** Layers this bench's glass holds when full, which sets how tall it is. */
+  readonly capacity: number
   readonly isSelected: boolean
   /** Tap sequence of the pour this flask just refused, or null. */
   readonly refusedAt: number | null
@@ -26,13 +27,15 @@ interface FlaskProps {
 export function Flask({
   position,
   contents,
+  capacity,
   isSelected,
   refusedAt,
   onTap
 }: FlaskProps) {
   const [scope, animate] = useAnimate()
   const [glassScope, animateGlass] = useAnimate()
-  const sealed = isComplete(contents)
+  const sealed = isComplete(contents, capacity)
+  const layerHeight = `${100 / capacity}%`
 
   useEffect(() => {
     if (refusedAt === null) return
@@ -63,6 +66,10 @@ export function Flask({
       ref={scope}
       type='button'
       className='flask'
+      /* The bottle grows with the bench, so a layer is the same thickness on
+         every one of them: taller glass reads as taller glass rather than as
+         thinner elixir. The cast is what a custom property costs in TSX. */
+      style={{ '--layers': capacity } as CSSProperties}
       data-selected={isSelected}
       data-sealed={sealed}
       aria-pressed={isSelected}
@@ -85,7 +92,7 @@ export function Flask({
                 className='flask__layer'
                 data-elixir={elixir}
                 initial={{ height: 0 }}
-                animate={{ height: LAYER_HEIGHT }}
+                animate={{ height: layerHeight }}
                 exit={{ height: 0 }}
                 transition={{ duration: 0.19, ease: [0.3, 0.9, 0.4, 1] }}
               />

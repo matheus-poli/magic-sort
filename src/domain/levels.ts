@@ -7,6 +7,8 @@ export interface Level {
    */
   readonly id: string
   readonly name: string
+  /** How many layers every flask on this bench holds when it is full. */
+  readonly capacity: number
   /**
    * The fewest pours that can sort this bench, which the scoreboard promises
    * the player is the true minimum, and the solve bonus measures them against.
@@ -32,6 +34,7 @@ export const LEVELS: readonly Level[] = [
   {
     id: 'apprentice',
     name: "The Apprentice's Bench",
+    capacity: 4,
     minimumPours: 14,
     board: [
       ['crimson', 'azure', 'verdant', 'amber'],
@@ -45,6 +48,7 @@ export const LEVELS: readonly Level[] = [
   {
     id: 'herbalist',
     name: "The Herbalist's Shelf",
+    capacity: 4,
     minimumPours: 16,
     board: [
       ['amber', 'crimson', 'verdant', 'azure'],
@@ -59,6 +63,7 @@ export const LEVELS: readonly Level[] = [
   {
     id: 'alchemist',
     name: "The Alchemist's Table",
+    capacity: 4,
     minimumPours: 21,
     board: [
       ['crimson', 'verdant', 'violet', 'amber'],
@@ -74,6 +79,7 @@ export const LEVELS: readonly Level[] = [
   {
     id: 'cupboard',
     name: 'The Crowded Cupboard',
+    capacity: 4,
     minimumPours: 18,
     board: [
       ['violet', 'amber', 'verdant', 'crimson'],
@@ -87,6 +93,7 @@ export const LEVELS: readonly Level[] = [
   {
     id: 'archmage',
     name: "The Archmage's Vault",
+    capacity: 4,
     minimumPours: 22,
     board: [
       ['azure', 'crimson', 'pearl', 'crimson'],

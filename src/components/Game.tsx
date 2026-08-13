@@ -95,6 +95,7 @@ export function Game({
             <Flask
               position={index + 1}
               contents={contents}
+              capacity={level.capacity}
               isSelected={game.selectedIndex === index}
               refusedAt={
                 game.lastTap.refusedFlaskIndex === index

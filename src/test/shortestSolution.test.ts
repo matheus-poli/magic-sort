@@ -19,32 +19,32 @@ describe('shortestSolution', () => {
       ['azure', 'azure', 'azure', 'azure']
     ]
 
-    expect(shortestSolution(board)).toHaveLength(1)
+    expect(shortestSolution(board, 4)).toHaveLength(1)
   })
 
   it('measures the shortest route, not the first one it stumbles on', () => {
-    expect(shortestSolution(twoElixirs)).toHaveLength(5)
+    expect(shortestSolution(twoElixirs, 4)).toHaveLength(5)
   })
 
   it('returns a route the bench accepts, with nothing left mixed at the end', () => {
-    const route = shortestSolution(twoElixirs) ?? []
+    const route = shortestSolution(twoElixirs, 4) ?? []
 
     // pourBetween throws on a pour the flasks would refuse, so replaying the
     // route is itself the check that every step of it is legal.
     const finished = route.reduce<Board>(
-      (bench, [source, target]) => pourBetween(bench, source, target),
+      (bench, [source, target]) => pourBetween(bench, source, target, 4),
       twoElixirs
     )
 
     expect(
-      finished.filter((flask) => !isEmpty(flask) && !isComplete(flask))
+      finished.filter((flask) => !isEmpty(flask) && !isComplete(flask, 4))
     ).toEqual([])
   })
 
   it('has nothing to pour on a bench that is already sorted', () => {
     const board: Board = [['crimson', 'crimson', 'crimson', 'crimson'], []]
 
-    expect(shortestSolution(board)).toEqual([])
+    expect(shortestSolution(board, 4)).toEqual([])
   })
 
   it('reports a bench that no sequence of pours can sort', () => {
@@ -53,6 +53,6 @@ describe('shortestSolution', () => {
       ['azure', 'crimson', 'azure', 'crimson']
     ]
 
-    expect(shortestSolution(board)).toBeNull()
+    expect(shortestSolution(board, 4)).toBeNull()
   })
 })

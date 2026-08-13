@@ -6,6 +6,7 @@ import type { Level } from '../domain/levels'
 const bench = (id: string, name: string): Level => ({
   id,
   name,
+  capacity: 4,
   minimumPours: 1,
   board: [['crimson', 'crimson', 'crimson'], ['crimson']]
 })

@@ -60,9 +60,9 @@ export function useGame(level: Level): Game {
     setBench(benchFor(level))
   }, [level])
 
-  const solved = isSolved(bench.board)
+  const solved = isSolved(bench.board, level.capacity)
   const score = scoreFor({
-    completedFlasks: completedFlaskCount(bench.board),
+    completedFlasks: completedFlaskCount(bench.board, level.capacity),
     flasksToFill: flasksToFill(bench.board),
     pours: bench.pours,
     minimumPours: level.minimumPours,
@@ -124,7 +124,9 @@ function tap(bench: Bench, index: number): Bench {
     }
   }
 
-  if (!canPourBetween(bench.board, bench.selectedIndex, index)) {
+  const capacity = bench.level.capacity
+
+  if (!canPourBetween(bench.board, bench.selectedIndex, index, capacity)) {
     return {
       ...bench,
       selectedIndex: null,
@@ -132,7 +134,7 @@ function tap(bench: Bench, index: number): Bench {
     }
   }
 
-  const board = pourBetween(bench.board, bench.selectedIndex, index)
+  const board = pourBetween(bench.board, bench.selectedIndex, index, capacity)
 
   return {
     ...bench,
@@ -143,7 +145,7 @@ function tap(bench: Bench, index: number): Bench {
       ...quietTap,
       outcome: 'poured',
       // Only the flask receiving the pour can have just been filled.
-      completedFlaskIndex: isComplete(board[index]) ? index : null
+      completedFlaskIndex: isComplete(board[index], capacity) ? index : null
     }
   }
 }

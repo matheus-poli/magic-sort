@@ -7,6 +7,7 @@ import type { Level } from '../domain/levels'
 const almostSolved: Level = {
   id: 'test-bench',
   name: 'Test Bench',
+  capacity: 4,
   minimumPours: 1,
   board: [
     ['crimson', 'crimson', 'crimson'],
@@ -19,6 +20,7 @@ const almostSolved: Level = {
 const mixed: Level = {
   id: 'test-mixed',
   name: 'Mixed Bench',
+  capacity: 4,
   minimumPours: 4,
   board: [['crimson', 'azure'], ['azure'], ['verdant'], []]
 }

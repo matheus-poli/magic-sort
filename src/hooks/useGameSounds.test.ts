@@ -11,6 +11,7 @@ vi.mock('../audio/sounds', () => ({ playSound: vi.fn() }))
 const bench: Level = {
   id: 'test-bench',
   name: 'Test Bench',
+  capacity: 4,
   minimumPours: 4,
   board: [['crimson', 'azure'], ['azure'], ['verdant'], []]
 }
@@ -19,6 +20,7 @@ const bench: Level = {
 const finalPour: Level = {
   id: 'test-final-pour',
   name: 'Final Pour',
+  capacity: 4,
   minimumPours: 1,
   board: [
     ['crimson', 'crimson', 'crimson'],

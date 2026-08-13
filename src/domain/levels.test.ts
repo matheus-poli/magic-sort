@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { LEVELS } from './levels'
-import { FLASK_CAPACITY, isComplete } from './flask'
+import { isComplete } from './flask'
 import { flasksToFill } from './board'
 import { shortestSolution } from '../test/shortestSolution'
 import type { Level } from './levels'
@@ -67,17 +67,21 @@ describe.each(LEVELS)('$name', (level: Level) => {
   it('holds exactly one flask worth of every elixir it uses', () => {
     const tally = elixirTally(level)
     const oneFlaskEach = Object.fromEntries(
-      Object.keys(tally).map((elixir) => [elixir, FLASK_CAPACITY])
+      Object.keys(tally).map((elixir) => [elixir, level.capacity])
     )
 
     expect(tally).toEqual(oneFlaskEach)
   })
 
   it('opens with no flask sorted for the player already', () => {
-    expect(level.board.filter(isComplete)).toEqual([])
+    expect(
+      level.board.filter((flask) => isComplete(flask, level.capacity))
+    ).toEqual([])
   })
 
   it('can be sorted in the pours it promises, and in no fewer', () => {
-    expect(shortestSolution(level.board)).toHaveLength(level.minimumPours)
+    expect(shortestSolution(level.board, level.capacity)).toHaveLength(
+      level.minimumPours
+    )
   })
 })

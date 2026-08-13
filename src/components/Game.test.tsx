@@ -14,6 +14,7 @@ vi.mock('../effects/confetti', () => ({
 const bench: Level = {
   id: 'test-bench',
   name: 'Test Bench',
+  capacity: 4,
   minimumPours: 4,
   board: [['crimson', 'azure'], ['azure'], []]
 }
@@ -22,6 +23,7 @@ const bench: Level = {
 const nearlyFull: Level = {
   id: 'test-nearly-full',
   name: 'Nearly Full',
+  capacity: 4,
   minimumPours: 2,
   board: [
     ['crimson', 'crimson', 'crimson'],
@@ -35,11 +37,25 @@ const nearlyFull: Level = {
 const finalPour: Level = {
   id: 'test-final-pour',
   name: 'Final Pour',
+  capacity: 4,
   minimumPours: 1,
   board: [
     ['crimson', 'crimson', 'crimson'],
     ['crimson'],
     ['azure', 'azure', 'azure', 'azure']
+  ]
+}
+
+/** Taller glass: the fifth layer is what finishes a flask on this bench. */
+const tallGlass: Level = {
+  id: 'test-tall-glass',
+  name: 'Tall Glass',
+  capacity: 5,
+  minimumPours: 1,
+  board: [
+    ['crimson', 'crimson', 'crimson', 'crimson'],
+    ['crimson'],
+    ['azure', 'azure', 'azure', 'azure', 'azure']
   ]
 }
 
@@ -135,6 +151,21 @@ describe('Game', () => {
     expect(flask(2)).toHaveAccessibleName(
       'Flask 2, holding azure, azure from bottom to top'
     )
+  })
+
+  it('keeps pouring into a four-layer flask on a bench of taller glass', async () => {
+    const user = userEvent.setup()
+    showBench(tallGlass)
+
+    await user.click(flask(2))
+    await user.click(flask(1))
+
+    expect(flask(1)).toHaveAccessibleName(
+      'Flask 1, holding crimson, crimson, crimson, crimson, crimson from bottom to top'
+    )
+    expect(
+      screen.getByRole('heading', { name: /elixirs sorted/i })
+    ).toBeInTheDocument()
   })
 
   it('counts the pours the apprentice has spent', async () => {

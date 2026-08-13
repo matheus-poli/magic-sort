@@ -260,6 +260,9 @@ body::before {
 
 .flask {
   --flask-width: clamp(3.5rem, 12vw, 4.75rem);
+  /* Layers of glass, which the bench overrides on its taller benches. */
+  --layers: 4;
+  --layer-height: calc(var(--flask-width) * 0.43);
 
   position: relative;
   /* Keeps the bottle's internal layering to itself, so a belly stacked above a
@@ -332,7 +335,7 @@ body::before {
   display: flex;
   flex-direction: column-reverse;
   width: 100%;
-  height: calc(var(--flask-width) * 1.72);
+  height: calc(var(--layer-height) * var(--layers));
   overflow: hidden;
   border: 2px solid var(--glass-edge);
   border-radius: 46% 46% 44% 44% / 32% 32% 42% 42%;
@@ -391,6 +394,9 @@ body::before {
 }
 .flask__layer:nth-child(4)::before {
   animation-delay: -0.9s;
+}
+.flask__layer:nth-child(5)::before {
+  animation-delay: -2.5s;
 }
 
 @keyframes bubbles {
