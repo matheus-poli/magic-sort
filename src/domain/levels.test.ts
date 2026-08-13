@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { STARTER_LEVEL } from './levels'
 import { isSolved } from './board'
 import { FLASK_CAPACITY } from './flask'
+import { shortestSolution } from '../test/shortestSolution'
 import type { Elixir } from './flask'
 
 function countByElixir(level: typeof STARTER_LEVEL): Record<string, number> {
@@ -36,7 +37,10 @@ describe('STARTER_LEVEL', () => {
     expect(isSolved(STARTER_LEVEL.board)).toBe(false)
   })
 
-  it('takes fourteen pours at the very least', () => {
+  it('can be sorted in the fourteen pours it promises, and no fewer', () => {
     expect(STARTER_LEVEL.minimumPours).toBe(14)
+    expect(shortestSolution(STARTER_LEVEL.board)).toHaveLength(
+      STARTER_LEVEL.minimumPours
+    )
   })
 })
