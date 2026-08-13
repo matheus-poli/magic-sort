@@ -171,7 +171,7 @@ The suite follows the pyramid — the bulk of the cost sits at the bottom:
   browser and moving on to the next. Anything a lower layer can cover belongs
   in a lower layer.
 
-Current coverage: 85% of statements, 82% of branches. The gap is deliberate —
+Current coverage: 89% of statements, 85% of branches. The gap is deliberate —
 it is the audio boundary and the confetti canvas, which only a real browser
 executes, and the animation callbacks, which are visual rather than behavioural.
 
