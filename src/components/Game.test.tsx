@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { UserEvent } from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Game } from './Game'
 import { celebrateFlask, celebrateLevel } from '../effects/confetti'
@@ -113,6 +114,19 @@ const showBench = (level: Level, standing: Standing = {}) =>
 const flask = (position: number) =>
   screen.getByRole('button', { name: new RegExp(`^Flask ${position}[,:]`) })
 
+/**
+ * Pours one flask into another and waits for the elixir to land. The flask
+ * being poured is put down at the moment the bench takes the pour, so letting
+ * go of it is the bench saying the elixir arrived.
+ */
+const pourFrom = async (user: UserEvent, from: number, to: number) => {
+  await user.click(flask(from))
+  await user.click(flask(to))
+  await waitFor(() =>
+    expect(flask(from)).toHaveAttribute('aria-pressed', 'false')
+  )
+}
+
 beforeEach(() => {
   vi.mocked(celebrateFlask).mockClear()
   vi.mocked(celebrateLevel).mockClear()
@@ -123,8 +137,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(nearlyFull)
 
-    await user.click(flask(2))
-    await user.click(flask(1))
+    await pourFrom(user, 2, 1)
 
     await waitFor(() => expect(celebrateFlask).toHaveBeenCalled())
   })
@@ -133,8 +146,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(bench)
 
-    await user.click(flask(1))
-    await user.click(flask(2))
+    await pourFrom(user, 1, 2)
 
     expect(celebrateFlask).not.toHaveBeenCalled()
   })
@@ -143,8 +155,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(finalPour)
 
-    await user.click(flask(2))
-    await user.click(flask(1))
+    await pourFrom(user, 2, 1)
 
     await waitFor(() => expect(celebrateLevel).toHaveBeenCalled())
   })
@@ -185,8 +196,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(bench)
 
-    await user.click(flask(1))
-    await user.click(flask(2))
+    await pourFrom(user, 1, 2)
 
     expect(flask(1)).toHaveAccessibleName(
       'Flask 1, a 4-layer flask holding crimson from bottom to top'
@@ -194,6 +204,45 @@ describe('Game', () => {
     expect(flask(2)).toHaveAccessibleName(
       'Flask 2, a 4-layer flask holding azure, azure from bottom to top'
     )
+  })
+
+  /*
+   * The elixir has to leave the flask that pours it and arrive in the one that
+   * receives it, and those are two different moments. Changing the bench on the
+   * tap is what made the pour read as teleporting.
+   */
+  it('holds the bench still while the elixir is on its way over', async () => {
+    const user = userEvent.setup()
+    showBench(bench)
+
+    await user.click(flask(1))
+    await user.click(flask(2))
+
+    expect(flask(2)).toHaveAccessibleName(
+      'Flask 2, a 4-layer flask holding azure from bottom to top'
+    )
+
+    await waitFor(() =>
+      expect(flask(2)).toHaveAccessibleName(
+        'Flask 2, a 4-layer flask holding azure, azure from bottom to top'
+      )
+    )
+  })
+
+  /*
+   * Waiting out the animation would make chaining pours feel stuck, which is
+   * most of what playing this game is.
+   */
+  it('lands the elixir at once when the apprentice taps on mid-pour', async () => {
+    const user = userEvent.setup()
+    showBench(nearlyFull)
+
+    await user.click(flask(2))
+    await user.click(flask(1))
+    await user.click(flask(3))
+
+    expect(screen.getByLabelText('Pours')).toHaveTextContent('1')
+    expect(flask(3)).toHaveAttribute('aria-pressed', 'true')
   })
 
   it('gives every elixir a mark of its own in colour-blind mode', () => {
@@ -221,8 +270,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(tallGlass)
 
-    await user.click(flask(2))
-    await user.click(flask(1))
+    await pourFrom(user, 2, 1)
 
     expect(flask(1)).toHaveAccessibleName(
       'Flask 1, a 5-layer flask holding crimson, crimson, crimson, crimson, crimson from bottom to top'
@@ -236,8 +284,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(bench)
 
-    await user.click(flask(1))
-    await user.click(flask(2))
+    await pourFrom(user, 1, 2)
 
     expect(screen.getByLabelText('Pours')).toHaveTextContent('1')
   })
@@ -276,8 +323,7 @@ describe('Game', () => {
     const onNextLevel = vi.fn()
     showBench(finalPour, { onNextLevel })
 
-    await user.click(flask(2))
-    await user.click(flask(1))
+    await pourFrom(user, 2, 1)
     await user.click(screen.getByRole('button', { name: 'Next level' }))
 
     // With the score, so the campaign can bank what this bench was worth.
@@ -288,8 +334,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(finalPour)
 
-    await user.click(flask(2))
-    await user.click(flask(1))
+    await pourFrom(user, 2, 1)
 
     expect(
       screen.queryByRole('button', { name: 'Next level' })
@@ -303,8 +348,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(finalPour, { onNextLevel: vi.fn() })
 
-    await user.click(flask(2))
-    await user.click(flask(1))
+    await pourFrom(user, 2, 1)
 
     expect(screen.getByText(/score 1000 of 1000/i)).toHaveTextContent(
       /^Score 1000 of 1000$/
@@ -315,8 +359,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(finalPour, { onNextLevel: vi.fn() })
 
-    await user.click(flask(2))
-    await user.click(flask(1))
+    await pourFrom(user, 2, 1)
 
     expect(screen.getByText(/more to sort/i)).toHaveTextContent(
       '4 more to sort.'
@@ -327,8 +370,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(finalPour, { onNextLevel: vi.fn() })
 
-    await user.click(flask(2))
-    await user.click(flask(1))
+    await pourFrom(user, 2, 1)
 
     expect(screen.getByRole('button', { name: 'Next level' })).toHaveFocus()
   })
@@ -337,8 +379,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(finalPour)
 
-    await user.click(flask(2))
-    await user.click(flask(1))
+    await pourFrom(user, 2, 1)
 
     // Presence is the behaviour worth asserting here: whether the card has
     // finished fading in is a question only a real browser can answer, and the
@@ -358,8 +399,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(finalPour)
 
-    await user.click(flask(2))
-    await user.click(flask(1))
+    await pourFrom(user, 2, 1)
 
     // Awaited because the number climbs to it rather than appearing on it.
     await waitFor(() =>
@@ -371,8 +411,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(finalPour)
 
-    await user.click(flask(2))
-    await user.click(flask(1))
+    await pourFrom(user, 2, 1)
 
     expect(screen.getByText(/final score/i)).toHaveTextContent(
       'Final score 1000 of 1000'
@@ -392,8 +431,7 @@ describe('Game', () => {
     const user = userEvent.setup()
     showBench(finalPour, { bankedScore: 1750 })
 
-    await user.click(flask(2))
-    await user.click(flask(1))
+    await pourFrom(user, 2, 1)
 
     await waitFor(() =>
       expect(screen.getByLabelText('Total')).toHaveTextContent('2750 / 5000')
@@ -405,8 +443,7 @@ describe('Game', () => {
     const onStartOver = vi.fn()
     showBench(bench, { onStartOver })
 
-    await user.click(flask(1))
-    await user.click(flask(2))
+    await pourFrom(user, 1, 2)
     await user.click(screen.getByRole('button', { name: 'Start over' }))
     await user.click(screen.getByRole('button', { name: 'Yes, start over' }))
 
@@ -419,8 +456,7 @@ describe('Game', () => {
     const onRestart = vi.fn()
     showBench(bench, { onRestart })
 
-    await user.click(flask(1))
-    await user.click(flask(2))
+    await pourFrom(user, 1, 2)
     await user.pointer({
       keys: '[MouseLeft>]',
       target: screen.getByRole('button', { name: 'Hold to restart' })

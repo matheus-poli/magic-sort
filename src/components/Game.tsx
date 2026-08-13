@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Flask } from './Flask'
 import { HoldToRestart } from './HoldToRestart'
@@ -6,8 +6,10 @@ import { StartOver } from './StartOver'
 import { ScoreBoard } from './ScoreBoard'
 import { useGame } from '../hooks/useGame'
 import { useGameSounds } from '../hooks/useGameSounds'
+import { usePourFlight } from '../hooks/usePourFlight'
 import { celebrateLevel } from '../effects/confetti'
 import { PERFECT_SCORE, totalScore } from '../domain/scoring'
+import type { CSSProperties } from 'react'
 import type { Level } from '../domain/levels'
 
 interface GameProps {
@@ -45,6 +47,16 @@ export function Game({
 }: GameProps) {
   const game = useGame(level)
   useGameSounds(game)
+
+  const bench = useRef<HTMLOListElement | null>(null)
+  const slots = useRef<(HTMLLIElement | null)[]>([])
+  const pour = usePourFlight({
+    board: game.board,
+    selectedIndex: game.selectedIndex,
+    bench,
+    slots,
+    onTap: game.tapFlask
+  })
 
   useEffect(() => {
     if (game.isSolved) celebrateLevel()
@@ -92,9 +104,15 @@ export function Game({
         minimumPours={level.minimumPours}
       />
 
-      <ol className='bench' aria-label='Flask bench'>
+      <ol className='bench' aria-label='Flask bench' ref={bench}>
         {game.board.map((flask, index) => (
-          <li key={index} className='bench__slot'>
+          <li
+            key={index}
+            className='bench__slot'
+            ref={(slot) => {
+              slots.current[index] = slot
+            }}
+          >
             <Flask
               position={index + 1}
               contents={flask.contents}
@@ -106,10 +124,31 @@ export function Game({
                   ? game.lastTap.sequence
                   : null
               }
-              onTap={() => game.tapFlask(index)}
+              onTap={() => pour.tapFlask(index)}
             />
           </li>
         ))}
+
+        {/* The elixir in the air, drawn between the tipped flask and the one
+            filling: it belongs to the bench rather than to either flask. */}
+        {pour.stream !== null && (
+          <motion.span
+            className='pour-stream'
+            aria-hidden='true'
+            data-elixir={pour.stream.elixir}
+            style={
+              {
+                left: pour.stream.left,
+                top: pour.stream.top,
+                height: pour.stream.height
+              } as CSSProperties
+            }
+            initial={{ scaleY: 0, opacity: 1 }}
+            animate={{ scaleY: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15, ease: 'easeIn' }}
+          />
+        )}
       </ol>
 
       <div className='undo'>

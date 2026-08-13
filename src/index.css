@@ -304,6 +304,50 @@ body::before {
 
 .bench__slot {
   display: flex;
+  /* A flask on its way over another has to be drawn above it, and a stacking
+     context is what lets the pouring flask claim that. */
+  position: relative;
+}
+
+/*
+ * The elixir falling out of a tipped flask. It hangs from the mouth of the
+ * flask being filled and grows downwards, so the liquid reads as arriving
+ * rather than as appearing.
+ */
+.pour-stream {
+  position: absolute;
+  z-index: 4;
+  width: 0.45rem;
+  margin-left: -0.225rem;
+  transform-origin: top center;
+  border-radius: 0 0 40% 40%;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--elixir) 70%, white),
+    var(--elixir) 40%,
+    color-mix(in srgb, var(--elixir) 85%, black)
+  );
+  box-shadow: 0 0 12px color-mix(in srgb, var(--elixir) 70%, transparent);
+  pointer-events: none;
+}
+
+.pour-stream[data-elixir='crimson'] {
+  --elixir: var(--crimson);
+}
+.pour-stream[data-elixir='azure'] {
+  --elixir: var(--azure);
+}
+.pour-stream[data-elixir='verdant'] {
+  --elixir: var(--verdant);
+}
+.pour-stream[data-elixir='amber'] {
+  --elixir: var(--amber);
+}
+.pour-stream[data-elixir='violet'] {
+  --elixir: var(--violet);
+}
+.pour-stream[data-elixir='pearl'] {
+  --elixir: var(--pearl);
 }
 
 .flask {
