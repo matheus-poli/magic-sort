@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Game } from './Game'
 import { celebrateFlask, celebrateLevel } from '../effects/confetti'
+import { benchOfGlass } from '../test/bench'
 import type { Level } from '../domain/levels'
 
 // Confetti paints to a canvas, which is a boundary rather than behaviour.
@@ -14,58 +15,64 @@ vi.mock('../effects/confetti', () => ({
 const bench: Level = {
   id: 'test-bench',
   name: 'Test Bench',
-  capacity: 4,
   minimumPours: 4,
-  board: [['crimson', 'azure'], ['azure'], []]
+  board: benchOfGlass(4, ['crimson', 'azure'], ['azure'], [])
 }
 
 /** Tapping flask 2 then flask 1 fills flask 1 without finishing the level. */
 const nearlyFull: Level = {
   id: 'test-nearly-full',
   name: 'Nearly Full',
-  capacity: 4,
   minimumPours: 2,
-  board: [
+  board: benchOfGlass(
+    4,
     ['crimson', 'crimson', 'crimson'],
     ['crimson'],
     ['azure', 'azure'],
     ['verdant', 'verdant']
-  ]
+  )
 }
 
 /** Tapping flask 2 then flask 1 finishes this level. */
 const finalPour: Level = {
   id: 'test-final-pour',
   name: 'Final Pour',
-  capacity: 4,
   minimumPours: 1,
-  board: [
+  board: benchOfGlass(
+    4,
     ['crimson', 'crimson', 'crimson'],
     ['crimson'],
     ['azure', 'azure', 'azure', 'azure']
-  ]
+  )
 }
 
 /** Taller glass: the fifth layer is what finishes a flask on this bench. */
 const tallGlass: Level = {
   id: 'test-tall-glass',
   name: 'Tall Glass',
-  capacity: 5,
   minimumPours: 1,
-  board: [
+  board: benchOfGlass(
+    5,
     ['crimson', 'crimson', 'crimson', 'crimson'],
     ['crimson'],
     ['azure', 'azure', 'azure', 'azure', 'azure']
-  ]
+  )
 }
 
 /** One layer of each elixir, so their marks can be compared side by side. */
 const oneOfEach: Level = {
   id: 'test-one-of-each',
   name: 'One of Each',
-  capacity: 4,
   minimumPours: 1,
-  board: [['crimson'], ['azure'], ['verdant'], ['amber'], ['violet'], ['pearl']]
+  board: benchOfGlass(
+    4,
+    ['crimson'],
+    ['azure'],
+    ['verdant'],
+    ['amber'],
+    ['violet'],
+    ['pearl']
+  )
 }
 
 interface Standing {

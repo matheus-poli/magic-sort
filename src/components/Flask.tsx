@@ -3,7 +3,10 @@ import { AnimatePresence, motion, useAnimate } from 'motion/react'
 import { isComplete } from '../domain/flask'
 import { celebrateFlask } from '../effects/confetti'
 import type { CSSProperties } from 'react'
-import type { Elixir, Flask as FlaskContents } from '../domain/flask'
+import type { Elixir } from '../domain/flask'
+
+/** The layers this flask holds, bottom-most first. */
+type FlaskContents = readonly Elixir[]
 
 /**
  * A shape for every elixir, for the players no palette can serve. Six colours
@@ -35,7 +38,7 @@ interface FlaskProps {
   /** What the player sees on the label: flasks are numbered from one. */
   readonly position: number
   readonly contents: FlaskContents
-  /** Layers this bench's glass holds when full, which sets how tall it is. */
+  /** Layers this flask's own glass holds when full, which sets how tall it is. */
   readonly capacity: number
   /** Whether each layer carries its elixir's sigil as well as its colour. */
   readonly sigils: boolean
@@ -56,7 +59,7 @@ export function Flask({
 }: FlaskProps) {
   const [scope, animate] = useAnimate()
   const [glassScope, animateGlass] = useAnimate()
-  const sealed = isComplete(contents, capacity)
+  const sealed = isComplete({ contents, capacity })
   const layerHeight = `${100 / capacity}%`
 
   useEffect(() => {
@@ -88,8 +91,8 @@ export function Flask({
       ref={scope}
       type='button'
       className='flask'
-      /* The bottle grows with the bench, so a layer is the same thickness on
-         every one of them: taller glass reads as taller glass rather than as
+      /* The bottle grows with its own glass, so a layer is the same thickness
+         in every one of them: taller glass reads as taller glass rather than as
          thinner elixir. The cast is what a custom property costs in TSX. */
       style={{ '--layers': capacity } as CSSProperties}
       data-selected={isSelected}

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useGame } from './useGame'
 import { useGameSounds } from './useGameSounds'
 import { playSound } from '../audio/sounds'
+import { benchOfGlass } from '../test/bench'
 import type { Level } from '../domain/levels'
 
 // Audio playback is a genuine boundary, so it is the one thing stubbed here.
@@ -11,22 +12,21 @@ vi.mock('../audio/sounds', () => ({ playSound: vi.fn() }))
 const bench: Level = {
   id: 'test-bench',
   name: 'Test Bench',
-  capacity: 4,
   minimumPours: 4,
-  board: [['crimson', 'azure'], ['azure'], ['verdant'], []]
+  board: benchOfGlass(4, ['crimson', 'azure'], ['azure'], ['verdant'], [])
 }
 
 /** Tapping flask 2 then flask 1 completes a flask and solves the level. */
 const finalPour: Level = {
   id: 'test-final-pour',
   name: 'Final Pour',
-  capacity: 4,
   minimumPours: 1,
-  board: [
+  board: benchOfGlass(
+    4,
     ['crimson', 'crimson', 'crimson'],
     ['crimson'],
     ['azure', 'azure', 'azure', 'azure']
-  ]
+  )
 }
 
 function renderGameWithSound(level: Level) {

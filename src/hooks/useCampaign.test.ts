@@ -1,14 +1,14 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { useCampaign } from './useCampaign'
+import { benchOfGlass } from '../test/bench'
 import type { Level } from '../domain/levels'
 
 const bench = (id: string, name: string): Level => ({
   id,
   name,
-  capacity: 4,
   minimumPours: 1,
-  board: [['crimson', 'crimson', 'crimson'], ['crimson']]
+  board: benchOfGlass(4, ['crimson', 'crimson', 'crimson'], ['crimson'])
 })
 
 const atelier: readonly Level[] = [

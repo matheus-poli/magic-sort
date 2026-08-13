@@ -2,91 +2,92 @@
 export type Elixir =
   'crimson' | 'azure' | 'verdant' | 'amber' | 'violet' | 'pearl'
 
-/** Layers of elixir, bottom-most first. The last entry is the visible top. */
-export type Flask = readonly Elixir[]
+export interface Flask {
+  /** Layers of elixir, bottom-most first. The last entry is the visible top. */
+  readonly contents: readonly Elixir[]
+  /**
+   * How many layers this glass holds when full. It belongs to the flask rather
+   * than to the bench, because the later benches set them out mixed: a bench of
+   * five-layer glass with a three-layer vial on it is a bench where the elixir
+   * that only fills three has exactly one place it can end up.
+   */
+  readonly capacity: number
+}
 
 export interface PourResult {
   readonly source: Flask
   readonly target: Flask
 }
 
-/*
- * How many layers a flask holds when full is the bench's business, not the
- * flask's: the atelier keeps taller glass on its later benches, so every rule
- * about room and fullness has to be told which bench it is standing at.
- */
+/** A glass poured full to its own brim, which is how a bench is laid out. */
+export function filledFlask(contents: readonly Elixir[]): Flask {
+  return { contents, capacity: contents.length }
+}
+
+/** A spare glass, which is the room a bench leaves the apprentice to think in. */
+export function emptyFlask(capacity: number): Flask {
+  return { contents: [], capacity }
+}
 
 export function topElixir(flask: Flask): Elixir | null {
-  return flask.at(-1) ?? null
+  return flask.contents.at(-1) ?? null
 }
 
 export function isEmpty(flask: Flask): boolean {
-  return flask.length === 0
+  return flask.contents.length === 0
 }
 
-export function isComplete(flask: Flask, capacity: number): boolean {
-  return flask.length === capacity && isPure(flask)
+export function isComplete(flask: Flask): boolean {
+  return flask.contents.length === flask.capacity && isPure(flask)
 }
 
-export function canPour(
-  source: Flask,
-  target: Flask,
-  capacity: number
-): boolean {
-  if (
-    source === target ||
-    isEmpty(source) ||
-    freeSpace(target, capacity) === 0
-  ) {
+export function canPour(source: Flask, target: Flask): boolean {
+  if (source === target || isEmpty(source) || freeSpace(target) === 0) {
     return false
   }
   return isEmpty(target) || topElixir(target) === topElixir(source)
 }
 
-export function pour(
-  source: Flask,
-  target: Flask,
-  capacity: number
-): PourResult {
-  if (!canPour(source, target, capacity)) {
-    throw new Error(describeRefusal(source, target, capacity))
+export function pour(source: Flask, target: Flask): PourResult {
+  if (!canPour(source, target)) {
+    throw new Error(describeRefusal(source, target))
   }
 
-  const volume = Math.min(topRunSize(source), freeSpace(target, capacity))
-  const poured = source.slice(source.length - volume)
+  const volume = Math.min(topRunSize(source), freeSpace(target))
+  const poured = source.contents.slice(source.contents.length - volume)
 
   return {
-    source: source.slice(0, source.length - volume),
-    target: [...target, ...poured]
+    source: {
+      ...source,
+      contents: source.contents.slice(0, source.contents.length - volume)
+    },
+    target: { ...target, contents: [...target.contents, ...poured] }
   }
 }
 
 function isPure(flask: Flask): boolean {
-  return flask.every((elixir) => elixir === flask[0])
+  return flask.contents.every((elixir) => elixir === flask.contents[0])
 }
 
-function freeSpace(flask: Flask, capacity: number): number {
-  return capacity - flask.length
+function freeSpace(flask: Flask): number {
+  return flask.capacity - flask.contents.length
 }
 
 /** How many layers pour out at once: the unbroken run of the top elixir. */
 function topRunSize(flask: Flask): number {
+  const layers = flask.contents
   const top = topElixir(flask)
   let size = 0
-  while (size < flask.length && flask[flask.length - 1 - size] === top) {
+  while (size < layers.length && layers[layers.length - 1 - size] === top) {
     size += 1
   }
   return size
 }
 
-function describeRefusal(
-  source: Flask,
-  target: Flask,
-  capacity: number
-): string {
+function describeRefusal(source: Flask, target: Flask): string {
   if (source === target) return 'Cannot pour a flask into itself'
   if (isEmpty(source)) return 'Cannot pour from an empty flask'
-  if (freeSpace(target, capacity) === 0) {
+  if (freeSpace(target) === 0) {
     return `Cannot pour ${topElixir(source)} into a full flask`
   }
   return `Cannot pour ${topElixir(source)} onto ${topElixir(target)}`

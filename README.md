@@ -15,17 +15,22 @@ target is empty, or its top layer matches what you are pouring, and it has room
 to take it. The whole unbroken run of the top elixir moves at once. Sort every
 flask to finish the level.
 
-Ten benches make up the atelier, on two shelves of five. Each shelf works its
-way up: more elixirs in play, then fewer flasks left spare to pour into. The
-second shelf starts over with taller glass, five layers to a flask instead of
-four. Solving a bench opens the next.
+Fourteen benches make up the atelier, grouped into shelves by the glass they are
+laid out in. The opening five teach the game itself, climbing by the number of
+elixirs in play and then by taking spare flasks away. Every shelf after that
+introduces a mechanic, and gets exactly one roomy bench to learn it on before
+the room is taken back: taller glass first, five layers to a flask instead of
+four, then benches of mixed glass where a three-layer vial stands beside a
+five-layer flask. Mixed glass changes the puzzle — an elixir can only be sealed
+in a flask its layers exactly fill, so the short elixirs have only the vials to
+end up in. Solving a bench opens the next.
 
 Every bench is scored out of 1000, so the number means the same thing wherever
 it was earned: 500 shared out across the flasks you sort, and 500 for solving in
 as few pours as the bench allows, minus 25 for every pour past that. Each bench
 states its own fewest-possible count up front, so the target is never a mystery.
 What a bench earned is banked when you move on, so the total climbs across the
-atelier towards 10000 — a thousand a bench. Starting a bench over is the way out
+atelier towards 14000 — a thousand a bench. Starting a bench over is the way out
 of a mistake, but it is not free: the button has to be held down while a bar
 fills, and it takes 100 points off the total. Throwing the whole run away is a
 separate button, and it asks first.
@@ -209,8 +214,10 @@ The game ships in vertical slices — each one playable on its own.
 - [x] **Slice 1** — one level, pouring, scoring, sound, animation, win state.
 - [x] **Slice 2** — ten levels on two shelves, progression between them, a
       score out of 1000.
-- [ ] **Slice 3** — undo and persistence.
-- [ ] **Slice 4** — the alchemist character, ingredient collection, boosts.
+- [x] **Slice 3** — fourteen benches, a shelf per mechanic, flasks that carry
+      their own glass size, and a pour that tips and falls.
+- [ ] **Slice 4** — undo and persistence.
+- [ ] **Slice 5** — the alchemist character, ingredient collection, boosts.
 
 ## Conventions
 

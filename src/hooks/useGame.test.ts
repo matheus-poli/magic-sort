@@ -1,28 +1,28 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { useGame } from './useGame'
+import { benchOfGlass } from '../test/bench'
 import type { Level } from '../domain/levels'
 
 /** Two pours from being solved, so tests stay short and readable. */
 const almostSolved: Level = {
   id: 'test-bench',
   name: 'Test Bench',
-  capacity: 4,
   minimumPours: 1,
-  board: [
+  board: benchOfGlass(
+    4,
     ['crimson', 'crimson', 'crimson'],
     ['crimson'],
     ['azure', 'azure', 'azure', 'azure']
-  ]
+  )
 }
 
 /** Flask 2 can never pour onto flask 0, which gives tests an illegal move. */
 const mixed: Level = {
   id: 'test-mixed',
   name: 'Mixed Bench',
-  capacity: 4,
   minimumPours: 4,
-  board: [['crimson', 'azure'], ['azure'], ['verdant'], []]
+  board: benchOfGlass(4, ['crimson', 'azure'], ['azure'], ['verdant'], [])
 }
 
 describe('useGame', () => {
@@ -68,12 +68,9 @@ describe('useGame', () => {
     act(() => result.current.tapFlask(0))
     act(() => result.current.tapFlask(1))
 
-    expect(result.current.board).toEqual([
-      ['crimson'],
-      ['azure', 'azure'],
-      ['verdant'],
-      []
-    ])
+    expect(result.current.board).toEqual(
+      benchOfGlass(4, ['crimson'], ['azure', 'azure'], ['verdant'], [])
+    )
   })
 
   it('counts a successful pour and clears the selection', () => {

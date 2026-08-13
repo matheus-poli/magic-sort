@@ -93,12 +93,12 @@ export function Game({
       />
 
       <ol className='bench' aria-label='Flask bench'>
-        {game.board.map((contents, index) => (
+        {game.board.map((flask, index) => (
           <li key={index} className='bench__slot'>
             <Flask
               position={index + 1}
-              contents={contents}
-              capacity={level.capacity}
+              contents={flask.contents}
+              capacity={flask.capacity}
               sigils={colourBlind}
               isSelected={game.selectedIndex === index}
               refusedAt={

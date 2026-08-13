@@ -23,10 +23,7 @@ interface Visit {
  * they are explored once — without that, the search is too slow to run over
  * every level on every test run.
  */
-export function shortestSolution(
-  board: Board,
-  capacity: number
-): readonly Pour[] | null {
+export function shortestSolution(board: Board): readonly Pour[] | null {
   const opening: Visit = {
     bench: benchFingerprint(board),
     board,
@@ -37,13 +34,13 @@ export function shortestSolution(
   let frontier: Visit[] = [opening]
 
   while (frontier.length > 0) {
-    const sorted = frontier.find((visit) => isSolved(visit.board, capacity))
+    const sorted = frontier.find((visit) => isSolved(visit.board))
     if (sorted !== undefined) return routeTo(sorted, visited)
 
     const next: Visit[] = []
     for (const visit of frontier) {
-      for (const pour of legalPours(visit.board, capacity)) {
-        const poured = pourBetween(visit.board, pour[0], pour[1], capacity)
+      for (const pour of legalPours(visit.board)) {
+        const poured = pourBetween(visit.board, pour[0], pour[1])
         const bench = benchFingerprint(poured)
         if (visited.has(bench)) continue
 
@@ -64,12 +61,12 @@ export function shortestSolution(
   return null
 }
 
-function legalPours(board: Board, capacity: number): Pour[] {
+function legalPours(board: Board): Pour[] {
   const pours: Pour[] = []
 
   for (let source = 0; source < board.length; source++) {
     for (let target = 0; target < board.length; target++) {
-      if (canPourBetween(board, source, target, capacity)) {
+      if (canPourBetween(board, source, target)) {
         pours.push([source, target])
       }
     }
@@ -90,9 +87,14 @@ function routeTo(end: Visit, visited: Map<string, Visit>): readonly Pour[] {
   return route
 }
 
+/*
+ * Two benches holding the same flasks in a different order are the same puzzle,
+ * so the fingerprint sorts them. The size of the glass is part of what a flask
+ * is: an empty three-layer vial and an empty five is not the same spare.
+ */
 function benchFingerprint(board: Board): string {
   return board
-    .map((flask) => flask.join(','))
+    .map((flask) => `${flask.capacity}:${flask.contents.join(',')}`)
     .sort()
     .join('|')
 }

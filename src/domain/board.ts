@@ -4,48 +4,38 @@ import type { Flask } from './flask'
 /** Every flask on the bench, in the order the apprentice sees them. */
 export type Board = readonly Flask[]
 
-export function isSolved(board: Board, capacity: number): boolean {
-  return board.every((flask) => isEmpty(flask) || isComplete(flask, capacity))
+export function isSolved(board: Board): boolean {
+  return board.every((flask) => isEmpty(flask) || isComplete(flask))
 }
 
-export function completedFlaskCount(board: Board, capacity: number): number {
-  return board.filter((flask) => isComplete(flask, capacity)).length
+export function completedFlaskCount(board: Board): number {
+  return board.filter(isComplete).length
 }
 
 /** How many flasks a sorted bench ends up with: one per elixir on it. */
 export function flasksToFill(board: Board): number {
-  return new Set(board.flat()).size
+  return new Set(board.flatMap((flask) => flask.contents)).size
 }
 
 export function canPourBetween(
   board: Board,
   sourceIndex: number,
-  targetIndex: number,
-  capacity: number
+  targetIndex: number
 ): boolean {
   if (sourceIndex === targetIndex) return false
-  return canPour(
-    flaskAt(board, sourceIndex),
-    flaskAt(board, targetIndex),
-    capacity
-  )
+  return canPour(flaskAt(board, sourceIndex), flaskAt(board, targetIndex))
 }
 
 export function pourBetween(
   board: Board,
   sourceIndex: number,
-  targetIndex: number,
-  capacity: number
+  targetIndex: number
 ): Board {
   if (sourceIndex === targetIndex) {
     throw new Error('Cannot pour a flask into itself')
   }
 
-  const result = pour(
-    flaskAt(board, sourceIndex),
-    flaskAt(board, targetIndex),
-    capacity
-  )
+  const result = pour(flaskAt(board, sourceIndex), flaskAt(board, targetIndex))
 
   return board.map((flask, index) => {
     if (index === sourceIndex) return result.source

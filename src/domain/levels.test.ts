@@ -8,17 +8,27 @@ import type { Level } from './levels'
 function elixirTally(level: Level): Record<string, number> {
   const tally: Record<string, number> = {}
   for (const flask of level.board) {
-    for (const elixir of flask) {
+    for (const elixir of flask.contents) {
       tally[elixir] = (tally[elixir] ?? 0) + 1
     }
   }
   return tally
 }
 
+/**
+ * The glass a bench is laid out in, largest first. It is what names the bench's
+ * mechanic: one size is the plain bench, two sizes is the bench where the small
+ * vial is the whole puzzle.
+ */
+function glassOf(level: Level): string {
+  const sizes = [...new Set(level.board.map((flask) => flask.capacity))]
+  return sizes.sort((first, second) => second - first).join('/')
+}
+
 /** The dials a bench is built from, named so a failure says which bench. */
 interface Rung {
   readonly bench: string
-  readonly capacity: number
+  readonly glass: string
   readonly elixirs: number
   readonly spares: number
 }
@@ -35,7 +45,7 @@ function rungOf(level: Level): Rung {
 
   return {
     bench: level.name,
-    capacity: level.capacity,
+    glass: glassOf(level),
     elixirs,
     spares: level.board.length - elixirs
   }
@@ -43,7 +53,7 @@ function rungOf(level: Level): Rung {
 
 /**
  * The benches grouped by the mechanic they share, in the order they are played.
- * A new mechanic is new glass, so the size of the glass names the shelf.
+ * A new mechanic is new glass on the bench, so the glass names the shelf.
  */
 function shelvesOf(levels: readonly Level[]): Rung[][] {
   const shelves: Rung[][] = []
@@ -52,9 +62,7 @@ function shelvesOf(levels: readonly Level[]): Rung[][] {
     const rung = rungOf(level)
     const shelf = shelves.at(-1)
 
-    if (shelf === undefined || shelf[0].capacity !== rung.capacity) {
-      shelves.push([])
-    }
+    if (shelf === undefined || shelf[0].glass !== rung.glass) shelves.push([])
     shelves[shelves.length - 1].push(rung)
   }
 
@@ -62,24 +70,33 @@ function shelvesOf(levels: readonly Level[]): Rung[][] {
 }
 
 /**
- * Harder means, in order: taller glass, then fewer spare flasks, then more
- * elixirs.
- *
- * Spares outrank elixirs because they decide how much room a bench leaves. The
- * five-elixir bench with one spare can only ever be arranged 65 ways, against
- * 3521 for the six-elixir bench with two, and players read that narrowness as
- * difficulty even though it takes fewer pours to sort.
- *
- * Taller glass outranks both because it starts a shelf over rather than
- * continuing one: a five-layer flask is a new thing to learn, so the atelier
- * hands back the room it had just taken away before tightening again.
+ * Within a shelf, harder means fewer spare flasks first and more elixirs
+ * second. Spares outrank elixirs because they decide how much room a bench
+ * leaves: the five-elixir bench with one spare can only ever be arranged 65
+ * ways, against 3521 for the six-elixir bench with two, and players read that
+ * narrowness as difficulty even though it takes fewer pours to sort.
  */
 function byDifficulty(first: Rung, second: Rung): number {
-  return (
-    first.capacity - second.capacity ||
-    second.spares - first.spares ||
-    first.elixirs - second.elixirs
-  )
+  return second.spares - first.spares || first.elixirs - second.elixirs
+}
+
+/**
+ * Every elixir has to end up sealed in a glass its layers exactly fill, so the
+ * layer counts on a bench must match its glass sizes one for one. On a bench of
+ * mixed glass that is the rule the player is really solving around: the elixir
+ * with three layers has only the three-layer vials to end in.
+ */
+function elixirsWithNoGlassToFill(level: Level): string[] {
+  const glasses = level.board.map((flask) => flask.capacity)
+  const unmatched: string[] = []
+
+  for (const [elixir, layers] of Object.entries(elixirTally(level))) {
+    const glass = glasses.indexOf(layers)
+    if (glass === -1) unmatched.push(`${elixir} fills ${layers} layers`)
+    else glasses.splice(glass, 1)
+  }
+
+  return unmatched
 }
 
 describe('LEVELS', () => {
@@ -92,14 +109,28 @@ describe('LEVELS', () => {
       "The Archmage's Vault",
       "The Glassblower's Gift",
       'The Narrow Larder',
-      'The Grand Alembic'
+      'The Grand Alembic',
+      'The Vial Rack',
+      "The Distiller's Row",
+      "The Apothecary's Wall",
+      'The Mismatched Set',
+      "The Curator's Cabinet",
+      "The Philosopher's Bench"
     ])
   })
 
-  it('only ever turns a dial up from one bench to the next', () => {
-    const ladder = LEVELS.map(rungOf)
+  it('teaches one mechanic at a time and never goes back to an earlier one', () => {
+    const shelves = shelvesOf(LEVELS).map((shelf) => shelf[0].glass)
 
-    expect(ladder).toEqual([...ladder].sort(byDifficulty))
+    expect(shelves).toEqual([...new Set(shelves)])
+  })
+
+  it('only ever turns a dial up from one bench to the next on a shelf', () => {
+    const shelves = shelvesOf(LEVELS)
+
+    expect(shelves).toEqual(
+      shelves.map((shelf) => [...shelf].sort(byDifficulty))
+    )
   })
 
   /*
@@ -111,13 +142,13 @@ describe('LEVELS', () => {
     const [, ...shelves] = shelvesOf(LEVELS)
 
     const room = shelves.map((shelf) => ({
-      shelf: shelf[0].capacity,
+      shelf: shelf[0].glass,
       benches: shelf.map((rung) => `${rung.bench}: ${rung.spares} spare`)
     }))
 
     expect(room).toEqual(
       shelves.map((shelf) => ({
-        shelf: shelf[0].capacity,
+        shelf: shelf[0].glass,
         benches: shelf.map(
           (rung, bench) =>
             `${rung.bench}: ${bench === 0 ? ROOM_TO_LEARN : MINIMUM_ROOM} spare`
@@ -150,24 +181,15 @@ describe('LEVELS', () => {
 })
 
 describe.each(LEVELS)('$name', (level: Level) => {
-  it('holds exactly one flask worth of every elixir it uses', () => {
-    const tally = elixirTally(level)
-    const oneFlaskEach = Object.fromEntries(
-      Object.keys(tally).map((elixir) => [elixir, level.capacity])
-    )
-
-    expect(tally).toEqual(oneFlaskEach)
+  it('has a glass that exactly fits every elixir it holds', () => {
+    expect(elixirsWithNoGlassToFill(level)).toEqual([])
   })
 
   it('opens with no flask sorted for the player already', () => {
-    expect(
-      level.board.filter((flask) => isComplete(flask, level.capacity))
-    ).toEqual([])
+    expect(level.board.filter(isComplete)).toEqual([])
   })
 
   it('can be sorted in the pours it promises, and in no fewer', () => {
-    expect(shortestSolution(level.board, level.capacity)).toHaveLength(
-      level.minimumPours
-    )
+    expect(shortestSolution(level.board)).toHaveLength(level.minimumPours)
   })
 })
