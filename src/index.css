@@ -553,6 +553,41 @@ body::before {
   box-shadow: 0 8px 26px rgba(255, 200, 107, 0.45);
 }
 
+/* ---------- Hold to restart ---------- */
+
+.hold {
+  position: relative;
+  overflow: hidden;
+  /* A long press should charge the button, not select its label or scroll the
+     page, and on a phone it must not summon the text-selection callout. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+}
+
+.hold[data-charging='true'] {
+  border-color: var(--gold);
+  background: rgba(185, 139, 255, 0.16);
+}
+
+.hold__label {
+  position: relative;
+  z-index: 1;
+}
+
+/* The charge itself: a line across the foot of the button, filling from the
+   left, clipped to the pill by the button's own overflow. */
+.hold__fill {
+  position: absolute;
+  z-index: 0;
+  inset: auto 0 0;
+  height: 3px;
+  transform-origin: left;
+  background: linear-gradient(90deg, var(--rune-bright), var(--gold));
+  box-shadow: 0 0 12px rgba(255, 200, 107, 0.7);
+}
+
 /* ---------- Victory ---------- */
 
 .victory {

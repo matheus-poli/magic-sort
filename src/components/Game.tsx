@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Flask } from './Flask'
+import { HoldToRestart } from './HoldToRestart'
 import { ScoreBoard } from './ScoreBoard'
 import { useGame } from '../hooks/useGame'
 import { useGameSounds } from '../hooks/useGameSounds'
@@ -74,9 +75,7 @@ export function Game({
         ))}
       </ol>
 
-      <button type='button' className='button' onClick={game.restart}>
-        Restart level
-      </button>
+      <HoldToRestart onRestart={game.restart} />
 
       <AnimatePresence>
         {game.isSolved && (

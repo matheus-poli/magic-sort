@@ -261,16 +261,23 @@ describe('Game', () => {
     )
   })
 
-  it('puts the bench back the way it started when asked to restart', async () => {
+  it('puts the bench back the way it started once the restart is held', async () => {
     const user = userEvent.setup()
     showBench(bench)
 
     await user.click(flask(1))
     await user.click(flask(2))
-    await user.click(screen.getByRole('button', { name: 'Restart level' }))
+    await user.pointer({
+      keys: '[MouseLeft>]',
+      target: screen.getByRole('button', { name: 'Hold to restart' })
+    })
 
-    expect(flask(1)).toHaveAccessibleName(
-      'Flask 1, holding crimson, azure from bottom to top'
+    await waitFor(
+      () =>
+        expect(flask(1)).toHaveAccessibleName(
+          'Flask 1, holding crimson, azure from bottom to top'
+        ),
+      { timeout: 3000 }
     )
     expect(screen.getByLabelText('Pours')).toHaveTextContent('0')
   })
