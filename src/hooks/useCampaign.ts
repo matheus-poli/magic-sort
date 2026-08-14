@@ -33,8 +33,12 @@ export interface Campaign {
   advance: (scoreEarned: number) => void
   /** Charges for throwing a bench away and starting it again. */
   chargeForRestart: () => void
-  /** Sends the apprentice back to the first bench, points kept, for a price. */
-  startOver: () => void
+  /**
+   * Sends the apprentice back to the first bench, points kept, for a price.
+   * Banks what the bench in hand earned on the way out, since they are leaving
+   * it for good rather than laying it out again.
+   */
+  startOver: (scoreEarned: number) => void
   /** Erases the run and opens one from nothing, points and bench alike. */
   beginAgain: () => void
 }
@@ -90,10 +94,11 @@ export function useCampaign(levels: readonly Level[]): Campaign {
    * to can never pay for the walk — the deeper in they are, the more the way
    * back costs, and it can leave them owing more than they have.
    */
-  const startOver = useCallback(() => {
+  const startOver = useCallback((scoreEarned: number) => {
     setProgress((current) => ({
       ...current,
       reached: 0,
+      earned: current.earned + scoreEarned,
       forfeited: current.forfeited + priceOfRebirth(current.reached + 1),
       rebirths: current.rebirths + 1
     }))
@@ -110,7 +115,14 @@ export function useCampaign(levels: readonly Level[]): Campaign {
   }, [])
 
   const position = progress.reached + 1
-  const bankedScore = progress.earned - progress.forfeited
+
+  /*
+   * Held at nothing rather than allowed into the red. Nothing here is bought on
+   * credit — a price the apprentice cannot pay ends their run instead — and the
+   * floor is what runs saved back when debt was a thing come back as, rather
+   * than as a debt the game no longer knows how to end.
+   */
+  const bankedScore = Math.max(0, progress.earned - progress.forfeited)
 
   return {
     level: levels[progress.reached],

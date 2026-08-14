@@ -103,21 +103,14 @@ describe('useCampaign', () => {
     expect(result.current.bankedScore).toBe(1850)
   })
 
-  it('takes points off the total when a bench is restarted', () => {
-    const { result } = renderHook(() => useCampaign(atelier))
-
-    act(() => result.current.chargeForRestart())
-
-    expect(result.current.bankedScore).toBe(-100)
-  })
-
   it('keeps a tally of what restarts have cost, to own up to it', () => {
     const { result } = renderHook(() => useCampaign(atelier))
 
+    act(() => result.current.advance(2000))
     act(() => result.current.chargeForRestart())
     act(() => result.current.chargeForRestart())
 
-    expect(result.current).toMatchObject({ forfeited: 200, bankedScore: -200 })
+    expect(result.current).toMatchObject({ forfeited: 400, bankedScore: 1600 })
   })
 
   /* A later bench pays more, so throwing one away costs more. */
@@ -154,7 +147,7 @@ describe('useCampaign', () => {
 
     act(() => result.current.advance(1000))
     act(() => result.current.advance(900))
-    act(() => result.current.startOver())
+    act(() => result.current.startOver(0))
 
     expect(result.current).toMatchObject({ level: atelier[0], position: 1 })
   })
@@ -162,12 +155,27 @@ describe('useCampaign', () => {
   it('charges the atelier behind the apprentice for the rebirth', () => {
     const { result } = renderHook(() => useCampaign(atelier))
 
-    act(() => result.current.advance(1000))
-    act(() => result.current.advance(2000))
-    act(() => result.current.startOver())
+    act(() => result.current.advance(6000))
+    act(() => result.current.advance(4000))
+    act(() => result.current.startOver(0))
 
     // Three benches stood behind them, worth 6000 between them.
-    expect(result.current.bankedScore).toBe(-3000)
+    expect(result.current.bankedScore).toBe(4000)
+  })
+
+  /*
+   * The bench in hand is banked on the way out, unlike the one a restart throws
+   * away: the apprentice is leaving it for good rather than laying it out again,
+   * and the price is weighed against the total on the scoreboard.
+   */
+  it('banks what the bench in hand earned as the apprentice walks away from it', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    act(() => result.current.advance(3000))
+    act(() => result.current.startOver(2500))
+
+    // The walk back from the second bench costs the 3000 behind them.
+    expect(result.current.bankedScore).toBe(2500)
   })
 
   /*
@@ -178,11 +186,11 @@ describe('useCampaign', () => {
   it('leaves the apprentice who walks back worse off than the one who did not', () => {
     const { result } = renderHook(() => useCampaign(atelier))
 
-    act(() => result.current.advance(1000))
-    act(() => result.current.advance(2000))
+    act(() => result.current.advance(6000))
+    act(() => result.current.advance(4000))
     const beforeTheWalkBack = result.current.bankedScore
 
-    act(() => result.current.startOver())
+    act(() => result.current.startOver(0))
     act(() => result.current.advance(1000))
     act(() => result.current.advance(2000))
 
@@ -192,47 +200,42 @@ describe('useCampaign', () => {
   it('counts a rebirth alongside what restarts have cost', () => {
     const { result } = renderHook(() => useCampaign(atelier))
 
+    act(() => result.current.advance(4000))
     act(() => result.current.chargeForRestart())
-    act(() => result.current.startOver())
+    act(() => result.current.startOver(0))
 
-    expect(result.current.forfeited).toBe(1100)
+    expect(result.current.forfeited).toBe(3200)
   })
 
   it('opens another atelier to earn for the reborn apprentice', () => {
     const { result } = renderHook(() => useCampaign(atelier))
 
-    act(() => result.current.startOver())
+    act(() => result.current.startOver(1000))
 
     expect(result.current.perfectTotal).toBe(12000)
   })
 
-  it('lets a rebirth cost more than the apprentice has to their name', () => {
-    const { result } = renderHook(() => useCampaign(atelier))
-
-    act(() => result.current.advance(200))
-    act(() => result.current.startOver())
-
-    expect(result.current.bankedScore).toBe(-2800)
-  })
-
   /*
-   * The campaign keeps the tally and nothing more. Whether a debt has ended
-   * the run is a question about the bench as well as the ledger, so it is
-   * asked of the domain where both are in view: see endOfRun.
+   * Nothing in the atelier is bought on credit, so the ledger has no red in it:
+   * a price the apprentice cannot pay ends their run instead, which is asked of
+   * the domain where the bench is in view too. This floor is here for the runs
+   * saved back when debt was a thing — they read as having nothing left rather
+   * than as a debt the game no longer knows how to end.
    */
-  it('lets the ledger fall into the red rather than holding it at nothing', () => {
+  it('reads a run saved in the red as one with nothing left', () => {
+    lendStorage()
+    rememberCampaign({ reached: 1, earned: 500, forfeited: 3000, rebirths: 0 })
+
     const { result } = renderHook(() => useCampaign(atelier))
 
-    act(() => result.current.chargeForRestart())
-
-    expect(result.current.bankedScore).toBe(-100)
+    expect(result.current.bankedScore).toBe(0)
   })
 
   it('opens a fresh run for the apprentice who begins again', () => {
     const { result } = renderHook(() => useCampaign(atelier))
 
-    act(() => result.current.advance(200))
-    act(() => result.current.startOver())
+    act(() => result.current.advance(1000))
+    act(() => result.current.startOver(0))
     act(() => result.current.beginAgain())
 
     expect(result.current).toMatchObject({
@@ -267,21 +270,22 @@ describe('useCampaign', () => {
   it('brings what restarts have cost back with the apprentice', () => {
     lendStorage()
     const { result, unmount } = renderHook(() => useCampaign(atelier))
+    act(() => result.current.advance(1000))
     act(() => result.current.chargeForRestart())
     unmount()
 
     const { result: onReturn } = renderHook(() => useCampaign(atelier))
 
     expect(onReturn.current).toMatchObject({
-      forfeited: 100,
-      bankedScore: -100
+      forfeited: 200,
+      bankedScore: 800
     })
   })
 
   it('holds the ceiling a rebirth raised, so the total still reads against it', () => {
     lendStorage()
     const { result, unmount } = renderHook(() => useCampaign(atelier))
-    act(() => result.current.startOver())
+    act(() => result.current.startOver(1000))
     unmount()
 
     const { result: onReturn } = renderHook(() => useCampaign(atelier))

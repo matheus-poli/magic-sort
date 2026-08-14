@@ -20,6 +20,27 @@ vi.mock('../audio/sounds', () => ({
  */
 const holdButton = () => screen.getByRole('button', { name: 'Hold to restart' })
 
+interface Press {
+  readonly onRestart?: () => void
+  readonly price?: number
+  readonly forfeited?: number
+  readonly wouldEndTheRun?: boolean
+}
+
+/** Renders the button and hands back the restart it is wired to. */
+const showButton = (press: Press = {}) => {
+  const onRestart = press.onRestart ?? vi.fn()
+  render(
+    <HoldToRestart
+      onRestart={onRestart}
+      price={press.price ?? 100}
+      forfeited={press.forfeited ?? 0}
+      wouldEndTheRun={press.wouldEndTheRun ?? false}
+    />
+  )
+  return onRestart
+}
+
 beforeEach(() => {
   vi.mocked(playSound).mockClear()
   vi.mocked(stopSound).mockClear()
@@ -28,7 +49,7 @@ beforeEach(() => {
 describe('HoldToRestart', () => {
   it('charges up audibly while the button is held down', async () => {
     const user = userEvent.setup()
-    render(<HoldToRestart onRestart={vi.fn()} forfeited={0} price={100} />)
+    showButton()
 
     await user.pointer({ keys: '[MouseLeft>]', target: holdButton() })
 
@@ -37,8 +58,7 @@ describe('HoldToRestart', () => {
 
   it('calls the charge off on a plain click, leaving the bench alone', async () => {
     const user = userEvent.setup()
-    const restart = vi.fn()
-    render(<HoldToRestart onRestart={restart} forfeited={0} price={100} />)
+    const restart = showButton()
 
     await user.click(holdButton())
 
@@ -48,7 +68,7 @@ describe('HoldToRestart', () => {
 
   it('calls it off when the pointer slides off the button', async () => {
     const user = userEvent.setup()
-    render(<HoldToRestart onRestart={vi.fn()} forfeited={0} price={100} />)
+    showButton()
 
     await user.pointer([
       { keys: '[MouseLeft>]', target: holdButton() },
@@ -60,7 +80,7 @@ describe('HoldToRestart', () => {
 
   it('charges from a key held down on the keyboard just the same', async () => {
     const user = userEvent.setup()
-    render(<HoldToRestart onRestart={vi.fn()} forfeited={0} price={100} />)
+    showButton()
 
     await user.tab()
     await user.keyboard('{Enter>}')
@@ -70,7 +90,7 @@ describe('HoldToRestart', () => {
 
   it('calls it off when the key is let go', async () => {
     const user = userEvent.setup()
-    render(<HoldToRestart onRestart={vi.fn()} forfeited={0} price={100} />)
+    showButton()
 
     await user.tab()
     await user.keyboard('{Enter>}')
@@ -81,8 +101,7 @@ describe('HoldToRestart', () => {
 
   it('restarts once the press has lasted long enough', async () => {
     const user = userEvent.setup()
-    const restart = vi.fn()
-    render(<HoldToRestart onRestart={restart} forfeited={0} price={100} />)
+    const restart = showButton()
 
     await user.pointer({ keys: '[MouseLeft>]', target: holdButton() })
 
@@ -92,7 +111,7 @@ describe('HoldToRestart', () => {
   })
 
   it('says what a restart will cost before anyone holds it', () => {
-    render(<HoldToRestart onRestart={vi.fn()} forfeited={0} price={100} />)
+    showButton()
 
     expect(holdButton()).toHaveAccessibleDescription(
       'Restarting costs 100 points.'
@@ -101,7 +120,7 @@ describe('HoldToRestart', () => {
 
   /* A later bench pays more, so throwing one away costs more. */
   it('names the price of the bench actually being thrown away', () => {
-    render(<HoldToRestart onRestart={vi.fn()} forfeited={0} price={2600} />)
+    showButton({ price: 2600 })
 
     expect(holdButton()).toHaveAccessibleDescription(
       'Restarting costs 2600 points.'
@@ -115,10 +134,37 @@ describe('HoldToRestart', () => {
    * thousand points.
    */
   it('owns up to what the campaign has given up so far', () => {
-    render(<HoldToRestart onRestart={vi.fn()} forfeited={200} price={100} />)
+    showButton({ forfeited: 200 })
 
     expect(holdButton()).toHaveAccessibleDescription(
       'Restarting costs 100 points. You have given up 200 points so far.'
     )
+  })
+
+  /*
+   * A restart is paid for out of banked points, and on the first bench of a
+   * fresh run there are none: holding this is the end of the run. Saying so
+   * before it is held is what makes it a decision rather than an ambush.
+   */
+  it('warns the apprentice whose restart would end their run', () => {
+    showButton({ wouldEndTheRun: true })
+
+    expect(holdButton()).toHaveAccessibleDescription(
+      'Restarting costs 100 points. That is more than you have: it would end your run.'
+    )
+  })
+
+  /* The end of a run has a voice of its own, and a bench being poured back
+     out is not it: the card that closes the run is what announces it. */
+  it('lands silently when the press is the end of the run', async () => {
+    const user = userEvent.setup()
+    const restart = showButton({ wouldEndTheRun: true })
+
+    await user.pointer({ keys: '[MouseLeft>]', target: holdButton() })
+    await waitFor(() => expect(restart).toHaveBeenCalledTimes(1), {
+      timeout: 3000
+    })
+
+    expect(vi.mocked(playSound).mock.calls).toEqual([['charge']])
   })
 })

@@ -15,7 +15,7 @@ vi.mock('../audio/sounds', () => ({
 const showCard = (onBeginAgain = vi.fn()) => {
   render(
     <GameOver
-      ending={{ kind: 'buried', debt: 3900 }}
+      ending={{ kind: 'stuck', price: 100 }}
       onBeginAgain={onBeginAgain}
     />
   )
@@ -30,18 +30,10 @@ beforeEach(() => {
 })
 
 describe('GameOver', () => {
-  it('tells the apprentice the run is over and what buried it', () => {
-    showCard()
-
-    expect(screen.getByRole('alertdialog')).toHaveTextContent(
-      'You owe 3900 points, and no bench in the atelier could pay that back.'
-    )
-  })
-
   /*
-   * The other way a run ends: the bench itself has run dry of pours, and the
-   * restart that would lay it out again costs more than the atelier could pay
-   * back. Naming the price is what stops the card reading as a bug.
+   * The ending nobody pressed for: the bench has run dry of pours and laying it
+   * out again costs more than the apprentice has. Naming the price is what
+   * stops the card reading as a bug.
    */
   it('tells the apprentice stuck on a dry bench what the way out would cost', () => {
     render(
@@ -49,7 +41,33 @@ describe('GameOver', () => {
     )
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent(
-      'There is no pour left on this bench, and the 500 points it costs to lay it out again would bury you.'
+      'There is no pour left on this bench, and you cannot pay the 500 points it costs to lay it out again.'
+    )
+  })
+
+  it('tells the apprentice who threw a bench away what they could not pay for it', () => {
+    render(
+      <GameOver
+        ending={{ kind: 'restart', price: 100 }}
+        onBeginAgain={vi.fn()}
+      />
+    )
+
+    expect(screen.getByRole('alertdialog')).toHaveTextContent(
+      'Laying this bench out again costs 100 points, which is more than you have.'
+    )
+  })
+
+  it('tells the apprentice who set off back what the walk cost', () => {
+    render(
+      <GameOver
+        ending={{ kind: 'rebirth', price: 45000 }}
+        onBeginAgain={vi.fn()}
+      />
+    )
+
+    expect(screen.getByRole('alertdialog')).toHaveTextContent(
+      'The walk back to the first bench costs 45000 points, which is more than you have.'
     )
   })
 

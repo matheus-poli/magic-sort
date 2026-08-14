@@ -10,8 +10,12 @@ export interface Press {
   readonly duration: number
   /** Heard for as long as the press is held, and cut off if it is let go. */
   readonly charge: SoundName
-  /** Heard the moment the press goes through. */
-  readonly done: SoundName
+  /**
+   * Heard the moment the press goes through, or null when what the press lands
+   * on has a voice of its own: a press that ends the run must not sound like
+   * the thing it usually does.
+   */
+  readonly done: SoundName | null
   onHeld: () => void
 }
 
@@ -42,12 +46,12 @@ export function useHold({ duration, charge, done, onHeld }: Press): Hold {
     playSound(charge)
     // The press is long enough to fetch what it lands on, and one of these
     // lands on a recorded track that would otherwise arrive after the deed.
-    warmSound(done)
+    if (done !== null) warmSound(done)
 
     charging.current = window.setTimeout(() => {
       charging.current = null
       stopSound(charge)
-      playSound(done)
+      if (done !== null) playSound(done)
       setIsHolding(false)
       onHeld()
     }, duration)

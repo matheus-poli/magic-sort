@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   benchWorth,
-  isRuined,
+  canPayForRebirth,
+  canPayForRestart,
   perfectTotal,
   priceOfRebirth,
   priceOfRestart,
-  rebirthWouldRuin,
-  restartWouldRuin,
   scoreFor,
   totalScore
 } from './scoring'
@@ -150,14 +149,6 @@ describe('totalScore', () => {
   it('adds what this bench is worth to what is already banked', () => {
     expect(totalScore({ banked: 1750, bench: 250 })).toBe(2000)
   })
-
-  /*
-   * Debt used to read as zero, which was kind until an apprentice could be
-   * ruined by it: a player who cannot see what they owe cannot see it coming.
-   */
-  it('reads out the debt when restarts have cost more than the benches paid', () => {
-    expect(totalScore({ banked: -300, bench: 100 })).toBe(-200)
-  })
 })
 
 describe('perfectTotal', () => {
@@ -174,50 +165,54 @@ describe('perfectTotal', () => {
   })
 })
 
-describe('rebirthWouldRuin', () => {
+describe('canPayForRestart', () => {
+  it('lets an apprentice who has banked the price lay the bench out again', () => {
+    expect(canPayForRestart({ banked: 100, position: 1 })).toBe(true)
+  })
+
+  /*
+   * Nothing in the atelier is bought on credit: an apprentice who cannot cover
+   * the price of throwing a bench away is at the end of their run rather than
+   * in debt over it.
+   */
+  it('refuses the apprentice who has not banked what a restart costs', () => {
+    expect(canPayForRestart({ banked: 99, position: 1 })).toBe(false)
+  })
+
+  /*
+   * Only banked points can pay for a restart. Whatever the bench in hand has
+   * earned is poured back out with it, so it is not asked about here — and a
+   * bench that could pay for its own second chance would let an apprentice
+   * bank the same flasks over and over.
+   */
+  it('asks more of an apprentice throwing away a bench that pays more', () => {
+    expect(canPayForRestart({ banked: 400, position: 5 })).toBe(false)
+  })
+})
+
+describe('canPayForRebirth', () => {
   it('leaves a well-off apprentice free to walk back to the first bench', () => {
-    expect(rebirthWouldRuin({ banked: 40000, position: 5 })).toBe(false)
+    expect(canPayForRebirth({ total: 40000, position: 5 })).toBe(true)
   })
 
   /*
-   * The warning the rebirth dialog gives: deep into a run the walk back costs
-   * more than most apprentices have, and pressing it unwarned would make the
-   * game-over card an ambush rather than a decision.
+   * The warning the rebirth dialog gives, and the end of the run if it is
+   * pressed all the same: deep into a run the walk back costs more than the
+   * apprentice has, and walking into that unwarned would make the game-over
+   * card an ambush rather than a decision.
    */
-  it('warns the apprentice whose walk back would bury them', () => {
-    expect(rebirthWouldRuin({ banked: 2000, position: 9 })).toBe(true)
+  it('refuses the walk back to an apprentice who cannot cover the atelier behind them', () => {
+    expect(canPayForRebirth({ total: 2000, position: 9 })).toBe(false)
   })
-})
 
-describe('restartWouldRuin', () => {
   /*
-   * A restart is the way out of a bench that cannot be sorted from where it
-   * stands, and an apprentice with nothing banked has to be able to take it:
-   * the bench they are handed back pays ten times what throwing it away costs.
+   * Weighed against the whole total, the bench in hand included: the walk banks
+   * that bench on the way out, and a price weighed against any number other
+   * than the one on the scoreboard would read as a bug.
    */
-  it('leaves an apprentice with nothing to their name free to start again', () => {
-    expect(restartWouldRuin({ banked: 0, position: 1 })).toBe(false)
-  })
-
-  it('is not ruin while the bench handed back could still clear the debt', () => {
-    expect(restartWouldRuin({ banked: -4500, position: 5 })).toBe(false)
-  })
-
-  it('is ruin once the price and the debt outgrow the bench handed back', () => {
-    expect(restartWouldRuin({ banked: -4800, position: 5 })).toBe(true)
-  })
-})
-
-describe('isRuined', () => {
-  it('leaves an apprentice who owes nothing to get on with the bench', () => {
-    expect(isRuined({ banked: 2400, benchInHand: benchWorth(3) })).toBe(false)
-  })
-
-  it('is not ruin while the bench in hand could still cover the debt', () => {
-    expect(isRuined({ banked: -900, benchInHand: benchWorth(1) })).toBe(false)
-  })
-
-  it('is ruin once not even a flawless bench could clear what is owed', () => {
-    expect(isRuined({ banked: -1200, benchInHand: benchWorth(1) })).toBe(true)
+  it('lets the price be paid out to the very last point', () => {
+    expect(canPayForRebirth({ total: priceOfRebirth(3), position: 3 })).toBe(
+      true
+    )
   })
 })

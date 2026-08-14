@@ -93,76 +93,56 @@ describe('App', () => {
   })
 
   /*
-   * The end of a run, wired up: the campaign works out that the debt has
-   * outgrown the atelier, and the card that says so is the only thing the
-   * apprentice can reach. Seeded through storage because getting there by
-   * playing would mean holding the restart button eleven times over.
+   * The end of a run, wired up. Nothing in the atelier is bought on credit, and
+   * an apprentice on the first bench of a fresh run has banked nothing at all:
+   * throwing that bench away is the end of their run, and the card that says so
+   * is the only thing left to reach.
    */
-  it('closes down a run the apprentice can no longer pay their way out of', () => {
-    lendStorage()
-    rememberCampaign({
-      reached: 0,
-      earned: 500,
-      forfeited: 3000,
-      rebirths: 1
-    })
-
-    render(<App />)
-
-    expect(screen.getByRole('alertdialog')).toHaveTextContent(
-      'You owe 2500 points, and no bench in the atelier could pay that back.'
-    )
-  })
-
-  it('hands a ruined apprentice a clean bench and an empty ledger', async () => {
-    lendStorage()
-    rememberCampaign({
-      reached: 0,
-      earned: 500,
-      forfeited: 3000,
-      rebirths: 1
-    })
+  it('closes down a run the apprentice cannot pay their way out of', async () => {
     const user = userEvent.setup()
     render(<App />)
 
-    await user.click(screen.getByRole('button', { name: 'Begin a new run' }))
+    await user.pointer({
+      keys: '[MouseLeft>]',
+      target: screen.getByRole('button', { name: 'Hold to restart' })
+    })
 
-    await waitFor(() =>
-      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    await waitFor(
+      () =>
+        expect(screen.getByRole('alertdialog')).toHaveTextContent(
+          'Laying this bench out again costs 100 points, which is more than you have.'
+        ),
+      { timeout: 3000 }
     )
-    // Awaited because the debt climbs back to nothing rather than vanishing.
-    await waitFor(() =>
-      expect(screen.getByLabelText('Total')).toHaveTextContent('0 / 1275000')
-    )
-    expect(screen.getByText(/level 1 of/i)).toBeInTheDocument()
   })
 
   /*
-   * The one control that reaches past the campaign to the save itself, held
-   * here for its full length on purpose: what is being proved runs from a
-   * button in the corner of the screen all the way down to the storage, and
-   * no lower layer can prove that on its own.
+   * The walk back to the first bench costs the whole atelier behind it, which
+   * deep into a run is more than the apprentice has: it is the way out of a run
+   * as well as the way back. What is being proved here runs from the dialog all
+   * the way down to the save being swept, and no lower layer can prove that on
+   * its own.
    */
-  it('erases a run outright when the corner button is held long enough', async () => {
+  it('hands the apprentice a clean bench and an empty ledger once the run is over', async () => {
     lendStorage()
     rememberCampaign({ reached: 4, earned: 9000, forfeited: 0, rebirths: 0 })
     const user = userEvent.setup()
     render(<App />)
     expect(screen.getByText(/level 5 of/i)).toBeInTheDocument()
 
-    await user.pointer({
-      keys: '[MouseLeft>]',
-      target: screen.getByRole('button', { name: 'Hold to erase this run' })
-    })
+    await user.click(screen.getByRole('button', { name: 'Start over' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, end my run' }))
+    await user.click(screen.getByRole('button', { name: 'Begin a new run' }))
 
-    await waitFor(
-      () => expect(screen.getByText(/level 1 of/i)).toBeInTheDocument(),
-      { timeout: 8000 }
+    await waitFor(() =>
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
     )
+    // Awaited because the total counts back down rather than vanishing.
     await waitFor(() =>
       expect(screen.getByLabelText('Total')).toHaveTextContent('0 / 1275000')
     )
-  }, 12000)
+    expect(screen.getByText(/level 1 of/i)).toBeInTheDocument()
+  })
 
   it('shows the way back to the blog the game is a project of', () => {
     render(<App />)

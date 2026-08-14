@@ -979,6 +979,12 @@ body::before {
   color: var(--parchment-dim);
 }
 
+/* A price the apprentice cannot pay is the end of their run, so the line that
+   says so has to read as a warning rather than as small print. */
+.restart__cost[data-ends-the-run='true'] {
+  color: #ffc2cd;
+}
+
 .hold {
   position: relative;
   overflow: hidden;

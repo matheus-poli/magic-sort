@@ -1,8 +1,7 @@
-import { useEffect, useId, useRef } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Flask } from './Flask'
 import { GameOver } from './GameOver'
-import { HoldToErase } from './HoldToErase'
 import { HoldToRestart } from './HoldToRestart'
 import { StartOver } from './StartOver'
 import { ScoreBoard } from './ScoreBoard'
@@ -12,13 +11,15 @@ import { usePourFlight } from '../hooks/usePourFlight'
 import { celebrateLevel } from '../effects/confetti'
 import { endOfRun } from '../domain/runsEnd'
 import {
+  canPayForRebirth,
+  canPayForRestart,
   priceOfRebirth,
   priceOfRestart,
-  rebirthWouldRuin,
   totalScore
 } from '../domain/scoring'
 import type { CSSProperties } from 'react'
 import type { Level } from '../domain/levels'
+import type { RunsEnd } from '../domain/runsEnd'
 
 interface GameProps {
   readonly level: Level
@@ -42,8 +43,11 @@ interface GameProps {
   readonly onNextLevel: ((score: number) => void) | null
   /** Tells the campaign a bench was thrown away, so it can charge for it. */
   readonly onRestart: () => void
-  /** Throws the whole run away and starts the atelier from the first bench. */
-  readonly onStartOver: () => void
+  /**
+   * Walks the apprentice back to the first bench, taking what the bench in hand
+   * earned: they are leaving it for good, so the campaign banks it on the way.
+   */
+  readonly onStartOver: (score: number) => void
   /** Opens a run from nothing, for an apprentice with nothing left. */
   readonly onBeginAgain: () => void
 }
@@ -66,6 +70,13 @@ export function Game({
   useGameSounds(game)
   const sortedId = useId()
 
+  /*
+   * A run ended by a price the apprentice could not pay. It is remembered here
+   * rather than read back off the ledger, because there is nothing left in the
+   * ledger to read: the run is swept the moment the price is refused.
+   */
+  const [pricedOut, setPricedOut] = useState<RunsEnd | null>(null)
+
   const bench = useRef<HTMLOListElement | null>(null)
   const slots = useRef<(HTMLLIElement | null)[]>([])
   const pour = usePourFlight({
@@ -82,18 +93,48 @@ export function Game({
 
   const total = totalScore({ banked: bankedScore, bench: game.score })
   const isLastBench = onNextLevel === null
+  const restartPrice = priceOfRestart(position)
   const rebirthPrice = priceOfRebirth(position)
+  const canRestart = canPayForRestart({ banked: bankedScore, position })
+  const canWalkBack = canPayForRebirth({ total, position })
 
-  // Asked on every render rather than watched for: a run ends the moment the
-  // last pour on the bench is spent, and nothing is pressed to make it happen.
-  const ending = endOfRun({
-    board: game.board,
-    banked: bankedScore,
-    bench: game.score,
-    position
-  })
+  /*
+   * The ending nobody pressed for is asked after on every render rather than
+   * watched for: a bench runs dry the moment the last pour on it is spent, and
+   * nothing is pressed to make that happen.
+   */
+  const ending =
+    pricedOut ?? endOfRun({ board: game.board, banked: bankedScore, position })
+
+  // The save is wiped rather than written over, so the bench the apprentice was
+  // on cannot be waiting for them at the next reload.
+  const sweepTheRun = () => {
+    game.restart()
+    onBeginAgain()
+  }
+
+  /*
+   * A price the apprentice cannot pay ends the run there and then, sweeping it
+   * as it goes rather than waiting for the card to be answered: closing the tab
+   * is not a way out of a run, and it must not become one for the run that has
+   * just ended.
+   */
+  const endTheRun = (howItEnded: RunsEnd) => {
+    setPricedOut(howItEnded)
+    sweepTheRun()
+  }
+
+  const beginANewRun = () => {
+    setPricedOut(null)
+    sweepTheRun()
+  }
 
   const restartBench = () => {
+    if (!canRestart) {
+      endTheRun({ kind: 'restart', price: restartPrice })
+      return
+    }
+
     game.restart()
     onRestart()
   }
@@ -101,13 +142,13 @@ export function Game({
   // The campaign may already be on the first bench, in which case the level it
   // hands back is the one in hand: the board has to be laid out again here.
   const startOverFromTheTop = () => {
-    game.restart()
-    onStartOver()
-  }
+    if (!canWalkBack) {
+      endTheRun({ kind: 'rebirth', price: rebirthPrice })
+      return
+    }
 
-  const beginAgainFromNothing = () => {
     game.restart()
-    onBeginAgain()
+    onStartOver(game.score)
   }
 
   const startOverControl = (
@@ -116,7 +157,7 @@ export function Game({
       levelCount={levelCount}
       total={total}
       price={rebirthPrice}
-      wouldEndTheRun={rebirthWouldRuin({ banked: bankedScore, position })}
+      wouldEndTheRun={!canWalkBack}
       onStartOver={startOverFromTheTop}
     />
   )
@@ -189,15 +230,12 @@ export function Game({
       <div className='undo'>
         <HoldToRestart
           onRestart={restartBench}
-          price={priceOfRestart(position)}
+          price={restartPrice}
           forfeited={forfeited}
+          wouldEndTheRun={!canRestart}
         />
         {startOverControl}
       </div>
-
-      {/* Out at the edge of the atelier, well away from the controls a player
-          reaches for while they are sorting. */}
-      <HoldToErase onErase={beginAgainFromNothing} />
 
       <AnimatePresence>
         {game.isSolved && (
@@ -285,11 +323,11 @@ export function Game({
         )}
       </AnimatePresence>
 
-      {/* The end of the run covers everything, the bench included: there is no
-          pour left that could pay off what the apprentice owes. */}
+      {/* The end of the run covers everything, the bench included: there is
+          nothing left on it the apprentice could pay their way out with. */}
       <AnimatePresence>
         {ending !== null && (
-          <GameOver ending={ending} onBeginAgain={beginAgainFromNothing} />
+          <GameOver ending={ending} onBeginAgain={beginANewRun} />
         )}
       </AnimatePresence>
     </main>

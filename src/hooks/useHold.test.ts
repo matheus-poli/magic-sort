@@ -111,6 +111,20 @@ describe('useHold', () => {
   })
 
   /*
+   * A press that ends the run must not sound like the thing it usually does,
+   * and the ruin that follows has a voice of its own: the card that closes the
+   * run is what announces it.
+   */
+  it('lands silently when the press was given no sound to land on', () => {
+    const { result } = renderHook(() => useHold({ ...press(), done: null }))
+
+    act(() => result.current.start())
+    wait(PRESS_MS)
+
+    expect(vi.mocked(playSound).mock.calls).toEqual([['charge']])
+  })
+
+  /*
    * A press is long enough to fetch what it lands on, and one of these lands
    * on a recorded track: asking for it at the moment the press goes through
    * would put the sound audibly behind the thing it is marking.

@@ -23,22 +23,31 @@ interface HoldToRestartProps {
    * so that the price of another one is never a surprise.
    */
   readonly forfeited: number
+  /** Whether that price is more than the apprentice has left to pay it with. */
+  readonly wouldEndTheRun: boolean
 }
 
 /**
  * Restarting throws away a bench in progress and costs the campaign points, so
  * it asks for more than a click: the button has to be held while a bar fills,
  * and letting go calls the whole thing off.
+ *
+ * An apprentice who cannot pay the price is holding down the end of their run,
+ * which the line under the button says outright: nothing here is bought on
+ * credit, so a bench thrown away unpaid is the last one of the run.
  */
 export function HoldToRestart({
   onRestart,
   price,
-  forfeited
+  forfeited,
+  wouldEndTheRun
 }: HoldToRestartProps) {
   const hold = useHold({
     duration: HOLD_MS,
     charge: 'charge',
-    done: 'reset',
+    // A press nobody comes back from must not sound like a bench being poured
+    // back out: the card that closes the run has a voice of its own.
+    done: wouldEndTheRun ? null : 'reset',
     onHeld: onRestart
   })
   const costId = useId()
@@ -83,8 +92,14 @@ export function HoldToRestart({
         />
       </button>
 
-      <p className='restart__cost' id={costId}>
+      <p
+        className='restart__cost'
+        id={costId}
+        data-ends-the-run={wouldEndTheRun}
+      >
         Restarting costs {price} points.
+        {wouldEndTheRun &&
+          ' That is more than you have: it would end your run.'}
         {forfeited > 0 && ` You have given up ${forfeited} points so far.`}
       </p>
     </div>

@@ -25,8 +25,25 @@ const showControl = (onStartOver = vi.fn()) => {
   return onStartOver
 }
 
+/** The dialog on a run the apprentice cannot afford to walk back across. */
+const showTheEndOfTheRun = (onStartOver = vi.fn()) => {
+  render(
+    <StartOver
+      position={9}
+      levelCount={50}
+      total={2000}
+      price={45000}
+      wouldEndTheRun
+      onStartOver={onStartOver}
+    />
+  )
+  return onStartOver
+}
+
 const trigger = () => screen.getByRole('button', { name: 'Start over' })
 const confirm = () => screen.getByRole('button', { name: 'Yes, start over' })
+const confirmTheEnd = () =>
+  screen.getByRole('button', { name: 'Yes, end my run' })
 const wayOut = () => screen.getByRole('button', { name: 'Keep playing' })
 
 beforeEach(() => {
@@ -67,22 +84,44 @@ describe('StartOver', () => {
    */
   it('warns the apprentice when the walk back would end their run', async () => {
     const user = userEvent.setup()
-    render(
-      <StartOver
-        position={9}
-        levelCount={50}
-        total={2000}
-        price={45000}
-        wouldEndTheRun
-        onStartOver={vi.fn()}
-      />
-    )
+    showTheEndOfTheRun()
 
     await user.click(trigger())
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent(
-      'That is more than the atelier could ever pay back: it would end your run.'
+      'That is more than you have: it would end your run.'
     )
+  })
+
+  /*
+   * The answer has to name what it actually does. An apprentice who cannot pay
+   * for the walk back is not starting anything over: they are ending the run,
+   * and the button they press should say the same thing the card that follows
+   * it does.
+   */
+  it('asks the apprentice to end their run rather than to start it over', async () => {
+    const user = userEvent.setup()
+    showTheEndOfTheRun()
+
+    await user.click(trigger())
+
+    expect(
+      screen.getByRole('alertdialog', { name: 'End this run?' })
+    ).toContainElement(confirmTheEnd())
+    expect(
+      screen.queryByRole('button', { name: 'Yes, start over' })
+    ).not.toBeInTheDocument()
+  })
+
+  it('asks about the atelier while there is still a walk back to be had', async () => {
+    const user = userEvent.setup()
+    showControl()
+
+    await user.click(trigger())
+
+    expect(
+      screen.getByRole('alertdialog', { name: 'Start the whole atelier over?' })
+    ).toContainElement(confirm())
   })
 
   it('leaves the way out under the finger, not the destruction', async () => {
@@ -136,19 +175,10 @@ describe('StartOver', () => {
   /* A rebirth nobody comes back from is not a rebirth, and must not sound like one. */
   it('keeps the rebirth quiet when the walk back is the end of the run', async () => {
     const user = userEvent.setup()
-    render(
-      <StartOver
-        position={9}
-        levelCount={50}
-        total={2000}
-        price={45000}
-        wouldEndTheRun
-        onStartOver={vi.fn()}
-      />
-    )
+    showTheEndOfTheRun()
 
     await user.click(trigger())
-    await user.click(confirm())
+    await user.click(confirmTheEnd())
 
     expect(vi.mocked(playSound)).not.toHaveBeenCalled()
   })

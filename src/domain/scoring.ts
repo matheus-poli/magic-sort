@@ -72,51 +72,12 @@ export interface CampaignProgress {
 }
 
 /**
- * The number on the scoreboard's total, debt and all. It used to read as zero
- * while the campaign was in the red, which was kind right up until an
- * apprentice could be ruined: a player who cannot see what they owe cannot see
- * the end of their run coming.
+ * The number on the scoreboard's total. There is no red in it: nothing in the
+ * atelier is bought on credit, so a price the apprentice cannot pay ends their
+ * run rather than being owed.
  */
 export function totalScore({ banked, bench }: CampaignProgress): number {
   return banked + bench
-}
-
-export interface Standing {
-  /** Points from the benches left behind, less what restarts have cost. */
-  readonly banked: number
-  /** The most the bench in front of the apprentice could still pay. */
-  readonly benchInHand: number
-}
-
-/**
- * Whether the apprentice is finished: so deep in debt that even sorting the
- * bench in front of them flawlessly would leave them owing points. Debt on its
- * own is a hole to climb out of; debt no bench can cover is the end of the run.
- */
-export function isRuined({ banked, benchInHand }: Standing): boolean {
-  return banked + benchInHand < 0
-}
-
-export interface Rebirth {
-  /** Points from the benches left behind, less what restarts have cost. */
-  readonly banked: number
-  /** Which bench the apprentice would be walking back from. */
-  readonly position: number
-}
-
-/**
- * Whether walking back to the first bench from here would leave a debt no
- * bench could clear. Deep into a run the walk costs more than most apprentices
- * have, and the dialog that offers it has to be able to say so first: pressing
- * it unwarned would make the end of the run an ambush rather than a decision.
- */
-export function rebirthWouldRuin({ banked, position }: Rebirth): boolean {
-  return isRuined({
-    banked: banked - priceOfRebirth(position),
-    // Whatever they were sorting is poured back out with the walk, so the only
-    // bench left to pay them is the first one.
-    benchInHand: benchWorth(1)
-  })
 }
 
 export interface Restart {
@@ -127,18 +88,33 @@ export interface Restart {
 }
 
 /**
- * Whether throwing this bench away would leave a debt no bench could clear.
- * It is the question a stuck apprentice's run hangs on: the price comes off
- * what they have banked, and the bench handed back to them is then the only
- * thing left that could pay it.
+ * Whether the apprentice can pay to lay this bench out again.
+ *
+ * Only banked points can. Whatever the bench in hand has earned is poured back
+ * out with it, so it never pays for its own second chance — a bench that did
+ * would let an apprentice bank the same flasks over and over.
  */
-export function restartWouldRuin({ banked, position }: Restart): boolean {
-  return isRuined({
-    banked: banked - priceOfRestart(position),
-    // Whatever was half-sorted is poured back out, so this bench pays from the
-    // top again rather than from where they had got to.
-    benchInHand: benchWorth(position)
-  })
+export function canPayForRestart({ banked, position }: Restart): boolean {
+  return banked >= priceOfRestart(position)
+}
+
+export interface Rebirth {
+  /** Everything the apprentice has, the bench in hand included. */
+  readonly total: number
+  /** Which bench the apprentice would be walking back from. */
+  readonly position: number
+}
+
+/**
+ * Whether the apprentice can pay for the walk back to the first bench.
+ *
+ * The whole total pays for it, unlike a restart: they are leaving the bench in
+ * hand for good rather than laying it out again, so what it earned is banked as
+ * they go. A price weighed against any number other than the one on the
+ * scoreboard would read as a bug.
+ */
+export function canPayForRebirth({ total, position }: Rebirth): boolean {
+  return total >= priceOfRebirth(position)
 }
 
 export function scoreFor(progress: RunProgress): number {

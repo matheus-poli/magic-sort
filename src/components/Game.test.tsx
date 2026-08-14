@@ -108,7 +108,7 @@ interface Standing {
   readonly colourBlind?: boolean
   readonly onNextLevel?: ((score: number) => void) | null
   readonly onRestart?: () => void
-  readonly onStartOver?: () => void
+  readonly onStartOver?: (score: number) => void
   readonly onBeginAgain?: () => void
 }
 
@@ -449,47 +449,94 @@ describe('Game', () => {
   })
 
   /*
-   * The end of a run. Nothing on the bench can pay off what the apprentice
-   * owes, so the card covers it rather than letting them pour on in vain.
+   * The end of a run nobody presses for, and the one the apprentice cannot see
+   * coming: the bench has no pour left in it, and laying it out again costs
+   * more than they have banked. Nothing has to be pressed for the run to be
+   * over, so nothing should have to be pressed to be told.
    */
-  it('closes the run down once the debt has outgrown the atelier', () => {
-    showBench(bench, { bankedScore: -4200 })
+  it('closes the run down when the bench runs dry and a restart is out of reach', () => {
+    showBench(deadEnd)
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent(
-      'You owe 4200 points, and no bench in the atelier could pay that back.'
+      'There is no pour left on this bench, and you cannot pay the 100 points it costs to lay it out again.'
     )
   })
 
-  it('leaves the bench standing while the apprentice can still sort their way out', () => {
-    showBench(bench, { bankedScore: -400 })
+  it('leaves a stuck apprentice who can pay for a restart to go and take it', () => {
+    showBench(deadEnd, { bankedScore: 100 })
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  })
+
+  it('leaves the bench standing while there are still pours left on it', () => {
+    showBench(bench)
 
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   })
 
   /*
-   * The other end of a run, and the one the apprentice cannot see coming: the
-   * bench has no pour left in it, and the restart that would lay it out again
-   * costs more than the atelier could pay back. Nobody has to press anything
-   * for the run to be over, so nothing should have to be pressed to be told.
+   * The end of a run the apprentice does press for. Nothing here is bought on
+   * credit: a bench thrown away by someone who cannot pay for it is the last
+   * one of their run, which is what the warning under the button said it would
+   * be.
    */
-  it('closes the run down when the bench runs dry and a restart is out of reach', () => {
-    showBench(deadEnd, { bankedScore: -950 })
+  it('ends the run of an apprentice who holds a restart they cannot pay for', async () => {
+    const user = userEvent.setup()
+    const onRestart = vi.fn()
+    showBench(bench, { onRestart })
 
-    expect(screen.getByRole('alertdialog')).toHaveTextContent(
-      'There is no pour left on this bench, and the 100 points it costs to lay it out again would bury you.'
+    await user.pointer({
+      keys: '[MouseLeft>]',
+      target: screen.getByRole('button', { name: 'Hold to restart' })
+    })
+
+    await waitFor(
+      () =>
+        expect(screen.getByRole('alertdialog')).toHaveTextContent(
+          'Laying this bench out again costs 100 points, which is more than you have.'
+        ),
+      { timeout: 3000 }
     )
+    expect(onRestart).not.toHaveBeenCalled()
   })
 
-  it('leaves a stuck apprentice who can pay for a restart to go and take it', () => {
-    showBench(deadEnd, { bankedScore: -400 })
+  it('ends the run of an apprentice who confirms a walk back they cannot pay for', async () => {
+    const user = userEvent.setup()
+    const onStartOver = vi.fn()
+    showBench(bench, { onStartOver })
 
-    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Start over' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, end my run' }))
+
+    // Named, because the dialog that asked the question is still fading out.
+    expect(
+      screen.getByRole('alertdialog', { name: 'Game over' })
+    ).toHaveTextContent(
+      'The walk back to the first bench costs 1000 points, which is more than you have.'
+    )
+    expect(onStartOver).not.toHaveBeenCalled()
+  })
+
+  /*
+   * The run is swept at the press rather than when the card is answered:
+   * closing the tab is not a way out of a run, and it must not become one for
+   * the run that has just ended.
+   */
+  it('sweeps the run away with the price the apprentice could not pay', async () => {
+    const user = userEvent.setup()
+    const onBeginAgain = vi.fn()
+    showBench(bench, { onBeginAgain })
+
+    await user.click(screen.getByRole('button', { name: 'Start over' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, end my run' }))
+
+    expect(onBeginAgain).toHaveBeenCalledTimes(1)
   })
 
   it('sweeps the bench clean when the apprentice begins a new run', async () => {
     const user = userEvent.setup()
     const onBeginAgain = vi.fn()
-    showBench(bench, { bankedScore: -4200, onBeginAgain })
+    showBench(deadEnd, { onBeginAgain })
 
     await user.click(screen.getByRole('button', { name: 'Begin a new run' }))
 
@@ -516,7 +563,7 @@ describe('Game', () => {
   it('hands the whole run back when the apprentice starts over', async () => {
     const user = userEvent.setup()
     const onStartOver = vi.fn()
-    showBench(bench, { onStartOver })
+    showBench(bench, { bankedScore: 1000, onStartOver })
 
     await pourFrom(user, 1, 2)
     await user.click(screen.getByRole('button', { name: 'Start over' }))
@@ -526,10 +573,28 @@ describe('Game', () => {
     expect(screen.getByLabelText('Pours')).toHaveTextContent('0')
   })
 
+  /*
+   * The bench in hand goes with the apprentice rather than down the drain: they
+   * are leaving it for good rather than laying it out again, so the campaign is
+   * handed what it earned to bank on the way past.
+   */
+  it('hands over what the bench in hand earned as the apprentice walks back', async () => {
+    const user = userEvent.setup()
+    const onStartOver = vi.fn()
+    showBench(nearlyFull, { bankedScore: 1000, onStartOver })
+
+    await pourFrom(user, 2, 1)
+    await user.click(screen.getByRole('button', { name: 'Start over' }))
+    await user.click(screen.getByRole('button', { name: 'Yes, start over' }))
+
+    // One of the three elixirs sealed, which is a third of the sorting half.
+    expect(onStartOver).toHaveBeenCalledWith(167)
+  })
+
   it('puts the bench back the way it started once the restart is held', async () => {
     const user = userEvent.setup()
     const onRestart = vi.fn()
-    showBench(bench, { onRestart })
+    showBench(bench, { bankedScore: 100, onRestart })
 
     await pourFrom(user, 1, 2)
     await user.pointer({

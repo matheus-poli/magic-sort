@@ -1,52 +1,41 @@
 import { isStuck } from './board'
-import {
-  benchWorth,
-  isRuined,
-  priceOfRestart,
-  restartWouldRuin,
-  totalScore
-} from './scoring'
+import { canPayForRestart, priceOfRestart } from './scoring'
 import type { Board } from './board'
 
 /**
- * How a run ended, which is what the card that closes it has to say. The two
- * endings are the same sentence from either side: the apprentice can no longer
+ * How a run ended, which is what the card that closes it has to say. All three
+ * endings are the same sentence from a different side: the apprentice cannot
  * pay their way to a bench worth sorting.
  */
 export type RunsEnd =
-  /** Owing more than a flawless bench could ever pay back. */
-  | { readonly kind: 'buried'; readonly debt: number }
   /** On a bench with no pour left, and priced out of laying it out again. */
   | { readonly kind: 'stuck'; readonly price: number }
+  /** Threw a bench away without the points to pay for it. */
+  | { readonly kind: 'restart'; readonly price: number }
+  /** Set off back to the first bench without the points for the walk. */
+  | { readonly kind: 'rebirth'; readonly price: number }
 
 export interface Run {
   /** The bench in front of the apprentice, which may have run dry of pours. */
   readonly board: Board
   /** Points from the benches left behind, less what restarts have cost. */
   readonly banked: number
-  /** What the bench in hand has earned so far. */
-  readonly bench: number
   /** Which bench of the atelier this is, counted the way a player counts. */
   readonly position: number
 }
 
 /**
- * Whether this run is over, and what ended it, or null while there is a way
- * out of it left. It is the whole of the question: the campaign knows what is
- * owed and the bench knows what can still be poured, and neither of them can
- * answer it alone.
+ * Whether the bench in front of the apprentice has ended their run on its own,
+ * and what to say about it, or null while there is a way out left. It is the
+ * one ending nobody presses for: the campaign knows what is banked and the
+ * bench knows what can still be poured, and neither answers it alone.
+ *
+ * The restart is the whole of the question. The walk back to the first bench
+ * costs ten times as much at every bench, so an apprentice who cannot pay to
+ * lay this one out again cannot walk away from it either.
  */
-export function endOfRun({
-  board,
-  banked,
-  bench,
-  position
-}: Run): RunsEnd | null {
-  if (isRuined({ banked, benchInHand: benchWorth(position) })) {
-    return { kind: 'buried', debt: -totalScore({ banked, bench }) }
-  }
-
-  if (isStuck(board) && restartWouldRuin({ banked, position })) {
+export function endOfRun({ board, banked, position }: Run): RunsEnd | null {
+  if (isStuck(board) && !canPayForRestart({ banked, position })) {
     return { kind: 'stuck', price: priceOfRestart(position) }
   }
 
