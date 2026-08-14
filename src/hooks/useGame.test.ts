@@ -1,7 +1,8 @@
 import { act, renderHook } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useGame } from './useGame'
 import { benchOfGlass } from '../test/bench'
+import { lendStorage } from '../test/storage'
 import type { Level } from '../domain/levels'
 
 /** Two pours from being solved, so tests stay short and readable. */
@@ -24,6 +25,10 @@ const mixed: Level = {
   minimumPours: 4,
   board: benchOfGlass(4, ['crimson', 'azure'], ['azure'], ['verdant'], [])
 }
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('useGame', () => {
   it('starts on the given level with nothing selected and no pours spent', () => {
@@ -215,5 +220,49 @@ describe('useGame', () => {
       pours: 0,
       selectedIndex: null
     })
+  })
+
+  /*
+   * The pours already spent are the point. A bench that came back laid out
+   * afresh would make closing the tab a restart that costs nothing, which is
+   * the one thing a restart is not supposed to be.
+   */
+  it('hands the apprentice back the bench they left part-solved', () => {
+    lendStorage()
+    const { result, unmount } = renderHook(() => useGame(mixed))
+    act(() => result.current.tapFlask(0))
+    act(() => result.current.tapFlask(1))
+    const leftBehind = result.current.board
+    unmount()
+
+    const { result: onReturn } = renderHook(() => useGame(mixed))
+
+    expect(onReturn.current).toMatchObject({ board: leftBehind, pours: 1 })
+  })
+
+  it('lays out a fresh bench when the saved one belongs to another level', () => {
+    lendStorage()
+    const { result, unmount } = renderHook(() => useGame(mixed))
+    act(() => result.current.tapFlask(0))
+    act(() => result.current.tapFlask(1))
+    unmount()
+
+    const { result: onReturn } = renderHook(() => useGame(almostSolved))
+
+    expect(onReturn.current).toMatchObject({
+      board: almostSolved.board,
+      pours: 0
+    })
+  })
+
+  it('restarts to the opening bench rather than to the one that was saved', () => {
+    lendStorage()
+    const { result } = renderHook(() => useGame(mixed))
+
+    act(() => result.current.tapFlask(0))
+    act(() => result.current.tapFlask(1))
+    act(() => result.current.restart())
+
+    expect(result.current).toMatchObject({ board: mixed.board, pours: 0 })
   })
 })

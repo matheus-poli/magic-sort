@@ -1,10 +1,18 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
 import { LEVELS } from './domain/levels'
+import { lendStorage } from './test/storage'
 
 const firstFlask = () => screen.getByRole('button', { name: /^Flask 1/ })
+
+/** The first spare glass on the opening bench, which anything can pour into. */
+const spareFlask = () => screen.getByRole('button', { name: /^Flask 5/ })
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('App', () => {
   it('opens the atelier on the first bench of the campaign', () => {
@@ -53,6 +61,31 @@ describe('App', () => {
         .getAttribute('aria-pressed'),
       marksOnTheFirstFlask: firstFlask().textContent
     }).toEqual({ pressed: 'false', marksOnTheFirstFlask: '' })
+  })
+
+  /*
+   * The whole point of sealing a run: the apprentice closes the tab mid-pour
+   * and comes back to the bench exactly as they left it, pours already spent
+   * included. Proving it here proves the wiring, which is what the campaign
+   * and the bench cannot each prove on their own.
+   */
+  it('hands the apprentice back the bench they closed the tab on', async () => {
+    lendStorage()
+    const user = userEvent.setup()
+    const { unmount } = render(<App />)
+
+    await user.click(firstFlask())
+    await user.click(spareFlask())
+    await waitFor(() =>
+      expect(screen.getByLabelText('Pours')).toHaveTextContent('1')
+    )
+    const leftBehind = spareFlask().getAttribute('aria-label')
+    unmount()
+
+    render(<App />)
+
+    expect(screen.getByLabelText('Pours')).toHaveTextContent('1')
+    expect(spareFlask()).toHaveAttribute('aria-label', leftBehind)
   })
 
   it('shows the way back to the blog the game is a project of', () => {

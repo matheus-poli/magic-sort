@@ -1,7 +1,9 @@
 import { act, renderHook } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useCampaign } from './useCampaign'
+import { rememberCampaign } from '../storage/savedRun'
 import { benchOfGlass } from '../test/bench'
+import { lendStorage, refuseToRemember } from '../test/storage'
 import type { Level } from '../domain/levels'
 
 const bench = (id: string, name: string): Level => ({
@@ -16,6 +18,10 @@ const atelier: readonly Level[] = [
   bench('second', 'Second Bench'),
   bench('third', 'Third Bench')
 ]
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('useCampaign', () => {
   it('opens on the first bench of the atelier', () => {
@@ -174,5 +180,72 @@ describe('useCampaign', () => {
     act(() => result.current.startOver())
 
     expect(result.current.bankedScore).toBe(-800)
+  })
+
+  /*
+   * Closing the tab is not a way out of a campaign. Everything the apprentice
+   * has earned and everything they owe comes back with them, or the price of
+   * a restart would be a page reload away from being no price at all.
+   */
+  it('picks the campaign back up where the apprentice left it', () => {
+    lendStorage()
+    const { result, unmount } = renderHook(() => useCampaign(atelier))
+    act(() => result.current.advance(850))
+    unmount()
+
+    const { result: onReturn } = renderHook(() => useCampaign(atelier))
+
+    expect(onReturn.current).toMatchObject({
+      level: atelier[1],
+      position: 2,
+      bankedScore: 850
+    })
+  })
+
+  it('brings what restarts have cost back with the apprentice', () => {
+    lendStorage()
+    const { result, unmount } = renderHook(() => useCampaign(atelier))
+    act(() => result.current.chargeForRestart())
+    unmount()
+
+    const { result: onReturn } = renderHook(() => useCampaign(atelier))
+
+    expect(onReturn.current).toMatchObject({
+      forfeited: 100,
+      bankedScore: -100
+    })
+  })
+
+  it('holds the ceiling a rebirth raised, so the total still reads against it', () => {
+    lendStorage()
+    const { result, unmount } = renderHook(() => useCampaign(atelier))
+    act(() => result.current.startOver())
+    unmount()
+
+    const { result: onReturn } = renderHook(() => useCampaign(atelier))
+
+    expect(onReturn.current.perfectTotal).toBe(6000)
+  })
+
+  it('opens on a bench the atelier still has when a save points past its end', () => {
+    lendStorage()
+    rememberCampaign({
+      reached: 99,
+      earned: 4200,
+      forfeited: 0,
+      rebirths: 0
+    })
+
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    expect(result.current).toMatchObject({ level: atelier[2], position: 3 })
+  })
+
+  it('opens the atelier fresh where the browser refuses to remember anything', () => {
+    refuseToRemember()
+
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    expect(result.current).toMatchObject({ position: 1, bankedScore: 0 })
   })
 })

@@ -1,9 +1,10 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   POINTS_LOST_PER_RESTART,
   POINTS_LOST_PER_START_OVER,
   perfectTotal
 } from '../domain/scoring'
+import { readSavedRun, rememberCampaign } from '../storage/savedRun'
 import type { Level } from '../domain/levels'
 
 export interface Campaign {
@@ -37,12 +38,15 @@ interface Progress {
 }
 
 export function useCampaign(levels: readonly Level[]): Campaign {
-  const [progress, setProgress] = useState<Progress>({
-    reached: 0,
-    earned: 0,
-    forfeited: 0,
-    rebirths: 0
-  })
+  const [progress, setProgress] = useState<Progress>(() =>
+    openingProgress(levels)
+  )
+
+  // Written down on every change rather than on the way out: a browser tab is
+  // closed without warning, and there is no last moment to be told about.
+  useEffect(() => {
+    rememberCampaign(progress)
+  }, [progress])
 
   const lastPosition = levels.length - 1
 
@@ -97,4 +101,23 @@ export function useCampaign(levels: readonly Level[]): Campaign {
     chargeForRestart,
     startOver
   }
+}
+
+/** The run the apprentice comes back to, or a fresh one for a first visit. */
+function openingProgress(levels: readonly Level[]): Progress {
+  const saved = readSavedRun()?.campaign
+  if (saved === undefined) {
+    return { reached: 0, earned: 0, forfeited: 0, rebirths: 0 }
+  }
+
+  return { ...saved, reached: benchWithin(levels, saved.reached) }
+}
+
+/*
+ * A save outlives the atelier it was written in: benches are reordered and
+ * dropped between builds, and a run pointing past the end of the list has to
+ * land on a bench that exists rather than on nothing at all.
+ */
+function benchWithin(levels: readonly Level[], reached: number): number {
+  return Math.min(Math.max(0, Math.trunc(reached)), levels.length - 1)
 }

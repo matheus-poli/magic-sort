@@ -37,6 +37,15 @@ is a separate button, and it asks first — it is a rebirth rather than a wipe, 
 everything you have earned comes with you for a price of 1000, and the atelier
 opens another 14000 to earn on the way back through it.
 
+The run is kept in the browser, so closing the tab is not a way out of one
+either: the bench comes back with the pours already spent on it, and the total
+comes back with it. It is sealed on the way in — scrambled, and signed so that a
+save which has been edited is refused rather than believed. That stops a player
+editing their score in developer tools, and honestly only that: the key ships
+inside the bundle, because the game has no server to keep a score on, and a key
+everybody has is not a secret. Making a score truly unforgeable is a different
+game to this one.
+
 Colour-blind mode is in the top-right corner, and the game remembers it. It
 retunes the elixirs to a palette measured against protanopia, deuteranopia and
 tritanopia — the closest pair anyone then sees is ΔE 17.7, against 7.7 for the
@@ -184,13 +193,14 @@ The suite follows the pyramid — the bulk of the cost sits at the bottom:
   the true minimum rather than the best route somebody happened to find.
 - **Integration (React Testing Library)** — one per meaningful interaction,
   querying by role and label the way a player perceives the UI. No test ids.
-- **E2E (Playwright)** — two, and only because no lower layer can hold them.
+- **E2E (Playwright)** — three, and only because no lower layer can hold them.
   One solves the starter level in a real browser and moves on to the next; the
-  other proves colour-blind mode is still on after a reload, which needs a
+  second proves colour-blind mode is still on after a reload; the third proves a
+  run comes back after one and an edited save does not. The last two need a
   browser with working storage, and the test environment has none. Anything a
   lower layer can cover belongs in a lower layer.
 
-Current coverage: 91% of statements, 86% of branches. The gap is deliberate —
+Current coverage: 93% of statements, 86% of branches. The gap is deliberate —
 it is the audio boundary and the confetti canvas, which only a real browser
 executes, and the animation callbacks, which are visual rather than behavioural.
 
@@ -218,8 +228,10 @@ The game ships in vertical slices — each one playable on its own.
       score out of 1000.
 - [x] **Slice 3** — fourteen benches, a shelf per mechanic, flasks that carry
       their own glass size, and a pour that tips and falls.
-- [ ] **Slice 4** — undo and persistence.
-- [ ] **Slice 5** — the alchemist character, ingredient collection, boosts.
+- [x] **Slice 4** — a run that survives the tab closing, sealed against editing,
+      and a start over that costs points rather than everything.
+- [ ] **Slice 5** — undo.
+- [ ] **Slice 6** — the alchemist character, ingredient collection, boosts.
 
 ## Conventions
 
