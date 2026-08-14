@@ -1077,31 +1077,38 @@ body::before {
 
 .victory__progress {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
+  width: min(100%, 26rem);
   margin-bottom: 0.35rem;
 }
 
-.pips {
-  display: flex;
-  gap: 0.4rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.pips__pip {
-  width: 0.5rem;
-  height: 0.5rem;
+.meter {
+  width: 100%;
+  height: 0.4rem;
+  overflow: hidden;
   border-radius: 999px;
-  background: rgba(226, 214, 255, 0.24);
+  background: rgba(226, 214, 255, 0.16);
 }
 
-.pips__pip[data-sorted='true'] {
-  background: var(--gold);
-  box-shadow: 0 0 10px rgba(255, 200, 107, 0.7);
+.meter__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* Grown from the left, so the bar reads as the atelier filling up. */
+  transform-origin: left center;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--rune-bright), var(--gold));
+  box-shadow: 0 0 12px rgba(255, 200, 107, 0.55);
+}
+
+.victory__sorted {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--parchment-dim);
 }
 
 /* One thing to do next, and a quiet way out of it. */

@@ -352,6 +352,26 @@ describe('Game', () => {
     )
   })
 
+  /*
+   * Fifty benches are more dots than a card can hold: the row of pips this
+   * replaces ran off the side of it and squeezed the closing line out. A bar
+   * says the same thing at any length of atelier.
+   */
+  it('measures how far into the atelier the sorted bench is', async () => {
+    const user = userEvent.setup()
+    showBench(finalPour, { position: 2, onNextLevel: vi.fn() })
+
+    await pourFrom(user, 2, 1)
+
+    const sorted = screen.getByRole('progressbar', {
+      name: 'Bench 2 of 5 sorted'
+    })
+    expect({
+      benchesSorted: sorted.getAttribute('aria-valuenow'),
+      benchesInTheAtelier: sorted.getAttribute('aria-valuemax')
+    }).toEqual({ benchesSorted: '2', benchesInTheAtelier: '5' })
+  })
+
   it('counts out how much of the atelier is still to sort', async () => {
     const user = userEvent.setup()
     showBench(finalPour, { onNextLevel: vi.fn() })

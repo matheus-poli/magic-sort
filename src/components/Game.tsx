@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Flask } from './Flask'
 import { GameOver } from './GameOver'
@@ -65,6 +65,7 @@ export function Game({
 }: GameProps) {
   const game = useGame(level, worth)
   useGameSounds(game)
+  const sortedId = useId()
 
   const bench = useRef<HTMLOListElement | null>(null)
   const slots = useRef<(HTMLLIElement | null)[]>([])
@@ -214,17 +215,29 @@ export function Game({
               </p>
 
               {/* The card covers the whole atelier, so it has to carry the
-                  progress the header behind it would otherwise show. */}
+                  progress the header behind it would otherwise show. A bar
+                  rather than a pip per bench: fifty of those ran off the
+                  side of the card. */}
               <div className='victory__progress'>
-                <ol className='pips' aria-hidden='true'>
-                  {Array.from({ length: levelCount }, (_, bench) => (
-                    <li
-                      key={bench}
-                      className='pips__pip'
-                      data-sorted={bench < position}
-                    />
-                  ))}
-                </ol>
+                <div
+                  className='meter'
+                  role='progressbar'
+                  aria-labelledby={sortedId}
+                  aria-valuemin={0}
+                  aria-valuemax={levelCount}
+                  aria-valuenow={position}
+                >
+                  <motion.span
+                    className='meter__fill'
+                    aria-hidden='true'
+                    initial={{ scaleX: (position - 1) / levelCount }}
+                    animate={{ scaleX: position / levelCount }}
+                    transition={{ duration: 0.6, ease: 'easeOut' }}
+                  />
+                </div>
+                <p className='victory__sorted' id={sortedId}>
+                  Bench {position} of {levelCount} sorted
+                </p>
                 <p className='victory__closing'>
                   {isLastBench
                     ? `Every bench in the atelier is sorted, for ${total} of ${perfectTotal}.`
