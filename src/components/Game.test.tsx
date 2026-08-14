@@ -71,6 +71,18 @@ const mixedGlass: Level = {
   ]
 }
 
+/** A bench with no pour left in it: both flasks full, and their tops clash. */
+const deadEnd: Level = {
+  id: 'test-dead-end',
+  name: 'Dead End',
+  minimumPours: 2,
+  board: benchOfGlass(
+    4,
+    ['crimson', 'crimson', 'crimson', 'azure'],
+    ['azure', 'azure', 'azure', 'crimson']
+  )
+}
+
 /** One layer of each elixir, so their marks can be compared side by side. */
 const oneOfEach: Level = {
   id: 'test-one-of-each',
@@ -93,7 +105,6 @@ interface Standing {
   readonly bankedScore?: number
   readonly perfectTotal?: number
   readonly forfeited?: number
-  readonly isRuined?: boolean
   readonly colourBlind?: boolean
   readonly onNextLevel?: ((score: number) => void) | null
   readonly onRestart?: () => void
@@ -111,7 +122,6 @@ const showBench = (level: Level, standing: Standing = {}) =>
       bankedScore={standing.bankedScore ?? 0}
       perfectTotal={standing.perfectTotal ?? 5000}
       forfeited={standing.forfeited ?? 0}
-      isRuined={standing.isRuined ?? false}
       colourBlind={standing.colourBlind ?? false}
       onNextLevel={standing.onNextLevel ?? null}
       onRestart={standing.onRestart ?? (() => {})}
@@ -443,7 +453,7 @@ describe('Game', () => {
    * owes, so the card covers it rather than letting them pour on in vain.
    */
   it('closes the run down once the debt has outgrown the atelier', () => {
-    showBench(bench, { bankedScore: -4200, isRuined: true })
+    showBench(bench, { bankedScore: -4200 })
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent(
       'You owe 4200 points, and no bench in the atelier could pay that back.'
@@ -456,10 +466,30 @@ describe('Game', () => {
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   })
 
+  /*
+   * The other end of a run, and the one the apprentice cannot see coming: the
+   * bench has no pour left in it, and the restart that would lay it out again
+   * costs more than the atelier could pay back. Nobody has to press anything
+   * for the run to be over, so nothing should have to be pressed to be told.
+   */
+  it('closes the run down when the bench runs dry and a restart is out of reach', () => {
+    showBench(deadEnd, { bankedScore: -950 })
+
+    expect(screen.getByRole('alertdialog')).toHaveTextContent(
+      'There is no pour left on this bench, and the 100 points it costs to lay it out again would bury you.'
+    )
+  })
+
+  it('leaves a stuck apprentice who can pay for a restart to go and take it', () => {
+    showBench(deadEnd, { bankedScore: -400 })
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  })
+
   it('sweeps the bench clean when the apprentice begins a new run', async () => {
     const user = userEvent.setup()
     const onBeginAgain = vi.fn()
-    showBench(bench, { bankedScore: -4200, isRuined: true, onBeginAgain })
+    showBench(bench, { bankedScore: -4200, onBeginAgain })
 
     await user.click(screen.getByRole('button', { name: 'Begin a new run' }))
 

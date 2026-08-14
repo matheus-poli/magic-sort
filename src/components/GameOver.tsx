@@ -1,21 +1,23 @@
 import { useEffect, useId } from 'react'
 import { motion } from 'motion/react'
 import { playSound, warmSound } from '../audio/sounds'
+import type { RunsEnd } from '../domain/runsEnd'
 
 interface GameOverProps {
-  /** What the apprentice owes, which no bench left could pay back. */
-  readonly debt: number
+  /** What ended the run, which is what this card is here to explain. */
+  readonly ending: RunsEnd
   /** Opens a run from nothing, which is all there is left to do. */
   readonly onBeginAgain: () => void
 }
 
 /**
- * The end of a run: the apprentice owes the atelier more than a flawless bench
- * could ever pay back, so there is nothing left to sort their way out of. It is
- * hand rolled rather than a <dialog>, for the same reason the rebirth's warning
- * is — jsdom has no showModal, and this is behaviour the tests have to drive.
+ * The end of a run, whichever way it came: an apprentice who owes more than a
+ * flawless bench could pay back, or one on a bench with no pour left and no
+ * way to afford laying it out again. It is hand rolled rather than a <dialog>,
+ * for the same reason the rebirth's warning is — jsdom has no showModal, and
+ * this is behaviour the tests have to drive.
  */
-export function GameOver({ debt, onBeginAgain }: GameOverProps) {
+export function GameOver({ ending, onBeginAgain }: GameOverProps) {
   const titleId = useId()
   const debtId = useId()
 
@@ -52,8 +54,7 @@ export function GameOver({ debt, onBeginAgain }: GameOverProps) {
           Game over
         </h2>
         <p className='confirm__detail' id={debtId}>
-          You owe {debt} points, and no bench in the atelier could pay that
-          back. The workshop has been swept clean.
+          {whatEndedIt(ending)} The workshop has been swept clean.
         </p>
 
         <div className='confirm__actions'>
@@ -69,4 +70,13 @@ export function GameOver({ debt, onBeginAgain }: GameOverProps) {
       </motion.div>
     </motion.div>
   )
+}
+
+function whatEndedIt(ending: RunsEnd): string {
+  switch (ending.kind) {
+    case 'buried':
+      return `You owe ${ending.debt} points, and no bench in the atelier could pay that back.`
+    case 'stuck':
+      return `There is no pour left on this bench, and the ${ending.price} points it costs to lay it out again would bury you.`
+  }
 }

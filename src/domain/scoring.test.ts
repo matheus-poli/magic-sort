@@ -6,6 +6,7 @@ import {
   priceOfRebirth,
   priceOfRestart,
   rebirthWouldRuin,
+  restartWouldRuin,
   scoreFor,
   totalScore
 } from './scoring'
@@ -185,6 +186,25 @@ describe('rebirthWouldRuin', () => {
    */
   it('warns the apprentice whose walk back would bury them', () => {
     expect(rebirthWouldRuin({ banked: 2000, position: 9 })).toBe(true)
+  })
+})
+
+describe('restartWouldRuin', () => {
+  /*
+   * A restart is the way out of a bench that cannot be sorted from where it
+   * stands, and an apprentice with nothing banked has to be able to take it:
+   * the bench they are handed back pays ten times what throwing it away costs.
+   */
+  it('leaves an apprentice with nothing to their name free to start again', () => {
+    expect(restartWouldRuin({ banked: 0, position: 1 })).toBe(false)
+  })
+
+  it('is not ruin while the bench handed back could still clear the debt', () => {
+    expect(restartWouldRuin({ banked: -4500, position: 5 })).toBe(false)
+  })
+
+  it('is ruin once the price and the debt outgrow the bench handed back', () => {
+    expect(restartWouldRuin({ banked: -4800, position: 5 })).toBe(true)
   })
 })
 

@@ -8,6 +8,19 @@ export function isSolved(board: Board): boolean {
   return board.every((flask) => isEmpty(flask) || isComplete(flask))
 }
 
+/**
+ * A bench with no pour left in it: every flask with room to spare turns away
+ * the top of every flask that could fill it. A sorted bench has run out of
+ * pours too, but by winning, so it never counts as stuck.
+ */
+export function isStuck(board: Board): boolean {
+  if (isSolved(board)) return false
+
+  return !board.some((_, source) =>
+    board.some((_, target) => canPourBetween(board, source, target))
+  )
+}
+
 export function completedFlaskCount(board: Board): number {
   return board.filter(isComplete).length
 }

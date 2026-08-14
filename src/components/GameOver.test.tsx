@@ -13,7 +13,12 @@ vi.mock('../audio/sounds', () => ({
 }))
 
 const showCard = (onBeginAgain = vi.fn()) => {
-  render(<GameOver debt={3900} onBeginAgain={onBeginAgain} />)
+  render(
+    <GameOver
+      ending={{ kind: 'buried', debt: 3900 }}
+      onBeginAgain={onBeginAgain}
+    />
+  )
   return onBeginAgain
 }
 
@@ -30,6 +35,21 @@ describe('GameOver', () => {
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent(
       'You owe 3900 points, and no bench in the atelier could pay that back.'
+    )
+  })
+
+  /*
+   * The other way a run ends: the bench itself has run dry of pours, and the
+   * restart that would lay it out again costs more than the atelier could pay
+   * back. Naming the price is what stops the card reading as a bug.
+   */
+  it('tells the apprentice stuck on a dry bench what the way out would cost', () => {
+    render(
+      <GameOver ending={{ kind: 'stuck', price: 500 }} onBeginAgain={vi.fn()} />
+    )
+
+    expect(screen.getByRole('alertdialog')).toHaveTextContent(
+      'There is no pour left on this bench, and the 500 points it costs to lay it out again would bury you.'
     )
   })
 

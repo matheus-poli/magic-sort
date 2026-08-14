@@ -119,6 +119,28 @@ export function rebirthWouldRuin({ banked, position }: Rebirth): boolean {
   })
 }
 
+export interface Restart {
+  /** Points from the benches left behind, less what restarts have cost. */
+  readonly banked: number
+  /** Which bench the apprentice would be laying out again. */
+  readonly position: number
+}
+
+/**
+ * Whether throwing this bench away would leave a debt no bench could clear.
+ * It is the question a stuck apprentice's run hangs on: the price comes off
+ * what they have banked, and the bench handed back to them is then the only
+ * thing left that could pay it.
+ */
+export function restartWouldRuin({ banked, position }: Restart): boolean {
+  return isRuined({
+    banked: banked - priceOfRestart(position),
+    // Whatever was half-sorted is poured back out, so this bench pays from the
+    // top again rather than from where they had got to.
+    benchInHand: benchWorth(position)
+  })
+}
+
 export function scoreFor(progress: RunProgress): number {
   return sortingPoints(progress) + solvingPoints(progress)
 }

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
   benchWorth,
-  isRuined,
   perfectTotal,
   priceOfRebirth,
   priceOfRestart
@@ -23,8 +22,6 @@ export interface Campaign {
   readonly forfeited: number
   /** The most this campaign could have scored by now, rebirths included. */
   readonly perfectTotal: number
-  /** Whether the debt has outgrown anything the bench in hand could pay. */
-  readonly isRuined: boolean
   /**
    * Hands the apprentice the next bench, banking what they scored on this one.
    * Does nothing on the last bench, so a run cannot be banked twice.
@@ -116,10 +113,6 @@ export function useCampaign(levels: readonly Level[]): Campaign {
     perfectTotal: perfectTotal({
       levelCount: levels.length,
       rebirths: progress.rebirths
-    }),
-    isRuined: isRuined({
-      banked: bankedScore,
-      benchInHand: benchWorth(position)
     }),
     advance,
     chargeForRestart,

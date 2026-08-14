@@ -212,28 +212,16 @@ describe('useCampaign', () => {
   })
 
   /*
-   * Debt is survivable right up until it is not: an apprentice in the red can
-   * sort their way out of it, and is only finished when the bench in front of
-   * them could not clear what they owe even sorted flawlessly.
+   * The campaign keeps the tally and nothing more. Whether a debt has ended
+   * the run is a question about the bench as well as the ledger, so it is
+   * asked of the domain where both are in view: see endOfRun.
    */
-  it('leaves an apprentice in debt to sort their way back out of it', () => {
+  it('lets the ledger fall into the red rather than holding it at nothing', () => {
     const { result } = renderHook(() => useCampaign(atelier))
 
     act(() => result.current.chargeForRestart())
 
-    expect(result.current).toMatchObject({ bankedScore: -100, isRuined: false })
-  })
-
-  it('ruins an apprentice no bench could pay out of debt', () => {
-    const { result } = renderHook(() => useCampaign(atelier))
-
-    act(() => result.current.advance(200))
-    act(() => result.current.startOver())
-
-    expect(result.current).toMatchObject({
-      bankedScore: -2800,
-      isRuined: true
-    })
+    expect(result.current.bankedScore).toBe(-100)
   })
 
   it('opens a fresh run for the apprentice who begins again', () => {
@@ -248,8 +236,7 @@ describe('useCampaign', () => {
       position: 1,
       bankedScore: 0,
       forfeited: 0,
-      perfectTotal: 6000,
-      isRuined: false
+      perfectTotal: 6000
     })
   })
 

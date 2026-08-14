@@ -4,6 +4,7 @@ import {
   completedFlaskCount,
   flasksToFill,
   isSolved,
+  isStuck,
   pourBetween
 } from './board'
 import { emptyFlask } from './flask'
@@ -63,6 +64,60 @@ describe('isSolved', () => {
     ]
 
     expect(isSolved(board)).toBe(true)
+  })
+})
+
+describe('isStuck', () => {
+  it('is true once every flask is full and no two tops match', () => {
+    const board: Board = [
+      glass(4, 'crimson', 'crimson', 'crimson', 'azure'),
+      glass(4, 'azure', 'azure', 'azure', 'crimson')
+    ]
+
+    expect(isStuck(board)).toBe(true)
+  })
+
+  it('is false while a spare flask is standing there to be poured into', () => {
+    const board: Board = [
+      glass(4, 'crimson', 'crimson', 'crimson', 'azure'),
+      glass(4, 'azure', 'azure', 'azure', 'crimson'),
+      emptyFlask(4)
+    ]
+
+    expect(isStuck(board)).toBe(false)
+  })
+
+  it('is false while an elixir has its own kind to be poured onto', () => {
+    const board: Board = [
+      glass(4, 'crimson', 'crimson', 'azure'),
+      glass(4, 'crimson', 'crimson', 'azure'),
+      glass(4, 'verdant', 'verdant', 'verdant', 'verdant')
+    ]
+
+    expect(isStuck(board)).toBe(false)
+  })
+
+  /* A bench with nowhere to pour because it is finished is not a bench to end
+     a run over. */
+  it('is false on a sorted bench, which has run out of pours by winning', () => {
+    const board: Board = [
+      glass(4, 'crimson', 'crimson', 'crimson', 'crimson'),
+      glass(4, 'azure', 'azure', 'azure', 'azure')
+    ]
+
+    expect(isStuck(board)).toBe(false)
+  })
+
+  /* Mixed glass is where this bites: the room left on the bench is in a vial
+     the runs beside it are too tall to be poured into. */
+  it('is true when the only room left turns away the tops that could fill it', () => {
+    const board: Board = [
+      glass(3, 'crimson', 'azure'),
+      glass(5, 'verdant', 'verdant', 'verdant', 'verdant', 'crimson'),
+      glass(5, 'azure', 'azure', 'azure', 'azure', 'verdant')
+    ]
+
+    expect(isStuck(board)).toBe(true)
   })
 })
 

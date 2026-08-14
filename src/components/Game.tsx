@@ -9,6 +9,7 @@ import { useGame } from '../hooks/useGame'
 import { useGameSounds } from '../hooks/useGameSounds'
 import { usePourFlight } from '../hooks/usePourFlight'
 import { celebrateLevel } from '../effects/confetti'
+import { endOfRun } from '../domain/runsEnd'
 import {
   priceOfRebirth,
   priceOfRestart,
@@ -31,8 +32,6 @@ interface GameProps {
   readonly perfectTotal: number
   /** What restarts have cost so far, which the restart button owns up to. */
   readonly forfeited: number
-  /** Whether the debt has outgrown anything this bench could pay back. */
-  readonly isRuined: boolean
   /** Show the elixirs the accessible way: tuned colours, and a sigil each. */
   readonly colourBlind: boolean
   /**
@@ -56,7 +55,6 @@ export function Game({
   bankedScore,
   perfectTotal,
   forfeited,
-  isRuined,
   colourBlind,
   onNextLevel,
   onRestart,
@@ -84,6 +82,15 @@ export function Game({
   const total = totalScore({ banked: bankedScore, bench: game.score })
   const isLastBench = onNextLevel === null
   const rebirthPrice = priceOfRebirth(position)
+
+  // Asked on every render rather than watched for: a run ends the moment the
+  // last pour on the bench is spent, and nothing is pressed to make it happen.
+  const ending = endOfRun({
+    board: game.board,
+    banked: bankedScore,
+    bench: game.score,
+    position
+  })
 
   const restartBench = () => {
     game.restart()
@@ -276,8 +283,8 @@ export function Game({
       {/* The end of the run covers everything, the bench included: there is no
           pour left that could pay off what the apprentice owes. */}
       <AnimatePresence>
-        {isRuined && (
-          <GameOver debt={-total} onBeginAgain={beginAgainFromNothing} />
+        {ending !== null && (
+          <GameOver ending={ending} onBeginAgain={beginAgainFromNothing} />
         )}
       </AnimatePresence>
     </main>
