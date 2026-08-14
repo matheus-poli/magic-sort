@@ -1,4 +1,4 @@
-import { emptyFlask, filledFlask } from './flask'
+import { emptyFlask, filledFlask, partFilledFlask } from './flask'
 import type { Board } from './board'
 
 export interface Level {
@@ -38,14 +38,28 @@ export interface Level {
  * Pour count is not a dial, which players proved: they found the five-elixir
  * bench with one spare harder than the six-elixir bench with two, though it
  * needs three fewer pours to sort. It is why the last bench of the atelier is
- * not the longest one to sort, and does not need to be.
+ * not the longest one to sort, and does not need to be. What is measured
+ * instead is the bench's own space of arrangements, and how much of it is a
+ * trap: the share that can no longer be sorted, whatever is poured next. A
+ * roomy bench loses under a tenth of its arrangements and a bench with a single
+ * spare loses a third or more, and along a shelf that count only ever climbs.
+ * The test suite walks every bench and holds the ladder to it.
  *
- * Mixed glass is the mechanic the last two shelves are built on, and it changes
- * what the puzzle is about: an elixir can only ever be sealed in a glass its
- * layers exactly fill, so the three-layer vials are the only home the short
- * elixirs have. The spare is always full-size glass, because a lone three-layer
- * vial cannot hold a run poured out of a five and leaves almost every bench
- * unsortable — the small glass is a destination, never room to work in.
+ * Mixed glass changes what the puzzle is about: an elixir can only ever be
+ * sealed in a glass its layers exactly fill, so the three-layer vials are the
+ * only home the short elixirs have. The spare is always full-size glass,
+ * because a lone three-layer vial cannot hold a run poured out of a five and
+ * leaves almost every bench unsortable — the small glass is a destination,
+ * never room to work in.
+ *
+ * The mechanics arrive in this order, one shelf each: four-layer glass, then
+ * five, then two sizes mixed, then three; the deep six-layer glass beside the
+ * vials, and the whole cabinet of sizes at once; room scattered rather than
+ * pooled, where the free layers are spread through part-filled glass so that no
+ * flask stands empty and a run has nowhere to be poured out to; the seven-layer
+ * decanter; and the last shelf, which is every one of them together. The
+ * elixirs climb from four to eight along the way, saffron and indigo joining
+ * the six the first shelves are sorted from.
  */
 export const LEVELS: readonly Level[] = [
   {
@@ -235,6 +249,909 @@ export const LEVELS: readonly Level[] = [
       filledFlask(['crimson', 'azure', 'crimson']),
       filledFlask(['violet', 'pearl', 'azure']),
       emptyFlask(5)
+    ]
+  },
+  {
+    id: 'deep',
+    name: 'The Deep Glass',
+    minimumPours: 17,
+    board: [
+      filledFlask(['crimson', 'azure', 'crimson', 'azure']),
+      filledFlask(['verdant', 'azure', 'verdant', 'crimson', 'azure', 'amber']),
+      filledFlask(['amber', 'crimson', 'crimson', 'azure', 'azure', 'amber']),
+      filledFlask(['verdant', 'amber', 'verdant', 'crimson']),
+      emptyFlask(6),
+      emptyFlask(4)
+    ]
+  },
+  {
+    id: 'cooper',
+    name: "The Cooper's Cellar",
+    minimumPours: 24,
+    board: [
+      filledFlask(['azure', 'violet', 'verdant', 'azure']),
+      filledFlask(['amber', 'crimson', 'verdant', 'crimson']),
+      filledFlask(['crimson', 'azure', 'crimson', 'violet']),
+      filledFlask(['azure', 'amber', 'verdant', 'amber', 'crimson', 'azure']),
+      filledFlask(['violet', 'verdant', 'amber', 'crimson', 'violet', 'azure']),
+      emptyFlask(6)
+    ]
+  },
+  {
+    id: 'tallow',
+    name: 'The Tallow Counter',
+    minimumPours: 24,
+    board: [
+      filledFlask(['azure', 'crimson', 'verdant', 'verdant', 'azure', 'pearl']),
+      filledFlask(['azure', 'crimson', 'crimson', 'violet']),
+      filledFlask(['amber', 'pearl', 'azure', 'crimson']),
+      filledFlask(['pearl', 'crimson', 'azure', 'crimson', 'verdant', 'azure']),
+      filledFlask(['violet', 'amber', 'amber', 'violet', 'verdant', 'verdant']),
+      filledFlask(['amber', 'pearl', 'verdant', 'violet']),
+      emptyFlask(6)
+    ]
+  },
+  {
+    id: 'brimming',
+    name: 'The Brimming Chest',
+    minimumPours: 26,
+    board: [
+      filledFlask([
+        'crimson',
+        'pearl',
+        'verdant',
+        'crimson',
+        'violet',
+        'verdant'
+      ]),
+      filledFlask(['azure', 'amber', 'amber', 'pearl', 'verdant', 'azure']),
+      filledFlask(['azure', 'crimson', 'pearl', 'azure']),
+      filledFlask(['violet', 'verdant', 'crimson', 'violet']),
+      filledFlask(['verdant', 'violet', 'azure', 'pearl']),
+      filledFlask(['crimson', 'crimson', 'amber', 'amber', 'verdant', 'azure']),
+      emptyFlask(6)
+    ]
+  },
+  {
+    id: 'draught',
+    name: 'The Long Draught',
+    minimumPours: 29,
+    board: [
+      filledFlask(['crimson', 'amber', 'verdant', 'amber', 'pearl', 'verdant']),
+      filledFlask(['amber', 'saffron', 'pearl', 'crimson']),
+      filledFlask(['verdant', 'violet', 'azure', 'crimson']),
+      filledFlask(['crimson', 'crimson', 'crimson', 'azure']),
+      filledFlask(['violet', 'azure', 'saffron', 'azure']),
+      filledFlask([
+        'verdant',
+        'saffron',
+        'amber',
+        'verdant',
+        'verdant',
+        'saffron'
+      ]),
+      filledFlask(['azure', 'violet', 'pearl', 'azure', 'pearl', 'violet']),
+      emptyFlask(6)
+    ]
+  },
+  {
+    id: 'glazier',
+    name: "The Glazier's Sample",
+    minimumPours: 14,
+    board: [
+      filledFlask(['azure', 'azure', 'azure', 'verdant', 'amber', 'amber']),
+      filledFlask(['crimson', 'verdant', 'crimson']),
+      filledFlask(['crimson', 'azure', 'amber', 'crimson']),
+      filledFlask(['verdant', 'azure', 'crimson', 'crimson', 'verdant']),
+      emptyFlask(6),
+      emptyFlask(5)
+    ]
+  },
+  {
+    id: 'measures',
+    name: 'The Four Measures',
+    minimumPours: 28,
+    board: [
+      filledFlask(['azure', 'crimson', 'azure', 'verdant', 'azure', 'pearl']),
+      filledFlask(['verdant', 'amber', 'crimson', 'amber', 'azure']),
+      filledFlask(['pearl', 'azure', 'amber', 'amber']),
+      filledFlask(['azure', 'violet', 'violet']),
+      filledFlask([
+        'violet',
+        'crimson',
+        'verdant',
+        'pearl',
+        'verdant',
+        'verdant'
+      ]),
+      filledFlask(['crimson', 'crimson', 'violet', 'crimson', 'amber']),
+      emptyFlask(6)
+    ]
+  },
+  {
+    id: 'sorter',
+    name: "The Sorter's Ledger",
+    minimumPours: 30,
+    board: [
+      filledFlask([
+        'verdant',
+        'crimson',
+        'saffron',
+        'crimson',
+        'saffron',
+        'amber'
+      ]),
+      filledFlask(['azure', 'violet', 'violet', 'saffron']),
+      filledFlask(['crimson', 'pearl', 'violet']),
+      filledFlask(['azure', 'amber', 'azure', 'amber', 'crimson']),
+      filledFlask(['verdant', 'crimson', 'azure', 'crimson']),
+      filledFlask(['azure', 'pearl', 'pearl', 'verdant', 'amber', 'azure']),
+      filledFlask(['amber', 'violet', 'pearl', 'verdant', 'verdant']),
+      emptyFlask(6)
+    ]
+  },
+  {
+    id: 'assayer',
+    name: "The Assayer's Balance",
+    minimumPours: 35,
+    board: [
+      filledFlask(['amber', 'pearl', 'azure']),
+      filledFlask(['saffron', 'amber', 'azure', 'verdant', 'crimson']),
+      filledFlask(['verdant', 'verdant', 'amber', 'violet']),
+      filledFlask(['crimson', 'crimson', 'pearl', 'violet']),
+      filledFlask([
+        'crimson',
+        'azure',
+        'crimson',
+        'amber',
+        'violet',
+        'verdant'
+      ]),
+      filledFlask(['pearl', 'crimson', 'saffron', 'azure', 'saffron']),
+      filledFlask(['amber', 'azure', 'verdant', 'pearl', 'azure', 'violet']),
+      emptyFlask(6)
+    ]
+  },
+  {
+    id: 'sideboard',
+    name: 'The Crowded Sideboard',
+    minimumPours: 34,
+    board: [
+      filledFlask(['amber', 'pearl', 'indigo', 'violet']),
+      filledFlask(['amber', 'amber', 'crimson']),
+      filledFlask(['indigo', 'azure', 'pearl', 'crimson', 'violet', 'crimson']),
+      filledFlask(['pearl', 'verdant', 'verdant', 'verdant', 'azure']),
+      filledFlask(['crimson', 'verdant', 'azure', 'violet']),
+      filledFlask(['crimson', 'azure', 'violet', 'azure', 'indigo']),
+      filledFlask(['amber', 'saffron', 'saffron', 'pearl', 'amber', 'crimson']),
+      filledFlask(['verdant', 'azure', 'saffron']),
+      emptyFlask(6)
+    ]
+  },
+  {
+    id: 'halfpoured',
+    name: 'The Half-Poured Batch',
+    minimumPours: 15,
+    board: [
+      partFilledFlask(4, ['crimson', 'amber', 'crimson']),
+      partFilledFlask(6, ['amber', 'crimson', 'crimson', 'azure', 'azure']),
+      partFilledFlask(4, ['azure', 'verdant', 'verdant']),
+      partFilledFlask(6, ['azure', 'crimson', 'verdant', 'verdant', 'azure']),
+      filledFlask(['crimson', 'amber', 'azure', 'amber']),
+      emptyFlask(6)
+    ]
+  },
+  {
+    id: 'spilled',
+    name: 'The Spilled Measure',
+    minimumPours: 23,
+    board: [
+      filledFlask(['crimson', 'violet', 'azure', 'violet', 'crimson', 'amber']),
+      filledFlask(['violet', 'azure', 'amber', 'verdant']),
+      filledFlask(['pearl', 'pearl', 'crimson', 'amber']),
+      partFilledFlask(6, ['pearl', 'crimson', 'violet', 'crimson', 'azure']),
+      partFilledFlask(6, ['azure', 'crimson', 'azure', 'pearl', 'verdant']),
+      partFilledFlask(4, ['azure', 'verdant']),
+      partFilledFlask(4, ['amber', 'verdant'])
+    ]
+  },
+  {
+    id: 'uneven',
+    name: 'The Uneven Pour',
+    minimumPours: 27,
+    board: [
+      partFilledFlask(4, ['verdant', 'crimson', 'crimson']),
+      partFilledFlask(6, ['crimson', 'violet', 'amber', 'azure', 'verdant']),
+      partFilledFlask(6, ['verdant', 'saffron', 'pearl', 'pearl', 'verdant']),
+      partFilledFlask(4, ['verdant', 'pearl', 'amber']),
+      filledFlask(['azure', 'azure', 'violet', 'azure', 'verdant', 'pearl']),
+      partFilledFlask(4, ['crimson', 'azure', 'saffron']),
+      partFilledFlask(6, ['crimson', 'violet', 'crimson', 'violet', 'amber']),
+      filledFlask(['saffron', 'amber', 'azure', 'saffron'])
+    ]
+  },
+  {
+    id: 'careless',
+    name: 'The Careless Hand',
+    minimumPours: 29,
+    board: [
+      filledFlask(['saffron', 'crimson', 'amber', 'azure']),
+      filledFlask(['verdant', 'pearl', 'azure', 'crimson']),
+      partFilledFlask(6, ['pearl', 'verdant', 'pearl', 'violet', 'verdant']),
+      partFilledFlask(6, ['azure', 'azure', 'crimson', 'saffron', 'violet']),
+      partFilledFlask(6, ['verdant', 'pearl', 'verdant', 'saffron', 'azure']),
+      partFilledFlask(6, ['crimson', 'verdant', 'amber', 'crimson']),
+      filledFlask(['violet', 'amber', 'saffron', 'violet']),
+      partFilledFlask(4, ['azure', 'crimson', 'amber'])
+    ]
+  },
+  {
+    id: 'restless',
+    name: 'The Restless Cellar',
+    minimumPours: 36,
+    board: [
+      filledFlask(['amber', 'azure', 'saffron', 'pearl', 'azure', 'crimson']),
+      partFilledFlask(4, ['crimson', 'verdant']),
+      filledFlask(['amber', 'azure', 'amber', 'verdant']),
+      filledFlask(['crimson', 'indigo', 'azure', 'indigo', 'violet', 'pearl']),
+      filledFlask(['verdant', 'azure', 'amber', 'verdant']),
+      partFilledFlask(6, ['verdant', 'amber', 'pearl', 'violet', 'violet']),
+      partFilledFlask(6, ['saffron', 'indigo', 'violet', 'saffron', 'crimson']),
+      partFilledFlask(6, ['verdant', 'crimson', 'amber', 'azure', 'crimson']),
+      partFilledFlask(4, ['indigo', 'pearl', 'saffron'])
+    ]
+  },
+  {
+    id: 'errand',
+    name: 'The Unfinished Errand',
+    minimumPours: 14,
+    board: [
+      filledFlask(['amber', 'crimson', 'verdant']),
+      partFilledFlask(5, ['azure', 'verdant']),
+      partFilledFlask(5, ['azure', 'azure', 'verdant', 'crimson']),
+      partFilledFlask(6, ['amber', 'azure', 'crimson', 'crimson', 'azure']),
+      filledFlask(['crimson', 'verdant', 'crimson', 'amber']),
+      emptyFlask(6)
+    ]
+  },
+  {
+    id: 'crooked',
+    name: 'The Crooked Dozen',
+    minimumPours: 33,
+    board: [
+      filledFlask([
+        'violet',
+        'saffron',
+        'crimson',
+        'crimson',
+        'verdant',
+        'pearl'
+      ]),
+      filledFlask(['azure', 'crimson', 'saffron', 'pearl']),
+      partFilledFlask(6, ['azure', 'crimson', 'verdant', 'amber', 'crimson']),
+      filledFlask(['azure', 'crimson', 'amber', 'violet']),
+      partFilledFlask(5, ['pearl', 'verdant', 'amber']),
+      partFilledFlask(6, ['verdant', 'amber', 'azure', 'verdant', 'saffron']),
+      filledFlask(['violet', 'amber', 'azure']),
+      partFilledFlask(5, ['pearl', 'violet', 'azure'])
+    ]
+  },
+  {
+    id: 'scullery',
+    name: 'The Cluttered Scullery',
+    minimumPours: 33,
+    board: [
+      partFilledFlask(4, ['verdant', 'violet', 'azure']),
+      filledFlask([
+        'azure',
+        'verdant',
+        'crimson',
+        'verdant',
+        'saffron',
+        'crimson'
+      ]),
+      partFilledFlask(6, ['saffron', 'pearl', 'azure', 'pearl']),
+      filledFlask(['crimson', 'crimson', 'amber', 'violet', 'verdant']),
+      filledFlask(['azure', 'pearl', 'azure', 'violet', 'amber', 'azure']),
+      partFilledFlask(4, ['verdant', 'crimson']),
+      partFilledFlask(3, ['saffron', 'amber']),
+      filledFlask(['amber', 'violet', 'crimson', 'amber', 'pearl'])
+    ]
+  },
+  {
+    id: 'midnight',
+    name: 'The Midnight Inventory',
+    minimumPours: 34,
+    board: [
+      partFilledFlask(6, ['verdant', 'violet', 'azure', 'amber']),
+      partFilledFlask(6, ['crimson', 'pearl', 'azure', 'crimson', 'saffron']),
+      partFilledFlask(3, ['indigo', 'verdant']),
+      partFilledFlask(6, ['violet', 'pearl', 'saffron', 'verdant', 'pearl']),
+      filledFlask(['pearl', 'azure', 'crimson', 'amber']),
+      filledFlask(['verdant', 'amber', 'verdant']),
+      partFilledFlask(4, ['indigo', 'indigo', 'crimson']),
+      filledFlask(['amber', 'amber', 'crimson', 'azure', 'azure']),
+      filledFlask(['crimson', 'saffron', 'violet', 'azure', 'violet'])
+    ]
+  },
+  {
+    id: 'guild',
+    name: "The Guild's Reckoning",
+    minimumPours: 33,
+    board: [
+      filledFlask(['indigo', 'azure', 'azure', 'pearl', 'violet', 'saffron']),
+      partFilledFlask(3, ['crimson', 'verdant']),
+      partFilledFlask(5, ['amber', 'crimson', 'azure', 'indigo']),
+      partFilledFlask(6, ['azure', 'verdant', 'crimson', 'saffron', 'saffron']),
+      partFilledFlask(5, ['pearl', 'azure', 'azure', 'amber']),
+      partFilledFlask(6, ['violet', 'amber', 'crimson', 'crimson', 'verdant']),
+      filledFlask(['violet', 'crimson', 'pearl']),
+      partFilledFlask(4, ['verdant', 'amber', 'amber']),
+      filledFlask(['verdant', 'pearl', 'violet', 'indigo'])
+    ]
+  },
+  {
+    id: 'decanter',
+    name: "The Master's Decanter",
+    minimumPours: 16,
+    board: [
+      filledFlask([
+        'amber',
+        'azure',
+        'verdant',
+        'crimson',
+        'crimson',
+        'verdant',
+        'crimson'
+      ]),
+      filledFlask([
+        'crimson',
+        'crimson',
+        'amber',
+        'azure',
+        'azure',
+        'azure',
+        'crimson'
+      ]),
+      filledFlask(['azure', 'azure', 'verdant']),
+      filledFlask(['crimson', 'azure', 'verdant', 'amber', 'verdant']),
+      emptyFlask(7),
+      emptyFlask(5)
+    ]
+  },
+  {
+    id: 'cask',
+    name: 'The Deep Cask',
+    minimumPours: 25,
+    board: [
+      filledFlask(['azure', 'crimson', 'amber']),
+      filledFlask([
+        'violet',
+        'pearl',
+        'pearl',
+        'pearl',
+        'crimson',
+        'azure',
+        'azure'
+      ]),
+      filledFlask(['verdant', 'amber', 'verdant', 'amber', 'amber']),
+      filledFlask([
+        'violet',
+        'crimson',
+        'azure',
+        'amber',
+        'crimson',
+        'verdant',
+        'crimson'
+      ]),
+      filledFlask(['crimson', 'violet', 'verdant']),
+      filledFlask(['azure', 'azure', 'verdant', 'azure', 'crimson']),
+      emptyFlask(7)
+    ]
+  },
+  {
+    id: 'seals',
+    name: 'The Seven Seals',
+    minimumPours: 34,
+    board: [
+      filledFlask(['crimson', 'violet', 'verdant']),
+      filledFlask([
+        'amber',
+        'azure',
+        'amber',
+        'saffron',
+        'saffron',
+        'azure',
+        'saffron'
+      ]),
+      filledFlask(['pearl', 'crimson', 'violet', 'verdant', 'verdant']),
+      filledFlask(['azure', 'amber', 'verdant']),
+      filledFlask([
+        'azure',
+        'violet',
+        'violet',
+        'amber',
+        'pearl',
+        'verdant',
+        'azure'
+      ]),
+      filledFlask([
+        'crimson',
+        'violet',
+        'pearl',
+        'crimson',
+        'crimson',
+        'azure',
+        'crimson'
+      ]),
+      filledFlask(['verdant', 'azure', 'amber', 'crimson', 'verdant']),
+      emptyFlask(7)
+    ]
+  },
+  {
+    id: 'towering',
+    name: 'The Towering Flight',
+    minimumPours: 31,
+    board: [
+      filledFlask(['crimson', 'saffron', 'verdant']),
+      filledFlask([
+        'violet',
+        'pearl',
+        'azure',
+        'crimson',
+        'verdant',
+        'violet',
+        'violet'
+      ]),
+      filledFlask(['amber', 'verdant', 'crimson']),
+      filledFlask([
+        'crimson',
+        'crimson',
+        'violet',
+        'amber',
+        'saffron',
+        'verdant',
+        'crimson'
+      ]),
+      filledFlask(['azure', 'amber', 'azure', 'verdant', 'verdant']),
+      filledFlask(['pearl', 'amber', 'amber', 'pearl', 'crimson']),
+      filledFlask([
+        'azure',
+        'saffron',
+        'azure',
+        'violet',
+        'azure',
+        'azure',
+        'verdant'
+      ]),
+      emptyFlask(7)
+    ]
+  },
+  {
+    id: 'vintner',
+    name: "The Vintner's Folly",
+    minimumPours: 37,
+    board: [
+      filledFlask(['verdant', 'crimson', 'verdant', 'azure', 'violet']),
+      filledFlask([
+        'amber',
+        'amber',
+        'crimson',
+        'violet',
+        'azure',
+        'saffron',
+        'verdant'
+      ]),
+      filledFlask(['azure', 'amber', 'indigo']),
+      filledFlask([
+        'crimson',
+        'azure',
+        'amber',
+        'crimson',
+        'verdant',
+        'pearl',
+        'indigo'
+      ]),
+      filledFlask(['violet', 'violet', 'amber', 'indigo', 'azure']),
+      filledFlask([
+        'azure',
+        'pearl',
+        'pearl',
+        'pearl',
+        'saffron',
+        'verdant',
+        'crimson'
+      ]),
+      filledFlask(['crimson', 'azure', 'violet', 'crimson', 'verdant']),
+      filledFlask(['verdant', 'saffron', 'pearl']),
+      emptyFlask(7)
+    ]
+  },
+  {
+    id: 'cabinet',
+    name: 'The Grand Cabinet',
+    minimumPours: 14,
+    board: [
+      filledFlask(['crimson', 'crimson', 'amber', 'amber']),
+      filledFlask(['azure', 'azure', 'amber', 'verdant', 'verdant', 'verdant']),
+      filledFlask([
+        'azure',
+        'verdant',
+        'azure',
+        'crimson',
+        'crimson',
+        'azure',
+        'amber'
+      ]),
+      filledFlask(['verdant', 'crimson', 'crimson', 'azure', 'crimson']),
+      emptyFlask(7),
+      emptyFlask(6)
+    ]
+  },
+  {
+    id: 'cellar',
+    name: 'The Whole Cellar',
+    minimumPours: 39,
+    board: [
+      filledFlask([
+        'crimson',
+        'pearl',
+        'violet',
+        'azure',
+        'pearl',
+        'verdant',
+        'verdant'
+      ]),
+      filledFlask(['crimson', 'verdant', 'amber', 'verdant']),
+      filledFlask(['saffron', 'pearl', 'violet', 'violet', 'azure']),
+      filledFlask(['amber', 'azure', 'saffron', 'azure', 'azure', 'verdant']),
+      filledFlask([
+        'crimson',
+        'crimson',
+        'azure',
+        'crimson',
+        'amber',
+        'pearl',
+        'amber'
+      ]),
+      filledFlask(['saffron', 'amber', 'violet', 'crimson', 'saffron']),
+      filledFlask(['azure', 'amber', 'crimson', 'pearl', 'verdant', 'violet']),
+      emptyFlask(7)
+    ]
+  },
+  {
+    id: 'counter',
+    name: 'The Endless Counter',
+    minimumPours: 38,
+    board: [
+      filledFlask([
+        'pearl',
+        'verdant',
+        'pearl',
+        'verdant',
+        'saffron',
+        'saffron',
+        'azure'
+      ]),
+      filledFlask(['amber', 'azure', 'amber', 'azure', 'verdant']),
+      filledFlask([
+        'crimson',
+        'pearl',
+        'crimson',
+        'verdant',
+        'pearl',
+        'crimson'
+      ]),
+      filledFlask([
+        'violet',
+        'amber',
+        'crimson',
+        'verdant',
+        'verdant',
+        'violet',
+        'violet'
+      ]),
+      filledFlask(['azure', 'azure', 'crimson', 'saffron']),
+      filledFlask(['pearl', 'crimson', 'amber', 'violet', 'amber', 'azure']),
+      filledFlask(['saffron', 'violet', 'amber', 'azure', 'crimson']),
+      emptyFlask(7)
+    ]
+  },
+  {
+    id: 'keeper',
+    name: "The Keeper's Inventory",
+    minimumPours: 44,
+    board: [
+      filledFlask(['azure', 'verdant', 'crimson', 'azure']),
+      filledFlask(['amber', 'verdant', 'pearl', 'azure', 'verdant']),
+      filledFlask(['amber', 'amber', 'verdant', 'amber', 'azure', 'crimson']),
+      filledFlask(['pearl', 'pearl', 'azure', 'crimson', 'indigo']),
+      filledFlask(['verdant', 'indigo', 'azure', 'verdant']),
+      filledFlask([
+        'pearl',
+        'indigo',
+        'violet',
+        'saffron',
+        'violet',
+        'crimson',
+        'pearl'
+      ]),
+      filledFlask([
+        'amber',
+        'crimson',
+        'indigo',
+        'violet',
+        'violet',
+        'crimson',
+        'azure'
+      ]),
+      filledFlask([
+        'saffron',
+        'amber',
+        'crimson',
+        'violet',
+        'saffron',
+        'saffron'
+      ]),
+      emptyFlask(7)
+    ]
+  },
+  {
+    id: 'ledger',
+    name: "The Master's Ledger",
+    minimumPours: 40,
+    board: [
+      filledFlask(['amber', 'azure', 'crimson', 'crimson', 'saffron']),
+      filledFlask(['indigo', 'violet', 'verdant', 'indigo', 'amber']),
+      filledFlask(['azure', 'violet', 'violet', 'azure', 'amber', 'crimson']),
+      filledFlask(['pearl', 'crimson', 'amber', 'verdant']),
+      filledFlask([
+        'pearl',
+        'crimson',
+        'pearl',
+        'pearl',
+        'azure',
+        'pearl',
+        'crimson'
+      ]),
+      filledFlask([
+        'saffron',
+        'amber',
+        'violet',
+        'amber',
+        'saffron',
+        'azure',
+        'saffron'
+      ]),
+      filledFlask(['azure', 'verdant', 'verdant', 'crimson']),
+      filledFlask([
+        'verdant',
+        'verdant',
+        'azure',
+        'indigo',
+        'indigo',
+        'violet'
+      ]),
+      emptyFlask(7)
+    ]
+  },
+  {
+    id: 'apprenticeship',
+    name: 'The Last Apprenticeship',
+    minimumPours: 17,
+    board: [
+      partFilledFlask(5, ['azure', 'crimson', 'crimson', 'verdant']),
+      partFilledFlask(4, ['azure', 'crimson', 'crimson']),
+      partFilledFlask(3, ['azure', 'crimson']),
+      partFilledFlask(6, ['verdant', 'azure', 'azure', 'crimson', 'amber']),
+      filledFlask([
+        'amber',
+        'verdant',
+        'verdant',
+        'amber',
+        'crimson',
+        'azure',
+        'verdant'
+      ]),
+      emptyFlask(6)
+    ]
+  },
+  {
+    id: 'sorcerer',
+    name: "The Sorcerer's Draught",
+    minimumPours: 39,
+    board: [
+      partFilledFlask(7, [
+        'violet',
+        'pearl',
+        'azure',
+        'amber',
+        'amber',
+        'violet'
+      ]),
+      partFilledFlask(6, ['amber', 'crimson', 'azure', 'verdant', 'saffron']),
+      partFilledFlask(4, ['azure', 'crimson']),
+      filledFlask(['crimson', 'azure', 'amber', 'azure', 'pearl']),
+      filledFlask([
+        'crimson',
+        'violet',
+        'crimson',
+        'saffron',
+        'verdant',
+        'saffron'
+      ]),
+      filledFlask([
+        'violet',
+        'verdant',
+        'amber',
+        'violet',
+        'crimson',
+        'pearl',
+        'verdant'
+      ]),
+      partFilledFlask(7, ['crimson', 'pearl', 'verdant', 'azure', 'verdant']),
+      partFilledFlask(3, ['amber', 'azure'])
+    ]
+  },
+  {
+    id: 'adept',
+    name: "The Adept's Trial",
+    minimumPours: 43,
+    board: [
+      partFilledFlask(4, ['saffron', 'azure']),
+      filledFlask([
+        'crimson',
+        'azure',
+        'azure',
+        'amber',
+        'verdant',
+        'azure',
+        'violet'
+      ]),
+      partFilledFlask(4, ['verdant', 'amber', 'azure']),
+      partFilledFlask(6, ['pearl', 'crimson', 'pearl', 'verdant', 'violet']),
+      partFilledFlask(7, [
+        'crimson',
+        'azure',
+        'violet',
+        'crimson',
+        'violet',
+        'pearl'
+      ]),
+      partFilledFlask(6, ['verdant', 'pearl', 'amber', 'crimson', 'indigo']),
+      filledFlask([
+        'saffron',
+        'indigo',
+        'violet',
+        'amber',
+        'indigo',
+        'crimson',
+        'saffron'
+      ]),
+      partFilledFlask(3, ['saffron', 'verdant']),
+      filledFlask(['crimson', 'amber', 'verdant', 'amber', 'azure'])
+    ]
+  },
+  {
+    id: 'vigil',
+    name: 'The Long Vigil',
+    minimumPours: 38,
+    board: [
+      partFilledFlask(7, [
+        'crimson',
+        'crimson',
+        'verdant',
+        'violet',
+        'amber',
+        'saffron'
+      ]),
+      partFilledFlask(3, ['azure', 'amber']),
+      partFilledFlask(6, ['azure', 'indigo', 'verdant', 'verdant', 'crimson']),
+      filledFlask([
+        'saffron',
+        'amber',
+        'violet',
+        'crimson',
+        'crimson',
+        'amber',
+        'violet'
+      ]),
+      partFilledFlask(4, ['indigo', 'saffron', 'pearl']),
+      partFilledFlask(4, ['azure', 'crimson', 'violet']),
+      partFilledFlask(5, ['crimson', 'azure', 'azure']),
+      filledFlask([
+        'azure',
+        'pearl',
+        'violet',
+        'amber',
+        'verdant',
+        'indigo',
+        'verdant'
+      ]),
+      filledFlask(['pearl', 'azure', 'saffron', 'verdant', 'amber', 'pearl'])
+    ]
+  },
+  {
+    id: 'distillation',
+    name: 'The Final Distillation',
+    minimumPours: 36,
+    board: [
+      filledFlask(['indigo', 'verdant', 'violet']),
+      filledFlask([
+        'pearl',
+        'azure',
+        'amber',
+        'pearl',
+        'crimson',
+        'pearl',
+        'saffron'
+      ]),
+      partFilledFlask(6, ['crimson', 'saffron', 'saffron', 'pearl']),
+      filledFlask(['crimson', 'amber', 'amber', 'verdant']),
+      partFilledFlask(7, [
+        'azure',
+        'crimson',
+        'crimson',
+        'amber',
+        'pearl',
+        'azure'
+      ]),
+      partFilledFlask(5, ['indigo', 'amber', 'violet', 'indigo']),
+      partFilledFlask(7, [
+        'azure',
+        'crimson',
+        'azure',
+        'violet',
+        'crimson',
+        'verdant'
+      ]),
+      partFilledFlask(6, ['amber', 'verdant', 'verdant', 'violet', 'violet']),
+      partFilledFlask(5, ['saffron', 'verdant', 'azure', 'azure'])
+    ]
+  },
+  {
+    id: 'opus',
+    name: 'The Magnum Opus',
+    minimumPours: 41,
+    board: [
+      partFilledFlask(7, [
+        'azure',
+        'crimson',
+        'verdant',
+        'crimson',
+        'violet',
+        'azure'
+      ]),
+      partFilledFlask(5, ['indigo', 'verdant', 'verdant', 'indigo']),
+      partFilledFlask(3, ['azure', 'amber']),
+      partFilledFlask(5, ['saffron', 'pearl', 'verdant', 'crimson']),
+      filledFlask([
+        'crimson',
+        'violet',
+        'crimson',
+        'saffron',
+        'pearl',
+        'pearl'
+      ]),
+      filledFlask([
+        'saffron',
+        'amber',
+        'saffron',
+        'amber',
+        'verdant',
+        'pearl',
+        'amber'
+      ]),
+      filledFlask(['indigo', 'violet', 'pearl', 'amber', 'violet', 'crimson']),
+      partFilledFlask(4, ['crimson', 'azure']),
+      partFilledFlask(7, [
+        'amber',
+        'azure',
+        'azure',
+        'azure',
+        'violet',
+        'verdant'
+      ])
     ]
   }
 ]

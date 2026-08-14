@@ -5,6 +5,7 @@ import {
   filledFlask,
   isComplete,
   isEmpty,
+  partFilledFlask,
   pour,
   topElixir
 } from './flask'
@@ -26,6 +27,14 @@ describe('filledFlask', () => {
 describe('emptyFlask', () => {
   it('is a spare glass of the size asked for', () => {
     expect(emptyFlask(5)).toEqual(glass(5))
+  })
+})
+
+describe('partFilledFlask', () => {
+  it('is a glass laid out with room still left in it', () => {
+    expect(partFilledFlask(6, ['crimson', 'azure'])).toEqual(
+      glass(6, 'crimson', 'azure')
+    )
   })
 })
 

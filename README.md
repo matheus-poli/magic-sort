@@ -15,27 +15,40 @@ target is empty, or its top layer matches what you are pouring, and it has room
 to take it. The whole unbroken run of the top elixir moves at once. Sort every
 flask to finish the level.
 
-Fourteen benches make up the atelier, grouped into shelves by the glass they are
-laid out in. The opening five teach the game itself, climbing by the number of
-elixirs in play and then by taking spare flasks away. Every shelf after that
-introduces a mechanic, and gets exactly one roomy bench to learn it on before
-the room is taken back: taller glass first, five layers to a flask instead of
-four, then benches of mixed glass where a three-layer vial stands beside a
-five-layer flask. Mixed glass changes the puzzle — an elixir can only be sealed
-in a flask its layers exactly fill, so the short elixirs have only the vials to
-end up in. Solving a bench opens the next.
+Fifty benches make up the atelier, grouped into shelves by the mechanic they
+share. The opening five teach the game itself, climbing by the number of elixirs
+in play and then by taking spare flasks away. Every shelf after that introduces
+one mechanic and gets exactly one roomy bench to learn it on before the room is
+taken back: taller glass, five layers to a flask instead of four; benches of
+mixed glass where a three-layer vial stands beside a five-layer flask; the deep
+six-layer glass and then the seven-layer decanter; the whole cabinet of sizes at
+once; and, on the late shelves, room that is scattered rather than pooled — no
+flask stands empty at the outset, the free layers are spread through part-filled
+glass, and there is nowhere to pour a whole run out to. Mixed glass changes the
+puzzle: an elixir can only be sealed in a flask its layers exactly fill, so the
+short elixirs have only the vials to end up in. Eight elixirs are in play by the
+end, on benches of nine flasks. Solving a bench opens the next.
+
+Difficulty is measured in possibilities rather than in pours. Every bench is
+searched exhaustively, and what the search counts is how many of the
+arrangements it can be poured into can no longer be sorted — how much of the
+bench is a trap. A bench with a spare flask loses under a tenth of its
+arrangements; a bench without one loses a third or more of them, and the last
+bench of the atelier can be lost in more ways than any other. Pour counts do not
+rank benches at all: the five-elixir bench with one spare takes fewer pours than
+the six-elixir bench with two, and every player finds it harder.
 
 Every bench is scored out of 1000, so the number means the same thing wherever
 it was earned: 500 shared out across the flasks you sort, and 500 for solving in
 as few pours as the bench allows, minus 25 for every pour past that. Each bench
 states its own fewest-possible count up front, so the target is never a mystery.
 What a bench earned is banked when you move on, so the total climbs across the
-atelier towards 14000 — a thousand a bench. Starting a bench over is the way out
+atelier towards 50000 — a thousand a bench. Starting a bench over is the way out
 of a mistake, but it is not free: the button has to be held down while a bar
 fills, and it takes 100 points off the total. Going back to the very first bench
 is a separate button, and it asks first — it is a rebirth rather than a wipe, so
 everything you have earned comes with you for a price of 1000, and the atelier
-opens another 14000 to earn on the way back through it.
+opens another 50000 to earn on the way back through it.
 
 The run is kept in the browser, so closing the tab is not a way out of one
 either: the bench comes back with the pours already spent on it, and the total
@@ -48,10 +61,13 @@ game to this one.
 
 Colour-blind mode is in the top-right corner, and the game remembers it. It
 retunes the elixirs to a palette measured against protanopia, deuteranopia and
-tritanopia — the closest pair anyone then sees is ΔE 17.7, against 7.7 for the
-atelier's own colours, where a deuteranope sees azure and violet as very nearly
-one colour — and marks every layer with a sigil of its own, because six colours
-cannot be told apart by colour alone whatever the palette.
+tritanopia and compared by CIEDE2000 — the closest pair anyone then sees is
+ΔE 11.9, against 5.9 for the atelier's own colours, where a tritanope sees azure
+and verdant as very nearly one elixir — and marks every layer with a sigil of
+its own, because eight colours cannot be told apart by colour alone whatever the
+palette. The two elixirs the late shelves add were picked by the same
+measurement, and cost the atelier's palette nothing: its closest pair is the one
+it always had.
 
 ## Getting set up
 
@@ -190,7 +206,9 @@ The suite follows the pyramid — the bulk of the cost sits at the bottom:
 
 - **Unit (Vitest)** — the puzzle rules, exhaustively. Every level is searched
   breadth-first as well, so the pour count it shows the player is proven to be
-  the true minimum rather than the best route somebody happened to find.
+  the true minimum rather than the best route somebody happened to find, and
+  every level's whole space of arrangements is walked so that the difficulty
+  ladder is a measured fact rather than a claim.
 - **Integration (React Testing Library)** — one per meaningful interaction,
   querying by role and label the way a player perceives the UI. No test ids.
 - **E2E (Playwright)** — three, and only because no lower layer can hold them.
@@ -232,8 +250,10 @@ The game ships in vertical slices — each one playable on its own.
       their own glass size, and a pour that tips and falls.
 - [x] **Slice 4** — a run that survives the tab closing, sealed against editing,
       and a start over that costs points rather than everything.
-- [ ] **Slice 5** — undo.
-- [ ] **Slice 6** — the alchemist character, ingredient collection, boosts.
+- [x] **Slice 5** — fifty benches measured by the possibilities they open, two
+      more elixirs, and benches whose room is scattered rather than pooled.
+- [ ] **Slice 6** — undo.
+- [ ] **Slice 7** — the alchemist character, ingredient collection, boosts.
 
 ## Conventions
 

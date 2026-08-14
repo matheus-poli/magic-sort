@@ -1,6 +1,13 @@
 /** The elixirs an apprentice sorts. One colour per flask is the goal. */
 export type Elixir =
-  'crimson' | 'azure' | 'verdant' | 'amber' | 'violet' | 'pearl'
+  | 'crimson'
+  | 'azure'
+  | 'verdant'
+  | 'amber'
+  | 'violet'
+  | 'pearl'
+  | 'saffron'
+  | 'indigo'
 
 export interface Flask {
   /** Layers of elixir, bottom-most first. The last entry is the visible top. */
@@ -27,6 +34,19 @@ export function filledFlask(contents: readonly Elixir[]): Flask {
 /** A spare glass, which is the room a bench leaves the apprentice to think in. */
 export function emptyFlask(capacity: number): Flask {
   return { contents: [], capacity }
+}
+
+/**
+ * A glass laid out with room still left in it. The later shelves scatter a
+ * bench's room through part-filled glass instead of pooling it in a spare
+ * flask: the same free layers are there, but no single glass is empty enough
+ * to take a run poured out of another.
+ */
+export function partFilledFlask(
+  capacity: number,
+  contents: readonly Elixir[]
+): Flask {
+  return { contents, capacity }
 }
 
 export function topElixir(flask: Flask): Elixir | null {

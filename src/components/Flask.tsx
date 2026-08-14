@@ -9,12 +9,12 @@ import type { Elixir } from '../domain/flask'
 type FlaskContents = readonly Elixir[]
 
 /**
- * A shape for every elixir, for the players no palette can serve. Six colours
- * cannot all be kept apart by colour alone: the closest pair a deuteranope sees
- * on this bench is ΔE 7.7, and the best palette that still lets each elixir
- * answer to its own name only reaches 17.7 — while a player with no colour
- * vision at all is left with two pairs at almost the same lightness. A
- * silhouette has none of those failure modes.
+ * A shape for every elixir, for the players no palette can serve. Eight colours
+ * cannot all be kept apart by colour alone: the closest pair anyone sees on
+ * this bench is ΔE 5.9, and the best palette that still lets each elixir answer
+ * to its own name only reaches 11.9 — while a player with no colour vision at
+ * all is left with pairs at almost the same lightness. A silhouette has none of
+ * those failure modes.
  */
 const SIGILS: Record<Elixir, string> = {
   crimson: '▲',
@@ -24,7 +24,11 @@ const SIGILS: Record<Elixir, string> = {
   // A square rather than a diamond: at the size a phone draws a layer, a
   // diamond is another angular blob among the triangles.
   violet: '■',
-  pearl: '✚'
+  pearl: '✚',
+  // The two the late shelves add. A hexagon reads as its own shape beside the
+  // circle at layer size, and a crescent is the only mark here with a hollow.
+  saffron: '⬢',
+  indigo: '☾'
 }
 
 /**

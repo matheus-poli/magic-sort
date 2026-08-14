@@ -18,6 +18,11 @@
   --amber: #ffb340;
   --violet: #a374ff;
   --pearl: #e8e4f7;
+  /* The two the late shelves add, picked so that they cost the palette
+     nothing: the closest pair anyone sees is still azure and verdant under
+     tritanopia, exactly as it was with six elixirs on the bench. */
+  --saffron: #ffe45e;
+  --indigo: #4b46f0;
 
   /* The blog's own accent, so its mark stays recognisably the blog's. */
   --blog-accent: #60a5fa;
@@ -359,6 +364,12 @@ body::before {
 .pour-stream[data-elixir='pearl'] {
   --elixir: var(--pearl);
 }
+.pour-stream[data-elixir='saffron'] {
+  --elixir: var(--saffron);
+}
+.pour-stream[data-elixir='indigo'] {
+  --elixir: var(--indigo);
+}
 
 .flask {
   --glass-base: clamp(3.5rem, 12vw, 4.75rem);
@@ -412,6 +423,23 @@ body::before {
   --glass-girth: 0.87;
   --glass-belly: 42% 42% 40% 40% / 24% 24% 32% 32%;
   --glass-shoulder: 72%;
+}
+
+/*
+ * The deep glass and the decanter, each drawn narrower than the last. The
+ * silhouette has to keep saying how much a glass holds without anyone counting
+ * layers, and by seven the bottle is nearly a column.
+ */
+.flask[data-glass='6'] {
+  --glass-girth: 0.8;
+  --glass-belly: 38% 38% 36% 36% / 20% 20% 26% 26%;
+  --glass-shoulder: 76%;
+}
+
+.flask[data-glass='7'] {
+  --glass-girth: 0.74;
+  --glass-belly: 34% 34% 32% 32% / 17% 17% 22% 22%;
+  --glass-shoulder: 80%;
 }
 
 /* Cork, neck, shoulder and belly, stacked into a potion bottle. */
@@ -564,6 +592,12 @@ body::before {
 .flask__layer:nth-child(5)::before {
   animation-delay: -2.5s;
 }
+.flask__layer:nth-child(6)::before {
+  animation-delay: -4.1s;
+}
+.flask__layer:nth-child(7)::before {
+  animation-delay: -1.3s;
+}
 
 @keyframes bubbles {
   0% {
@@ -644,12 +678,16 @@ body::before {
 }
 
 /*
- * The palette for colour-blind mode, measured rather than picked. Simulated for
- * protanopia, deuteranopia and tritanopia, the closest pair anyone sees here is
- * ΔE 17.7 — against 7.7 for the atelier's own colours, where a deuteranope sees
- * azure and violet as very nearly one colour. Six colours cannot do much better
- * than this while each still answers to its own name, which is the reason the
- * sigils carry the rest of the weight.
+ * The palette for colour-blind mode, measured rather than picked: every colour
+ * simulated for protanopia, deuteranopia and tritanopia, and the pairs compared
+ * by CIEDE2000. The closest pair anyone sees here is ΔE 11.9, amber against
+ * saffron under deuteranopia — against 5.9 for the atelier's own colours, where
+ * a tritanope sees azure and verdant as very nearly one elixir. Eight colours
+ * cannot do much better than this while each still answers to its own name,
+ * which is the reason the sigils carry the rest of the weight.
+ *
+ * Every one of them stays light enough to carry the dark sigil at 4.4:1 or
+ * better, which is what rules out the deeper end of the indigo.
  */
 .game[data-colour-blind='true'] {
   --crimson: #e54147;
@@ -658,6 +696,8 @@ body::before {
   --amber: #ffa022;
   --violet: #d1a4e9;
   --pearl: #e8e7f0;
+  --saffron: #fff238;
+  --indigo: #7e86b9;
 }
 
 .flask__layer[data-elixir='crimson'] {
@@ -677,6 +717,12 @@ body::before {
 }
 .flask__layer[data-elixir='pearl'] {
   --elixir: var(--pearl);
+}
+.flask__layer[data-elixir='saffron'] {
+  --elixir: var(--saffron);
+}
+.flask__layer[data-elixir='indigo'] {
+  --elixir: var(--indigo);
 }
 
 /* A single specular highlight sells the curve of the glass. */
