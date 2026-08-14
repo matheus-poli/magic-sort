@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { playSound } from '../audio/sounds'
+import { playSound, warmSound } from '../audio/sounds'
 import { POINTS_LOST_PER_START_OVER } from '../domain/scoring'
 
 interface StartOverProps {
@@ -50,7 +50,12 @@ export function StartOver({
       <button
         type='button'
         className='button button--quiet'
-        onClick={() => setIsAsking(true)}
+        onClick={() => {
+          // The dialog is a decision that takes a moment, and that moment is
+          // exactly long enough to fetch the sound the answer plays.
+          warmSound('revive')
+          setIsAsking(true)
+        }}
       >
         Start over
       </button>

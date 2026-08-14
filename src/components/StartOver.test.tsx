@@ -2,12 +2,13 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { StartOver } from './StartOver'
-import { playSound } from '../audio/sounds'
+import { playSound, warmSound } from '../audio/sounds'
 
 // Audio is a real boundary, and the sound is part of what is being asked for.
 vi.mock('../audio/sounds', () => ({
   playSound: vi.fn(),
-  stopSound: vi.fn()
+  stopSound: vi.fn(),
+  warmSound: vi.fn()
 }))
 
 const showControl = (onStartOver = vi.fn()) => {
@@ -26,7 +27,10 @@ const trigger = () => screen.getByRole('button', { name: 'Start over' })
 const confirm = () => screen.getByRole('button', { name: 'Yes, start over' })
 const wayOut = () => screen.getByRole('button', { name: 'Keep playing' })
 
-beforeEach(() => vi.mocked(playSound).mockClear())
+beforeEach(() => {
+  vi.mocked(playSound).mockClear()
+  vi.mocked(warmSound).mockClear()
+})
 
 describe('StartOver', () => {
   it('asks first instead of throwing the run away on a click', async () => {
@@ -75,6 +79,21 @@ describe('StartOver', () => {
     await waitFor(() =>
       expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
     )
+  })
+
+  /*
+   * The rebirth is a recorded track, and Howler does not fetch a sound until
+   * the first time it is played — so the sound arrived audibly after the
+   * button that caused it. Opening the dialog is the player saying they are
+   * thinking about it, which is all the warning the fetch needs.
+   */
+  it('fetches the rebirth sound while the apprentice is still deciding', async () => {
+    const user = userEvent.setup()
+    showControl()
+
+    await user.click(trigger())
+
+    expect(vi.mocked(warmSound).mock.calls).toEqual([['revive']])
   })
 
   it('marks the moment with the sound of a life wound back', async () => {
