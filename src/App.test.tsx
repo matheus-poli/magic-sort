@@ -23,12 +23,15 @@ describe('App', () => {
     )
   })
 
-  it('scores the whole atelier out of a thousand points a bench', () => {
+  /*
+   * A thousand for the first bench and another thousand for every bench after
+   * it, which is what fifty benches add up to. The ladder is the reason to
+   * press on rather than sort the easy benches over and over.
+   */
+  it('scores the whole atelier out of what its fifty benches pay', () => {
     render(<App />)
 
-    expect(screen.getByLabelText('Total')).toHaveTextContent(
-      `0 / ${LEVELS.length * 1000}`
-    )
+    expect(screen.getByLabelText('Total')).toHaveTextContent('0 / 1275000')
   })
 
   it('lays out every flask that first bench holds', () => {

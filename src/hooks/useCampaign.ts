@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
-  POINTS_LOST_PER_RESTART,
-  POINTS_LOST_PER_START_OVER,
-  perfectTotal
+  benchWorth,
+  perfectTotal,
+  priceOfRebirth,
+  priceOfRestart
 } from '../domain/scoring'
 import { readSavedRun, rememberCampaign } from '../storage/savedRun'
 import type { Level } from '../domain/levels'
@@ -13,6 +14,8 @@ export interface Campaign {
   readonly position: number
   readonly levelCount: number
   readonly hasNext: boolean
+  /** What a flawless run of the bench in front of the apprentice would pay. */
+  readonly worth: number
   /** What the benches left behind earned, less what restarts have cost. */
   readonly bankedScore: number
   /** What restarts and rebirths have cost, to tell the player the price. */
@@ -68,30 +71,38 @@ export function useCampaign(levels: readonly Level[]): Campaign {
   const chargeForRestart = useCallback(() => {
     setProgress((current) => ({
       ...current,
-      forfeited: current.forfeited + POINTS_LOST_PER_RESTART
+      forfeited: current.forfeited + priceOfRestart(current.reached + 1)
     }))
   }, [])
 
   /*
    * A rebirth rather than a wipe: the apprentice walks back to the first bench
-   * carrying every point they earned, and pays a flawless bench for the walk.
-   * Wiping the score made this button one nobody could afford to press.
+   * carrying every point they earned, and pays for the walk. Wiping the score
+   * made this button one nobody could afford to press.
+   *
+   * The price is the atelier behind them, so the benches they are walking back
+   * to can never pay for the walk — the deeper in they are, the more the way
+   * back costs, and it can leave them owing more than they have.
    */
   const startOver = useCallback(() => {
     setProgress((current) => ({
       ...current,
       reached: 0,
-      forfeited: current.forfeited + POINTS_LOST_PER_START_OVER,
+      forfeited: current.forfeited + priceOfRebirth(current.reached + 1),
       rebirths: current.rebirths + 1
     }))
   }, [])
 
+  const position = progress.reached + 1
+  const bankedScore = progress.earned - progress.forfeited
+
   return {
     level: levels[progress.reached],
-    position: progress.reached + 1,
+    position,
     levelCount: levels.length,
     hasNext: progress.reached < lastPosition,
-    bankedScore: progress.earned - progress.forfeited,
+    worth: benchWorth(position),
+    bankedScore,
     forfeited: progress.forfeited,
     perfectTotal: perfectTotal({
       levelCount: levels.length,
@@ -103,12 +114,15 @@ export function useCampaign(levels: readonly Level[]): Campaign {
   }
 }
 
+/** Where an apprentice stands before they have earned or owed anything. */
+function freshProgress(): Progress {
+  return { reached: 0, earned: 0, forfeited: 0, rebirths: 0 }
+}
+
 /** The run the apprentice comes back to, or a fresh one for a first visit. */
 function openingProgress(levels: readonly Level[]): Progress {
   const saved = readSavedRun()?.campaign
-  if (saved === undefined) {
-    return { reached: 0, earned: 0, forfeited: 0, rebirths: 0 }
-  }
+  if (saved === undefined) return freshProgress()
 
   return { ...saved, reached: benchWithin(levels, saved.reached) }
 }

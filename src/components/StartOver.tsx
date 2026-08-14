@@ -1,13 +1,14 @@
 import { useEffect, useId, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { playSound, warmSound } from '../audio/sounds'
-import { POINTS_LOST_PER_START_OVER } from '../domain/scoring'
 
 interface StartOverProps {
   /** Where the apprentice is, so the warning can name what is at stake. */
   readonly position: number
   readonly levelCount: number
   readonly total: number
+  /** What the walk back to the first bench costs from where they stand. */
+  readonly price: number
   readonly onStartOver: () => void
 }
 
@@ -22,6 +23,7 @@ export function StartOver({
   position,
   levelCount,
   total,
+  price,
   onStartOver
 }: StartOverProps) {
   const [isAsking, setIsAsking] = useState(false)
@@ -83,8 +85,8 @@ export function StartOver({
               </h2>
               <p className='confirm__detail' id={costId}>
                 You are on level {position} of {levelCount} with {total} points.
-                Starting over puts you back on the first bench and costs{' '}
-                {POINTS_LOST_PER_START_OVER} points.
+                Starting over puts you back on the first bench and costs {price}{' '}
+                points.
               </p>
 
               <div className='confirm__actions'>

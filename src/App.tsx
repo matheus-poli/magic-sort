@@ -20,6 +20,7 @@ export function App() {
         level={campaign.level}
         position={campaign.position}
         levelCount={campaign.levelCount}
+        worth={campaign.worth}
         bankedScore={campaign.bankedScore}
         perfectTotal={campaign.perfectTotal}
         forfeited={campaign.forfeited}

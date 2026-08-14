@@ -5,34 +5,49 @@ export interface RunProgress {
   readonly pours: number
   /** The fewest pours that can sort this bench. */
   readonly minimumPours: number
+  /** What this bench pays for a flawless run, which is its place in the atelier. */
+  readonly worth: number
   readonly solved: boolean
 }
 
-const POINTS_FOR_SORTING = 500
-const POINTS_FOR_SOLVING = 500
+/** What the first bench of the atelier pays. Every bench after it pays more. */
+const WORTH_OF_THE_FIRST_BENCH = 1000
 
 /**
- * Every bench is scored out of the same total, so a score reads the same
- * wherever it was earned: half of it for sorting the elixirs, half for spending
- * no more pours than the bench demands.
+ * A pour past the fewest possible costs a fortieth of the bench, so twenty
+ * wasted pours cost the whole solving half wherever they are wasted.
  */
-export const PERFECT_SCORE = POINTS_FOR_SORTING + POINTS_FOR_SOLVING
-
-/** Exported so the scoreboard can tell the player the price in the same breath. */
-export const POINTS_LOST_PER_EXTRA_POUR = 25
+const POURS_THAT_COST_THE_SOLVING_HALF = 20
 
 /**
- * What throwing a bench away costs the campaign. Restarting is the way out of
- * a mistake, so it is allowed — it just is not free.
+ * What a bench pays for a flawless run: another first bench for every bench
+ * sorted to reach it, so the tenth is worth ten times the first.
+ *
+ * The ladder is the whole economy. An apprentice who presses on into the
+ * benches that are hard to sort has to out-earn one who keeps sorting the easy
+ * ones and walking back to them, or the game rewards the wrong player.
  */
-export const POINTS_LOST_PER_RESTART = 100
+export function benchWorth(position: number): number {
+  return WORTH_OF_THE_FIRST_BENCH * position
+}
+
+/** What throwing this bench away costs: a tenth of what it would have paid. */
+export function priceOfRestart(position: number): number {
+  return benchWorth(position) / 10
+}
 
 /**
- * What being reborn costs: a flawless bench, ten times the price of restarting
- * one. An apprentice who goes back to the first flask keeps everything they
- * earned, so the price is the only thing making it a decision.
+ * What walking back to the first bench costs: every bench behind the apprentice
+ * and the one they are standing on.
+ *
+ * That price is deliberately more than the walk back can pay. Sorting the
+ * benches behind again earns exactly what they are worth, so charging that
+ * much plus the bench in hand leaves a farmer out of pocket every time round —
+ * the only way to earn in this atelier is the bench you have not sorted yet.
  */
-export const POINTS_LOST_PER_START_OVER = 1000
+export function priceOfRebirth(position: number): number {
+  return atelierWorth(position)
+}
 
 export interface Atelier {
   readonly levelCount: number
@@ -46,7 +61,7 @@ export interface Atelier {
  * each one opens another atelier's worth of points to earn.
  */
 export function perfectTotal({ levelCount, rebirths }: Atelier): number {
-  return levelCount * PERFECT_SCORE * (rebirths + 1)
+  return atelierWorth(levelCount) * (rebirths + 1)
 }
 
 export interface CampaignProgress {
@@ -69,8 +84,12 @@ export function scoreFor(progress: RunProgress): number {
   return sortingPoints(progress) + solvingPoints(progress)
 }
 
-function sortingPoints({ completedFlasks, flasksToFill }: RunProgress): number {
-  return Math.round((POINTS_FOR_SORTING * completedFlasks) / flasksToFill)
+function sortingPoints({
+  completedFlasks,
+  flasksToFill,
+  worth
+}: RunProgress): number {
+  return Math.round((half(worth) * completedFlasks) / flasksToFill)
 }
 
 function solvingPoints(progress: RunProgress): number {
@@ -79,6 +98,25 @@ function solvingPoints(progress: RunProgress): number {
   const extraPours = Math.max(0, progress.pours - progress.minimumPours)
   return Math.max(
     0,
-    POINTS_FOR_SOLVING - extraPours * POINTS_LOST_PER_EXTRA_POUR
+    half(progress.worth) - extraPours * pourPenalty(progress.worth)
   )
+}
+
+/**
+ * What a pour past the fewest possible costs, which is the bench's own worth
+ * scaled: the price of wasting a pour has to rise with what a bench pays, or
+ * the late benches would hand out their points however clumsily they were sorted.
+ */
+export function pourPenalty(worth: number): number {
+  return half(worth) / POURS_THAT_COST_THE_SOLVING_HALF
+}
+
+/** Half a bench: what sorting it pays, and what solving it in time pays. */
+function half(worth: number): number {
+  return worth / 2
+}
+
+/** Every bench up to and including this one, sorted flawlessly. */
+function atelierWorth(levelCount: number): number {
+  return (WORTH_OF_THE_FIRST_BENCH * levelCount * (levelCount + 1)) / 2
 }

@@ -1,6 +1,5 @@
 import { useId } from 'react'
 import { motion } from 'motion/react'
-import { POINTS_LOST_PER_RESTART } from '../domain/scoring'
 import { HOLD_MS, useHold } from '../hooks/useHold'
 import type { KeyboardEvent } from 'react'
 
@@ -9,6 +8,8 @@ const DRAIN_SECONDS = 0.18
 
 interface HoldToRestartProps {
   readonly onRestart: () => void
+  /** What throwing this bench away costs, which climbs with what it pays. */
+  readonly price: number
   /**
    * What the campaign has given up so far, to restarts and to rebirths alike,
    * so that the price of another one is never a surprise.
@@ -21,7 +22,11 @@ interface HoldToRestartProps {
  * it asks for more than a click: the button has to be held while a bar fills,
  * and letting go calls the whole thing off.
  */
-export function HoldToRestart({ onRestart, forfeited }: HoldToRestartProps) {
+export function HoldToRestart({
+  onRestart,
+  price,
+  forfeited
+}: HoldToRestartProps) {
   const hold = useHold(onRestart)
   const costId = useId()
 
@@ -66,7 +71,7 @@ export function HoldToRestart({ onRestart, forfeited }: HoldToRestartProps) {
       </button>
 
       <p className='restart__cost' id={costId}>
-        Restarting costs {POINTS_LOST_PER_RESTART} points.
+        Restarting costs {price} points.
         {forfeited > 0 && ` You have given up ${forfeited} points so far.`}
       </p>
     </div>

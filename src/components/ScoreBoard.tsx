@@ -1,9 +1,11 @@
 import { useId } from 'react'
 import { CountingNumber } from './CountingNumber'
-import { PERFECT_SCORE, POINTS_LOST_PER_EXTRA_POUR } from '../domain/scoring'
+import { pourPenalty } from '../domain/scoring'
 
 interface ScoreBoardProps {
   readonly score: number
+  /** What a flawless run of this bench pays, which is what it is scored out of. */
+  readonly worth: number
   /** The whole campaign so far, this bench included. */
   readonly totalScore: number
   readonly perfectTotal: number
@@ -13,6 +15,7 @@ interface ScoreBoardProps {
 
 export function ScoreBoard({
   score,
+  worth,
   totalScore,
   perfectTotal,
   pours,
@@ -21,7 +24,7 @@ export function ScoreBoard({
   return (
     <div className='scoreboard'>
       <dl className='scoreboard__stats'>
-        <Stat label='Score' value={score} outOf={PERFECT_SCORE} counting />
+        <Stat label='Score' value={score} outOf={worth} counting />
         <Stat label='Total' value={totalScore} outOf={perfectTotal} counting />
         <Stat label='Pours' value={pours} />
       </dl>
@@ -30,7 +33,7 @@ export function ScoreBoard({
           everyone who has not played golf. Spell the rule out instead. */}
       <p className='scoreboard__hint'>
         This bench can be sorted in {minimumPours} pours. Every pour past that
-        costs {POINTS_LOST_PER_EXTRA_POUR} points.
+        costs {pourPenalty(worth)} points.
       </p>
     </div>
   )

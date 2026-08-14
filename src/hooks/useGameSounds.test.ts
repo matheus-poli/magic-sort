@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useGame } from './useGame'
 import { useGameSounds } from './useGameSounds'
 import { playSound } from '../audio/sounds'
+import { benchWorth } from '../domain/scoring'
 import { benchOfGlass } from '../test/bench'
 import type { Level } from '../domain/levels'
 
@@ -31,7 +32,7 @@ const finalPour: Level = {
 
 function renderGameWithSound(level: Level) {
   return renderHook(() => {
-    const game = useGame(level)
+    const game = useGame(level, benchWorth(1))
     useGameSounds(game)
     return game
   })

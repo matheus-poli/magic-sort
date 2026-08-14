@@ -16,7 +16,8 @@ const showControl = (onStartOver = vi.fn()) => {
     <StartOver
       position={3}
       levelCount={5}
-      total={2100}
+      total={9000}
+      price={6000}
       onStartOver={onStartOver}
     />
   )
@@ -54,7 +55,7 @@ describe('StartOver', () => {
     await user.click(trigger())
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent(
-      'You are on level 3 of 5 with 2100 points. Starting over puts you back on the first bench and costs 1000 points.'
+      'You are on level 3 of 5 with 9000 points. Starting over puts you back on the first bench and costs 6000 points.'
     )
   })
 

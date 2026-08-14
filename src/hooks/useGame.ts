@@ -46,7 +46,12 @@ interface Bench {
   readonly lastTap: LastTap
 }
 
-export function useGame(level: Level): Game {
+/**
+ * The bench in play. The worth is handed in rather than read off the level,
+ * because what a bench pays is its place in the atelier rather than anything
+ * about the glass on it: the same board pays more the later it is met.
+ */
+export function useGame(level: Level, worth: number): Game {
   // Only a first render looks for a saved bench. Every other way of arriving
   // at one — moving on, restarting, playing again — is asking for a board laid
   // out afresh, and would be wrong to hand back a half-solved one.
@@ -78,6 +83,7 @@ export function useGame(level: Level): Game {
     flasksToFill: flasksToFill(bench.board),
     pours: bench.pours,
     minimumPours: level.minimumPours,
+    worth,
     solved
   })
 

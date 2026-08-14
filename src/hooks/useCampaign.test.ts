@@ -116,19 +116,28 @@ describe('useCampaign', () => {
     expect(result.current).toMatchObject({ forfeited: 200, bankedScore: -200 })
   })
 
-  it('charges for restarts out of what the benches earned', () => {
+  /* A later bench pays more, so throwing one away costs more. */
+  it('charges for a restart against the bench being thrown away', () => {
     const { result } = renderHook(() => useCampaign(atelier))
 
     act(() => result.current.advance(1000))
     act(() => result.current.chargeForRestart())
 
-    expect(result.current.bankedScore).toBe(900)
+    expect(result.current.bankedScore).toBe(800)
+  })
+
+  it('hands over what the bench in front of the apprentice pays', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    act(() => result.current.advance(1000))
+
+    expect(result.current.worth).toBe(2000)
   })
 
   it('scores the atelier out of a flawless run of every bench', () => {
     const { result } = renderHook(() => useCampaign(atelier))
 
-    expect(result.current.perfectTotal).toBe(3000)
+    expect(result.current.perfectTotal).toBe(6000)
   })
 
   /*
@@ -146,14 +155,34 @@ describe('useCampaign', () => {
     expect(result.current).toMatchObject({ level: atelier[0], position: 1 })
   })
 
-  it('charges a flawless bench for the rebirth', () => {
+  it('charges the atelier behind the apprentice for the rebirth', () => {
     const { result } = renderHook(() => useCampaign(atelier))
 
     act(() => result.current.advance(1000))
-    act(() => result.current.advance(900))
+    act(() => result.current.advance(2000))
     act(() => result.current.startOver())
 
-    expect(result.current.bankedScore).toBe(900)
+    // Three benches stood behind them, worth 6000 between them.
+    expect(result.current.bankedScore).toBe(-3000)
+  })
+
+  /*
+   * The rule that keeps an apprentice moving forward: walking back to sort the
+   * easy benches again costs more than they can possibly pay, so farming them
+   * always ends worse than pressing on.
+   */
+  it('leaves the apprentice who walks back worse off than the one who did not', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    act(() => result.current.advance(1000))
+    act(() => result.current.advance(2000))
+    const beforeTheWalkBack = result.current.bankedScore
+
+    act(() => result.current.startOver())
+    act(() => result.current.advance(1000))
+    act(() => result.current.advance(2000))
+
+    expect(result.current.bankedScore).toBeLessThan(beforeTheWalkBack)
   })
 
   it('counts a rebirth alongside what restarts have cost', () => {
@@ -170,7 +199,7 @@ describe('useCampaign', () => {
 
     act(() => result.current.startOver())
 
-    expect(result.current.perfectTotal).toBe(6000)
+    expect(result.current.perfectTotal).toBe(12000)
   })
 
   it('lets a rebirth cost more than the apprentice has to their name', () => {
@@ -179,7 +208,7 @@ describe('useCampaign', () => {
     act(() => result.current.advance(200))
     act(() => result.current.startOver())
 
-    expect(result.current.bankedScore).toBe(-800)
+    expect(result.current.bankedScore).toBe(-2800)
   })
 
   /*
@@ -224,7 +253,7 @@ describe('useCampaign', () => {
 
     const { result: onReturn } = renderHook(() => useCampaign(atelier))
 
-    expect(onReturn.current.perfectTotal).toBe(6000)
+    expect(onReturn.current.perfectTotal).toBe(12000)
   })
 
   it('opens on a bench the atelier still has when a save points past its end', () => {

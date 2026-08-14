@@ -8,7 +8,7 @@ import { useGame } from '../hooks/useGame'
 import { useGameSounds } from '../hooks/useGameSounds'
 import { usePourFlight } from '../hooks/usePourFlight'
 import { celebrateLevel } from '../effects/confetti'
-import { PERFECT_SCORE, totalScore } from '../domain/scoring'
+import { priceOfRebirth, priceOfRestart, totalScore } from '../domain/scoring'
 import type { CSSProperties } from 'react'
 import type { Level } from '../domain/levels'
 
@@ -17,6 +17,8 @@ interface GameProps {
   /** Which bench of the atelier this is, counted the way a player counts. */
   readonly position: number
   readonly levelCount: number
+  /** What a flawless run of this bench pays, which climbs with its position. */
+  readonly worth: number
   /** Points earned on the benches before this one, less what restarts cost. */
   readonly bankedScore: number
   /** The ceiling those points climb towards, which a rebirth raises. */
@@ -40,6 +42,7 @@ export function Game({
   level,
   position,
   levelCount,
+  worth,
   bankedScore,
   perfectTotal,
   forfeited,
@@ -48,7 +51,7 @@ export function Game({
   onRestart,
   onStartOver
 }: GameProps) {
-  const game = useGame(level)
+  const game = useGame(level, worth)
   useGameSounds(game)
 
   const bench = useRef<HTMLOListElement | null>(null)
@@ -67,6 +70,7 @@ export function Game({
 
   const total = totalScore({ banked: bankedScore, bench: game.score })
   const isLastBench = onNextLevel === null
+  const rebirthPrice = priceOfRebirth(position)
 
   const restartBench = () => {
     game.restart()
@@ -85,6 +89,7 @@ export function Game({
       position={position}
       levelCount={levelCount}
       total={total}
+      price={rebirthPrice}
       onStartOver={startOverFromTheTop}
     />
   )
@@ -100,6 +105,7 @@ export function Game({
 
       <ScoreBoard
         score={game.score}
+        worth={worth}
         totalScore={total}
         perfectTotal={perfectTotal}
         pours={game.pours}
@@ -154,7 +160,11 @@ export function Game({
       </ol>
 
       <div className='undo'>
-        <HoldToRestart onRestart={restartBench} forfeited={forfeited} />
+        <HoldToRestart
+          onRestart={restartBench}
+          price={priceOfRestart(position)}
+          forfeited={forfeited}
+        />
         {startOverControl}
       </div>
 
@@ -178,8 +188,7 @@ export function Game({
               {/* "Final" only when it is: the word was telling players on the
                   first bench that they had reached the end of the game. */}
               <p className='victory__score'>
-                {isLastBench ? 'Final score' : 'Score'} {game.score} of{' '}
-                {PERFECT_SCORE}
+                {isLastBench ? 'Final score' : 'Score'} {game.score} of {worth}
               </p>
               <p className='victory__detail'>
                 Pours spent: {game.pours} · Fewest possible:{' '}

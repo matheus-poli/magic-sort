@@ -38,17 +38,18 @@ bench of the atelier can be lost in more ways than any other. Pour counts do not
 rank benches at all: the five-elixir bench with one spare takes fewer pours than
 the six-elixir bench with two, and every player finds it harder.
 
-Every bench is scored out of 1000, so the number means the same thing wherever
-it was earned: 500 shared out across the flasks you sort, and 500 for solving in
-as few pours as the bench allows, minus 25 for every pour past that. Each bench
-states its own fewest-possible count up front, so the target is never a mystery.
-What a bench earned is banked when you move on, so the total climbs across the
-atelier towards 50000 — a thousand a bench. Starting a bench over is the way out
-of a mistake, but it is not free: the button has to be held down while a bar
-fills, and it takes 100 points off the total. Going back to the very first bench
-is a separate button, and it asks first — it is a rebirth rather than a wipe, so
-everything you have earned comes with you for a price of 1000, and the atelier
-opens another 50000 to earn on the way back through it.
+Each bench pays more than the one before it. The first is worth 1000 — half of
+it shared out across the flasks you sort, half for solving in as few pours as
+the bench allows, minus a fortieth of the bench for every pour past that — and
+the fiftieth is worth 50000, so a flawless atelier comes to 1275000. That ladder
+is the whole economy: pressing on into the benches that are hard to sort has to
+out-earn sorting the easy ones over and over. Starting a bench over is the way
+out of a mistake, but it is not free: the button has to be held down while a bar
+fills, and it costs a tenth of the bench being thrown away. Going back to the
+very first bench is a separate button, and it asks first — it is a rebirth
+rather than a wipe, so everything you have earned comes with you, but it costs
+the whole atelier behind you and the bench you are standing on, which is always
+more than sorting those benches again could pay back.
 
 The run is kept in the browser, so closing the tab is not a way out of one
 either: the bench comes back with the pours already spent on it, and the total

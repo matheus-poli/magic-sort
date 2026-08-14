@@ -88,6 +88,8 @@ const oneOfEach: Level = {
 }
 
 interface Standing {
+  readonly position?: number
+  readonly worth?: number
   readonly bankedScore?: number
   readonly perfectTotal?: number
   readonly forfeited?: number
@@ -101,8 +103,9 @@ const showBench = (level: Level, standing: Standing = {}) =>
   render(
     <Game
       level={level}
-      position={1}
+      position={standing.position ?? 1}
       levelCount={5}
+      worth={standing.worth ?? 1000}
       bankedScore={standing.bankedScore ?? 0}
       perfectTotal={standing.perfectTotal ?? 5000}
       forfeited={standing.forfeited ?? 0}
@@ -300,20 +303,7 @@ describe('Game', () => {
   })
 
   it('counts out which bench of the atelier this is', () => {
-    render(
-      <Game
-        level={bench}
-        position={2}
-        levelCount={5}
-        bankedScore={0}
-        perfectTotal={5000}
-        forfeited={0}
-        colourBlind={false}
-        onNextLevel={null}
-        onRestart={() => {}}
-        onStartOver={() => {}}
-      />
-    )
+    showBench(bench, { position: 2, worth: 2000 })
 
     // Anchored: the bench name used to trail this line and read as clutter.
     expect(screen.getByText(/level 2 of 5/i)).toHaveTextContent(

@@ -1,9 +1,13 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useGame } from './useGame'
+import { benchWorth } from '../domain/scoring'
 import { benchOfGlass } from '../test/bench'
 import { lendStorage } from '../test/storage'
 import type { Level } from '../domain/levels'
+
+/** Every bench below is played as the opening one, which pays a thousand. */
+const worth = benchWorth(1)
 
 /** Two pours from being solved, so tests stay short and readable. */
 const almostSolved: Level = {
@@ -32,7 +36,7 @@ afterEach(() => {
 
 describe('useGame', () => {
   it('starts on the given level with nothing selected and no pours spent', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     expect(result.current).toMatchObject({
       board: mixed.board,
@@ -43,7 +47,7 @@ describe('useGame', () => {
   })
 
   it('selects a flask that has elixir to pour', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(0))
 
@@ -51,7 +55,7 @@ describe('useGame', () => {
   })
 
   it('ignores a tap on an empty flask when nothing is selected', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(3))
 
@@ -59,7 +63,7 @@ describe('useGame', () => {
   })
 
   it('puts a selected flask back down when it is tapped again', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(0))
     act(() => result.current.tapFlask(0))
@@ -68,7 +72,7 @@ describe('useGame', () => {
   })
 
   it('pours from the selected flask into the flask tapped next', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(0))
     act(() => result.current.tapFlask(1))
@@ -79,7 +83,7 @@ describe('useGame', () => {
   })
 
   it('counts a successful pour and clears the selection', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(0))
     act(() => result.current.tapFlask(1))
@@ -88,7 +92,7 @@ describe('useGame', () => {
   })
 
   it('leaves the board and the pour count alone when the pour is illegal', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(2))
     act(() => result.current.tapFlask(0))
@@ -97,7 +101,7 @@ describe('useGame', () => {
   })
 
   it('puts both flasks down when the pour is illegal', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(2))
     act(() => result.current.tapFlask(0))
@@ -106,7 +110,7 @@ describe('useGame', () => {
   })
 
   it('names the flask that refused the pour, so the UI can rebuff the player', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(2))
     act(() => result.current.tapFlask(0))
@@ -115,7 +119,7 @@ describe('useGame', () => {
   })
 
   it('reports the level solved once every flask holds a single elixir', () => {
-    const { result } = renderHook(() => useGame(almostSolved))
+    const { result } = renderHook(() => useGame(almostSolved, worth))
 
     act(() => result.current.tapFlask(1))
     act(() => result.current.tapFlask(0))
@@ -124,7 +128,7 @@ describe('useGame', () => {
   })
 
   it('scores completed flasks plus the bonus for a run at the fewest pours', () => {
-    const { result } = renderHook(() => useGame(almostSolved))
+    const { result } = renderHook(() => useGame(almostSolved, worth))
 
     act(() => result.current.tapFlask(1))
     act(() => result.current.tapFlask(0))
@@ -132,14 +136,24 @@ describe('useGame', () => {
     expect(result.current.score).toBe(1000)
   })
 
+  /* The same bench, played later in the atelier, pays what it is worth there. */
+  it('scores the run against what this bench is worth', () => {
+    const { result } = renderHook(() => useGame(almostSolved, benchWorth(7)))
+
+    act(() => result.current.tapFlask(1))
+    act(() => result.current.tapFlask(0))
+
+    expect(result.current.score).toBe(7000)
+  })
+
   it('scores completed flasks while the level is still in progress', () => {
-    const { result } = renderHook(() => useGame(almostSolved))
+    const { result } = renderHook(() => useGame(almostSolved, worth))
 
     expect(result.current.score).toBe(250)
   })
 
   it('reports picking a flask up so the UI can react to it', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(0))
 
@@ -147,7 +161,7 @@ describe('useGame', () => {
   })
 
   it('reports a refused pour so the UI can react to it', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(2))
     act(() => result.current.tapFlask(0))
@@ -156,7 +170,7 @@ describe('useGame', () => {
   })
 
   it('reports a completed pour so the UI can react to it', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(0))
     act(() => result.current.tapFlask(1))
@@ -165,7 +179,7 @@ describe('useGame', () => {
   })
 
   it('names the flask a pour just filled, so the UI can celebrate it', () => {
-    const { result } = renderHook(() => useGame(almostSolved))
+    const { result } = renderHook(() => useGame(almostSolved, worth))
 
     act(() => result.current.tapFlask(1))
     act(() => result.current.tapFlask(0))
@@ -174,7 +188,7 @@ describe('useGame', () => {
   })
 
   it('names no flask when the pour leaves the target unfinished', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(0))
     act(() => result.current.tapFlask(1))
@@ -183,7 +197,7 @@ describe('useGame', () => {
   })
 
   it('gives repeated identical taps a fresh sequence so effects re-fire', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(0))
     const first = result.current.lastTap
@@ -193,9 +207,12 @@ describe('useGame', () => {
   })
 
   it('lays out a fresh bench when it is handed a different level', () => {
-    const { result, rerender } = renderHook(({ level }) => useGame(level), {
-      initialProps: { level: mixed }
-    })
+    const { result, rerender } = renderHook(
+      ({ level }) => useGame(level, worth),
+      {
+        initialProps: { level: mixed }
+      }
+    )
 
     act(() => result.current.tapFlask(0))
     act(() => result.current.tapFlask(1))
@@ -209,7 +226,7 @@ describe('useGame', () => {
   })
 
   it('sends the bench back to its opening state on restart', () => {
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(0))
     act(() => result.current.tapFlask(1))
@@ -229,25 +246,25 @@ describe('useGame', () => {
    */
   it('hands the apprentice back the bench they left part-solved', () => {
     lendStorage()
-    const { result, unmount } = renderHook(() => useGame(mixed))
+    const { result, unmount } = renderHook(() => useGame(mixed, worth))
     act(() => result.current.tapFlask(0))
     act(() => result.current.tapFlask(1))
     const leftBehind = result.current.board
     unmount()
 
-    const { result: onReturn } = renderHook(() => useGame(mixed))
+    const { result: onReturn } = renderHook(() => useGame(mixed, worth))
 
     expect(onReturn.current).toMatchObject({ board: leftBehind, pours: 1 })
   })
 
   it('lays out a fresh bench when the saved one belongs to another level', () => {
     lendStorage()
-    const { result, unmount } = renderHook(() => useGame(mixed))
+    const { result, unmount } = renderHook(() => useGame(mixed, worth))
     act(() => result.current.tapFlask(0))
     act(() => result.current.tapFlask(1))
     unmount()
 
-    const { result: onReturn } = renderHook(() => useGame(almostSolved))
+    const { result: onReturn } = renderHook(() => useGame(almostSolved, worth))
 
     expect(onReturn.current).toMatchObject({
       board: almostSolved.board,
@@ -257,7 +274,7 @@ describe('useGame', () => {
 
   it('restarts to the opening bench rather than to the one that was saved', () => {
     lendStorage()
-    const { result } = renderHook(() => useGame(mixed))
+    const { result } = renderHook(() => useGame(mixed, worth))
 
     act(() => result.current.tapFlask(0))
     act(() => result.current.tapFlask(1))
