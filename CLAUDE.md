@@ -95,7 +95,8 @@ src/
   domain/       Pure TypeScript. No React, no DOM, no side effects, no imports from above.
   hooks/        React state orchestration over the domain.
   components/   Presentation. Receives data and callbacks via props.
-  audio/        The one impure boundary; isolated so tests can stub it.
+  audio/        An impure boundary; isolated so tests can stub it.
+  storage/      An impure boundary: the saved run, which tests lend a storage to.
 ```
 
 The dependency arrow points one way: `components → hooks → domain`. The domain
