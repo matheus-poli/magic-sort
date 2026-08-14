@@ -51,6 +51,10 @@ rather than a wipe, so everything you have earned comes with you, but it costs
 the whole atelier behind you and the bench you are standing on, which is always
 more than sorting those benches again could pay back.
 
+That price can bury you, and so can enough restarts. Points go negative, and an
+apprentice who owes more than a flawless bench could ever clear is finished: the
+workshop closes, and all that is left is to begin again from nothing.
+
 The run is kept in the browser, so closing the tab is not a way out of one
 either: the bench comes back with the pours already spent on it, and the total
 comes back with it. It is sealed on the way in — scrambled, and signed so that a
@@ -236,9 +240,12 @@ Kept deliberately short. Beyond React and the toolchain:
   degrades on its own when the player asks for reduced motion.
 
 The sound effects are synthesised by `scripts/generate-sounds.mjs` rather than
-downloaded, which keeps the repository self-contained. The rebirth is the one
-exception: `src/audio/revive.mp3` is a recorded track rather than a recipe, and
-the generator has no entry for it so that re-running it cannot overwrite it.
+downloaded, which keeps the repository self-contained. It takes sound names on
+the command line — `npm run sounds -- defeat` — because three of the recipes are
+built on noise, and regenerating the whole bench to add one sound rewrites files
+nobody touched with fresh random samples. The rebirth is the one exception to
+the recipes: `src/audio/revive.mp3` is a recorded track, and the generator has
+no entry for it so that re-running it cannot overwrite it.
 
 ## Roadmap
 
@@ -252,7 +259,8 @@ The game ships in vertical slices — each one playable on its own.
 - [x] **Slice 4** — a run that survives the tab closing, sealed against editing,
       and a start over that costs points rather than everything.
 - [x] **Slice 5** — fifty benches measured by the possibilities they open, two
-      more elixirs, and benches whose room is scattered rather than pooled.
+      more elixirs, benches whose room is scattered rather than pooled, a bench
+      worth more than the one before it, and a run that can end in ruin.
 - [ ] **Slice 6** — undo.
 - [ ] **Slice 7** — the alchemist character, ingredient collection, boosts.
 

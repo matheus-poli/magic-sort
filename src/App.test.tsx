@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
 import { LEVELS } from './domain/levels'
+import { rememberCampaign } from './storage/savedRun'
 import { lendStorage } from './test/storage'
 
 const firstFlask = () => screen.getByRole('button', { name: /^Flask 1/ })
@@ -89,6 +90,51 @@ describe('App', () => {
 
     expect(screen.getByLabelText('Pours')).toHaveTextContent('1')
     expect(spareFlask()).toHaveAttribute('aria-label', leftBehind)
+  })
+
+  /*
+   * The end of a run, wired up: the campaign works out that the debt has
+   * outgrown the atelier, and the card that says so is the only thing the
+   * apprentice can reach. Seeded through storage because getting there by
+   * playing would mean holding the restart button eleven times over.
+   */
+  it('closes down a run the apprentice can no longer pay their way out of', () => {
+    lendStorage()
+    rememberCampaign({
+      reached: 0,
+      earned: 500,
+      forfeited: 3000,
+      rebirths: 1
+    })
+
+    render(<App />)
+
+    expect(screen.getByRole('alertdialog')).toHaveTextContent(
+      'You owe 2500 points, and no bench in the atelier could pay that back.'
+    )
+  })
+
+  it('hands a ruined apprentice a clean bench and an empty ledger', async () => {
+    lendStorage()
+    rememberCampaign({
+      reached: 0,
+      earned: 500,
+      forfeited: 3000,
+      rebirths: 1
+    })
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole('button', { name: 'Begin a new run' }))
+
+    await waitFor(() =>
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+    )
+    // Awaited because the debt climbs back to nothing rather than vanishing.
+    await waitFor(() =>
+      expect(screen.getByLabelText('Total')).toHaveTextContent('0 / 1275000')
+    )
+    expect(screen.getByText(/level 1 of/i)).toBeInTheDocument()
   })
 
   it('shows the way back to the blog the game is a project of', () => {

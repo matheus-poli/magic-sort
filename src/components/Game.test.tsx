@@ -93,10 +93,12 @@ interface Standing {
   readonly bankedScore?: number
   readonly perfectTotal?: number
   readonly forfeited?: number
+  readonly isRuined?: boolean
   readonly colourBlind?: boolean
   readonly onNextLevel?: ((score: number) => void) | null
   readonly onRestart?: () => void
   readonly onStartOver?: () => void
+  readonly onBeginAgain?: () => void
 }
 
 const showBench = (level: Level, standing: Standing = {}) =>
@@ -109,10 +111,12 @@ const showBench = (level: Level, standing: Standing = {}) =>
       bankedScore={standing.bankedScore ?? 0}
       perfectTotal={standing.perfectTotal ?? 5000}
       forfeited={standing.forfeited ?? 0}
+      isRuined={standing.isRuined ?? false}
       colourBlind={standing.colourBlind ?? false}
       onNextLevel={standing.onNextLevel ?? null}
       onRestart={standing.onRestart ?? (() => {})}
       onStartOver={standing.onStartOver ?? (() => {})}
+      onBeginAgain={standing.onBeginAgain ?? (() => {})}
     />
   )
 
@@ -412,6 +416,34 @@ describe('Game', () => {
     expect(screen.getByText(/fewest possible/i)).toHaveTextContent(
       'Pours spent: 1 · Fewest possible: 1'
     )
+  })
+
+  /*
+   * The end of a run. Nothing on the bench can pay off what the apprentice
+   * owes, so the card covers it rather than letting them pour on in vain.
+   */
+  it('closes the run down once the debt has outgrown the atelier', () => {
+    showBench(bench, { bankedScore: -4200, isRuined: true })
+
+    expect(screen.getByRole('alertdialog')).toHaveTextContent(
+      'You owe 4200 points, and no bench in the atelier could pay that back.'
+    )
+  })
+
+  it('leaves the bench standing while the apprentice can still sort their way out', () => {
+    showBench(bench, { bankedScore: -400 })
+
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  })
+
+  it('sweeps the bench clean when the apprentice begins a new run', async () => {
+    const user = userEvent.setup()
+    const onBeginAgain = vi.fn()
+    showBench(bench, { bankedScore: -4200, isRuined: true, onBeginAgain })
+
+    await user.click(screen.getByRole('button', { name: 'Begin a new run' }))
+
+    expect(onBeginAgain).toHaveBeenCalledTimes(1)
   })
 
   it('carries the points banked on earlier benches into the total', () => {

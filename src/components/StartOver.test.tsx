@@ -18,6 +18,7 @@ const showControl = (onStartOver = vi.fn()) => {
       levelCount={5}
       total={9000}
       price={6000}
+      wouldEndTheRun={false}
       onStartOver={onStartOver}
     />
   )
@@ -56,6 +57,31 @@ describe('StartOver', () => {
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent(
       'You are on level 3 of 5 with 9000 points. Starting over puts you back on the first bench and costs 6000 points.'
+    )
+  })
+
+  /*
+   * The price is the whole atelier behind the apprentice, so deep into a run it
+   * can cost more than they have. Walking into that unwarned would make the
+   * game-over card an ambush rather than a decision.
+   */
+  it('warns the apprentice when the walk back would end their run', async () => {
+    const user = userEvent.setup()
+    render(
+      <StartOver
+        position={9}
+        levelCount={50}
+        total={2000}
+        price={45000}
+        wouldEndTheRun
+        onStartOver={vi.fn()}
+      />
+    )
+
+    await user.click(trigger())
+
+    expect(screen.getByRole('alertdialog')).toHaveTextContent(
+      'That is more than the atelier could ever pay back: it would end your run.'
     )
   })
 
@@ -105,6 +131,26 @@ describe('StartOver', () => {
     await user.click(confirm())
 
     expect(vi.mocked(playSound).mock.calls).toEqual([['revive']])
+  })
+
+  /* A rebirth nobody comes back from is not a rebirth, and must not sound like one. */
+  it('keeps the rebirth quiet when the walk back is the end of the run', async () => {
+    const user = userEvent.setup()
+    render(
+      <StartOver
+        position={9}
+        levelCount={50}
+        total={2000}
+        price={45000}
+        wouldEndTheRun
+        onStartOver={vi.fn()}
+      />
+    )
+
+    await user.click(trigger())
+    await user.click(confirm())
+
+    expect(vi.mocked(playSound)).not.toHaveBeenCalled()
   })
 
   it('leaves the run standing when the apprentice keeps playing', async () => {

@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   benchWorth,
+  isRuined,
   perfectTotal,
   priceOfRebirth,
   priceOfRestart,
+  rebirthWouldRuin,
   scoreFor,
   totalScore
 } from './scoring'
@@ -148,8 +150,12 @@ describe('totalScore', () => {
     expect(totalScore({ banked: 1750, bench: 250 })).toBe(2000)
   })
 
-  it('never reads below zero, however much restarting has cost', () => {
-    expect(totalScore({ banked: -300, bench: 100 })).toBe(0)
+  /*
+   * Debt used to read as zero, which was kind until an apprentice could be
+   * ruined by it: a player who cannot see what they owe cannot see it coming.
+   */
+  it('reads out the debt when restarts have cost more than the benches paid', () => {
+    expect(totalScore({ banked: -300, bench: 100 })).toBe(-200)
   })
 })
 
@@ -164,5 +170,34 @@ describe('perfectTotal', () => {
    */
   it('opens another atelier to earn every time the apprentice is reborn', () => {
     expect(perfectTotal({ levelCount: 3, rebirths: 2 })).toBe(18000)
+  })
+})
+
+describe('rebirthWouldRuin', () => {
+  it('leaves a well-off apprentice free to walk back to the first bench', () => {
+    expect(rebirthWouldRuin({ banked: 40000, position: 5 })).toBe(false)
+  })
+
+  /*
+   * The warning the rebirth dialog gives: deep into a run the walk back costs
+   * more than most apprentices have, and pressing it unwarned would make the
+   * game-over card an ambush rather than a decision.
+   */
+  it('warns the apprentice whose walk back would bury them', () => {
+    expect(rebirthWouldRuin({ banked: 2000, position: 9 })).toBe(true)
+  })
+})
+
+describe('isRuined', () => {
+  it('leaves an apprentice who owes nothing to get on with the bench', () => {
+    expect(isRuined({ banked: 2400, benchInHand: benchWorth(3) })).toBe(false)
+  })
+
+  it('is not ruin while the bench in hand could still cover the debt', () => {
+    expect(isRuined({ banked: -900, benchInHand: benchWorth(1) })).toBe(false)
+  })
+
+  it('is ruin once not even a flawless bench could clear what is owed', () => {
+    expect(isRuined({ banked: -1200, benchInHand: benchWorth(1) })).toBe(true)
   })
 })

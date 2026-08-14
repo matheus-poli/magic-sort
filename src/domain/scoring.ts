@@ -72,12 +72,51 @@ export interface CampaignProgress {
 }
 
 /**
- * The number on the scoreboard's total. Restarts can cost more than the benches
- * have earned so far, and a campaign in debt reads as zero rather than as a
- * negative score nobody wants to look at.
+ * The number on the scoreboard's total, debt and all. It used to read as zero
+ * while the campaign was in the red, which was kind right up until an
+ * apprentice could be ruined: a player who cannot see what they owe cannot see
+ * the end of their run coming.
  */
 export function totalScore({ banked, bench }: CampaignProgress): number {
-  return Math.max(0, banked + bench)
+  return banked + bench
+}
+
+export interface Standing {
+  /** Points from the benches left behind, less what restarts have cost. */
+  readonly banked: number
+  /** The most the bench in front of the apprentice could still pay. */
+  readonly benchInHand: number
+}
+
+/**
+ * Whether the apprentice is finished: so deep in debt that even sorting the
+ * bench in front of them flawlessly would leave them owing points. Debt on its
+ * own is a hole to climb out of; debt no bench can cover is the end of the run.
+ */
+export function isRuined({ banked, benchInHand }: Standing): boolean {
+  return banked + benchInHand < 0
+}
+
+export interface Rebirth {
+  /** Points from the benches left behind, less what restarts have cost. */
+  readonly banked: number
+  /** Which bench the apprentice would be walking back from. */
+  readonly position: number
+}
+
+/**
+ * Whether walking back to the first bench from here would leave a debt no
+ * bench could clear. Deep into a run the walk costs more than most apprentices
+ * have, and the dialog that offers it has to be able to say so first: pressing
+ * it unwarned would make the end of the run an ambush rather than a decision.
+ */
+export function rebirthWouldRuin({ banked, position }: Rebirth): boolean {
+  return isRuined({
+    banked: banked - priceOfRebirth(position),
+    // Whatever they were sorting is poured back out with the walk, so the only
+    // bench left to pay them is the first one.
+    benchInHand: benchWorth(1)
+  })
 }
 
 export function scoreFor(progress: RunProgress): number {

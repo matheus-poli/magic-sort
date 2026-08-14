@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Flask } from './Flask'
+import { GameOver } from './GameOver'
 import { HoldToRestart } from './HoldToRestart'
 import { StartOver } from './StartOver'
 import { ScoreBoard } from './ScoreBoard'
@@ -8,7 +9,12 @@ import { useGame } from '../hooks/useGame'
 import { useGameSounds } from '../hooks/useGameSounds'
 import { usePourFlight } from '../hooks/usePourFlight'
 import { celebrateLevel } from '../effects/confetti'
-import { priceOfRebirth, priceOfRestart, totalScore } from '../domain/scoring'
+import {
+  priceOfRebirth,
+  priceOfRestart,
+  rebirthWouldRuin,
+  totalScore
+} from '../domain/scoring'
 import type { CSSProperties } from 'react'
 import type { Level } from '../domain/levels'
 
@@ -25,6 +31,8 @@ interface GameProps {
   readonly perfectTotal: number
   /** What restarts have cost so far, which the restart button owns up to. */
   readonly forfeited: number
+  /** Whether the debt has outgrown anything this bench could pay back. */
+  readonly isRuined: boolean
   /** Show the elixirs the accessible way: tuned colours, and a sigil each. */
   readonly colourBlind: boolean
   /**
@@ -36,6 +44,8 @@ interface GameProps {
   readonly onRestart: () => void
   /** Throws the whole run away and starts the atelier from the first bench. */
   readonly onStartOver: () => void
+  /** Opens a run from nothing, for an apprentice with nothing left. */
+  readonly onBeginAgain: () => void
 }
 
 export function Game({
@@ -46,10 +56,12 @@ export function Game({
   bankedScore,
   perfectTotal,
   forfeited,
+  isRuined,
   colourBlind,
   onNextLevel,
   onRestart,
-  onStartOver
+  onStartOver,
+  onBeginAgain
 }: GameProps) {
   const game = useGame(level, worth)
   useGameSounds(game)
@@ -84,12 +96,18 @@ export function Game({
     onStartOver()
   }
 
+  const beginAgainFromNothing = () => {
+    game.restart()
+    onBeginAgain()
+  }
+
   const startOverControl = (
     <StartOver
       position={position}
       levelCount={levelCount}
       total={total}
       price={rebirthPrice}
+      wouldEndTheRun={rebirthWouldRuin({ banked: bankedScore, position })}
       onStartOver={startOverFromTheTop}
     />
   )
@@ -239,6 +257,14 @@ export function Game({
               </div>
             </motion.div>
           </motion.section>
+        )}
+      </AnimatePresence>
+
+      {/* The end of the run covers everything, the bench included: there is no
+          pour left that could pay off what the apprentice owes. */}
+      <AnimatePresence>
+        {isRuined && (
+          <GameOver debt={-total} onBeginAgain={beginAgainFromNothing} />
         )}
       </AnimatePresence>
     </main>

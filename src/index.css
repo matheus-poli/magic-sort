@@ -973,12 +973,30 @@ body::before {
   box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
 }
 
+/*
+ * The end of a run rather than a question about one. The warning card is lit
+ * red because it is still asking something; this one has nothing left to ask,
+ * so the light has gone out of it.
+ */
+.confirm--ruin {
+  border-color: rgba(226, 214, 255, 0.22);
+  background: linear-gradient(
+    165deg,
+    rgba(32, 24, 54, 0.94),
+    rgba(10, 6, 22, 0.96)
+  );
+}
+
 .confirm__title {
   margin: 0;
   font-family: var(--display);
   font-size: clamp(1.4rem, 4.5vw, 1.85rem);
   font-weight: 400;
   color: #ffc2cd;
+}
+
+.confirm--ruin .confirm__title {
+  color: var(--parchment);
 }
 
 .confirm__detail {

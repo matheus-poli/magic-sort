@@ -1,6 +1,7 @@
 import { Howl } from 'howler'
 import chargeUrl from './charge.wav'
 import completeUrl from './complete.wav'
+import defeatUrl from './defeat.wav'
 import pickupUrl from './pickup.wav'
 import pourUrl from './pour.wav'
 import refusedUrl from './refused.wav'
@@ -18,6 +19,7 @@ export type SoundName =
   | 'charge'
   | 'reset'
   | 'revive'
+  | 'defeat'
   | 'victory'
 
 const sources: Record<SoundName, string> = {
@@ -28,6 +30,7 @@ const sources: Record<SoundName, string> = {
   charge: chargeUrl,
   reset: resetUrl,
   revive: reviveUrl,
+  defeat: defeatUrl,
   victory: victoryUrl
 }
 

@@ -161,13 +161,40 @@ const recipes = {
           delay: step * 0.12
         })
       )
+    ),
+
+  // The victory arpeggio's opposite number: a minor triad falling instead of
+  // rising, over a low swell of the workshop shutting up for the night.
+  defeat: () =>
+    mix(
+      ...[392, 311.13, 261.63, 196].map((frequency, step) =>
+        tone({
+          from: frequency,
+          to: frequency * 0.96,
+          duration: 0.9,
+          gain: 0.19,
+          wave: triangle,
+          delay: step * 0.17
+        })
+      ),
+      tone({ from: 98, to: 55, duration: 1.3, gain: 0.26, delay: 0.5 })
     )
 }
 
 mkdirSync(OUTPUT_DIR, { recursive: true })
 
-for (const [name, recipe] of Object.entries(recipes)) {
-  const file = join(OUTPUT_DIR, `${name}.wav`)
-  writeFileSync(file, toWav(recipe()))
+/*
+ * Named on the command line, or all of them. Three of these recipes are built
+ * on noise, so regenerating the whole bench to add one sound rewrites files
+ * nobody touched with different random samples.
+ */
+const asked = process.argv.slice(2)
+const wanted = asked.length > 0 ? asked : Object.keys(recipes)
+
+for (const name of wanted) {
+  const recipe = recipes[name]
+  if (recipe === undefined) throw new Error(`No recipe for ${name}`)
+
+  writeFileSync(join(OUTPUT_DIR, `${name}.wav`), toWav(recipe()))
   console.log(`wrote ${name}.wav`)
 }

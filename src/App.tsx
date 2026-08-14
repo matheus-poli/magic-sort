@@ -24,10 +24,12 @@ export function App() {
         bankedScore={campaign.bankedScore}
         perfectTotal={campaign.perfectTotal}
         forfeited={campaign.forfeited}
+        isRuined={campaign.isRuined}
         colourBlind={colourBlind.enabled}
         onNextLevel={campaign.hasNext ? campaign.advance : null}
         onRestart={campaign.chargeForRestart}
         onStartOver={campaign.startOver}
+        onBeginAgain={campaign.beginAgain}
       />
     </>
   )

@@ -9,6 +9,8 @@ interface StartOverProps {
   readonly total: number
   /** What the walk back to the first bench costs from where they stand. */
   readonly price: number
+  /** Whether paying that price would leave a debt no bench could clear. */
+  readonly wouldEndTheRun: boolean
   readonly onStartOver: () => void
 }
 
@@ -24,6 +26,7 @@ export function StartOver({
   levelCount,
   total,
   price,
+  wouldEndTheRun,
   onStartOver
 }: StartOverProps) {
   const [isAsking, setIsAsking] = useState(false)
@@ -43,7 +46,9 @@ export function StartOver({
 
   const startOver = () => {
     setIsAsking(false)
-    playSound('revive')
+    // A walk back nobody comes back from is not a rebirth, and must not sound
+    // like one: the ruin that follows has a voice of its own.
+    if (!wouldEndTheRun) playSound('revive')
     onStartOver()
   }
 
@@ -87,6 +92,8 @@ export function StartOver({
                 You are on level {position} of {levelCount} with {total} points.
                 Starting over puts you back on the first bench and costs {price}{' '}
                 points.
+                {wouldEndTheRun &&
+                  ' That is more than the atelier could ever pay back: it would end your run.'}
               </p>
 
               <div className='confirm__actions'>

@@ -212,6 +212,48 @@ describe('useCampaign', () => {
   })
 
   /*
+   * Debt is survivable right up until it is not: an apprentice in the red can
+   * sort their way out of it, and is only finished when the bench in front of
+   * them could not clear what they owe even sorted flawlessly.
+   */
+  it('leaves an apprentice in debt to sort their way back out of it', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    act(() => result.current.chargeForRestart())
+
+    expect(result.current).toMatchObject({ bankedScore: -100, isRuined: false })
+  })
+
+  it('ruins an apprentice no bench could pay out of debt', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    act(() => result.current.advance(200))
+    act(() => result.current.startOver())
+
+    expect(result.current).toMatchObject({
+      bankedScore: -2800,
+      isRuined: true
+    })
+  })
+
+  it('opens a fresh run for the apprentice who begins again', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    act(() => result.current.advance(200))
+    act(() => result.current.startOver())
+    act(() => result.current.beginAgain())
+
+    expect(result.current).toMatchObject({
+      level: atelier[0],
+      position: 1,
+      bankedScore: 0,
+      forfeited: 0,
+      perfectTotal: 6000,
+      isRuined: false
+    })
+  })
+
+  /*
    * Closing the tab is not a way out of a campaign. Everything the apprentice
    * has earned and everything they owe comes back with them, or the price of
    * a restart would be a page reload away from being no price at all.
