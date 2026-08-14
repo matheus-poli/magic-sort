@@ -3,10 +3,9 @@
 // The sounds are generated rather than downloaded so the repository stays
 // self-contained. Re-run with `npm run sounds` after editing a recipe.
 //
-// Three sounds are deliberately not recipes: the rebirth, the end of a run and
-// the run being erased are recorded tracks at src/audio/revive.mp3,
-// src/audio/defeat.mp3 and src/audio/wipe.mp3. They have no entry here on
-// purpose, so that regenerating the bench cannot overwrite them.
+// Two sounds are deliberately not recipes: the rebirth and the end of a run are
+// recorded tracks at src/audio/revive.mp3 and src/audio/defeat.mp3. They have no
+// entry here on purpose, so that regenerating the bench cannot overwrite them.
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -143,20 +142,6 @@ const recipes = {
     mix(
       swell({ from: 160, to: 520, duration: 0.9, gain: 0.24, wave: triangle }),
       swell({ from: 240, to: 784, duration: 0.9, gain: 0.12 })
-    ),
-
-  /*
-   * The whole run being erased, charging up. Its length is the length of that
-   * press in src/components/HoldToErase.tsx, the way the bench restart's is.
-   * It is the same rise an octave down with a tritone under it: this press
-   * takes far longer to hold, and has to sound like something being undone
-   * rather than like something being poured out.
-   */
-  wipeCharge: () =>
-    mix(
-      swell({ from: 55, to: 233, duration: 5, gain: 0.24, wave: triangle }),
-      swell({ from: 82.5, to: 349.5, duration: 5, gain: 0.12 }),
-      swell({ from: 77.8, to: 329.6, duration: 5, gain: 0.09, wave: triangle })
     ),
 
   // Everything poured back out again: a sweep down through a wash of liquid.

@@ -6,12 +6,10 @@ import pourUrl from './pour.wav'
 import refusedUrl from './refused.wav'
 import resetUrl from './reset.wav'
 import victoryUrl from './victory.wav'
-import wipeChargeUrl from './wipeCharge.wav'
 // The recorded sounds, rather than synthesised ones. See
 // scripts/generate-sounds.mjs for why they are the exceptions.
 import defeatUrl from './defeat.mp3'
 import reviveUrl from './revive.mp3'
-import wipeUrl from './wipe.mp3'
 
 export type SoundName =
   | 'pickup'
@@ -23,8 +21,6 @@ export type SoundName =
   | 'revive'
   | 'defeat'
   | 'victory'
-  | 'wipeCharge'
-  | 'wipe'
 
 const sources: Record<SoundName, string> = {
   pickup: pickupUrl,
@@ -35,9 +31,7 @@ const sources: Record<SoundName, string> = {
   reset: resetUrl,
   revive: reviveUrl,
   defeat: defeatUrl,
-  victory: victoryUrl,
-  wipeCharge: wipeChargeUrl,
-  wipe: wipeUrl
+  victory: victoryUrl
 }
 
 const isAudioAvailable =
