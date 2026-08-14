@@ -35,8 +35,14 @@ const TILT_DEGREES = 104
  * measured from the flask's middle, which is what it turns about, so a flask
  * hangs over the bench with daylight under it rather than lying across the
  * glass it is filling.
+ *
+ * A flask lying on its side reaches roughly half its own length below that
+ * middle, so the clearance has to cover that overhang before it buys any
+ * daylight at all: at 34 the glass was resting in the elixir it was pouring
+ * onto. This leaves the mouth above the brim of a flask filled to the top,
+ * which is the worst case and the one a player notices.
  */
-const POURING_HEIGHT = 34
+const POURING_HEIGHT = 58
 
 interface Flight {
   readonly x: number
