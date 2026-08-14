@@ -1,13 +1,13 @@
 import { Howl } from 'howler'
 import chargeUrl from './charge.wav'
 import completeUrl from './complete.wav'
-import defeatUrl from './defeat.wav'
 import pickupUrl from './pickup.wav'
 import pourUrl from './pour.wav'
 import refusedUrl from './refused.wav'
 import resetUrl from './reset.wav'
-// The one recorded sound on the bench, rather than a synthesised one. See
-// scripts/generate-sounds.mjs for why it is the exception.
+// The recorded sounds, rather than synthesised ones. See
+// scripts/generate-sounds.mjs for why they are the exceptions.
+import defeatUrl from './defeat.mp3'
 import reviveUrl from './revive.mp3'
 import victoryUrl from './victory.wav'
 

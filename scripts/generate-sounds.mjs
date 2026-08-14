@@ -3,9 +3,10 @@
 // The sounds are generated rather than downloaded so the repository stays
 // self-contained. Re-run with `npm run sounds` after editing a recipe.
 //
-// One sound is deliberately not a recipe: the rebirth is a recorded track at
-// src/audio/revive.mp3. It has no entry here on purpose, so that regenerating
-// the bench cannot overwrite it.
+// Two sounds are deliberately not recipes: the rebirth and the end of a run
+// are recorded tracks at src/audio/revive.mp3 and src/audio/defeat.mp3. They
+// have no entry here on purpose, so that regenerating the bench cannot
+// overwrite them.
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -161,23 +162,6 @@ const recipes = {
           delay: step * 0.12
         })
       )
-    ),
-
-  // The victory arpeggio's opposite number: a minor triad falling instead of
-  // rising, over a low swell of the workshop shutting up for the night.
-  defeat: () =>
-    mix(
-      ...[392, 311.13, 261.63, 196].map((frequency, step) =>
-        tone({
-          from: frequency,
-          to: frequency * 0.96,
-          duration: 0.9,
-          gain: 0.19,
-          wave: triangle,
-          delay: step * 0.17
-        })
-      ),
-      tone({ from: 98, to: 55, duration: 1.3, gain: 0.26, delay: 0.5 })
     )
 }
 
