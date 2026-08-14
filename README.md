@@ -55,6 +55,12 @@ That price can bury you, and so can enough restarts. Points go negative, and an
 apprentice who owes more than a flawless bench could ever clear is finished: the
 workshop closes, and all that is left is to begin again from nothing.
 
+A run can also end on the bench in front of you. A bench can be poured into a
+corner where nothing will take another drop — every glass full, and no two tops
+that match — and if throwing that one away costs more than the atelier could
+ever pay back, that is the end of the run as surely as debt is. The game works
+it out for you rather than leaving you tapping glass that will never move.
+
 The run is kept in the browser, so closing the tab is not a way out of one
 either: the bench comes back with the pours already spent on it, and the total
 comes back with it. It is sealed on the way in — scrambled, and signed so that a
@@ -63,6 +69,12 @@ editing their score in developer tools, and honestly only that: the key ships
 inside the bundle, because the game has no server to keep a score on, and a key
 everybody has is not a secret. Making a score truly unforgeable is a different
 game to this one.
+
+There is one way to be rid of a run, in the bottom-right corner: a button held
+down for five seconds while a dial sweeps round it. It erases the save outright
+rather than zeroing it — every point and every bench, gone — and hands back a
+first visit. Five seconds because it is the one thing in the game that cannot
+be taken back.
 
 Colour-blind mode is in the top-right corner, and the game remembers it. It
 retunes the elixirs to a palette measured against protanopia, deuteranopia and
@@ -243,9 +255,10 @@ The sound effects are synthesised by `scripts/generate-sounds.mjs` rather than
 downloaded, which keeps the repository self-contained. It takes sound names on
 the command line — `npm run sounds -- defeat` — because three of the recipes are
 built on noise, and regenerating the whole bench to add one sound rewrites files
-nobody touched with fresh random samples. The rebirth is the one exception to
-the recipes: `src/audio/revive.mp3` is a recorded track, and the generator has
-no entry for it so that re-running it cannot overwrite it.
+nobody touched with fresh random samples. Three sounds are the exception to the
+recipes: the rebirth, the end of a run and a run being erased are recorded
+tracks at `src/audio/revive.mp3`, `defeat.mp3` and `wipe.mp3`, and the generator
+has no entry for them so that re-running it cannot overwrite them.
 
 ## Roadmap
 
