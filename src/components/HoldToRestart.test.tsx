@@ -8,7 +8,8 @@ import { playSound, stopSound } from '../audio/sounds'
 // feedback under test here — the charge is something the player hears.
 vi.mock('../audio/sounds', () => ({
   playSound: vi.fn(),
-  stopSound: vi.fn()
+  stopSound: vi.fn(),
+  warmSound: vi.fn()
 }))
 
 /*

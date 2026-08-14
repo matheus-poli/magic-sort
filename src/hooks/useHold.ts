@@ -1,12 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { playSound, stopSound } from '../audio/sounds'
+import { playSound, stopSound, warmSound } from '../audio/sounds'
+import type { SoundName } from '../audio/sounds'
 
-/**
- * How long a press has to last. Long enough that it cannot happen by accident,
- * short enough not to feel like a punishment — and the length of the charge
- * sound in scripts/generate-sounds.mjs, which has to run out as the bar fills.
- */
-export const HOLD_MS = 900
+export interface Press {
+  /**
+   * How long the press has to last, and the length of the charge sound: the
+   * two are one promise, and the sound has to run out as the bar fills.
+   */
+  readonly duration: number
+  /** Heard for as long as the press is held, and cut off if it is let go. */
+  readonly charge: SoundName
+  /** Heard the moment the press goes through. */
+  readonly done: SoundName
+  onHeld: () => void
+}
 
 export interface Hold {
   /** True from the press until it goes through or is let go. */
@@ -17,9 +24,13 @@ export interface Hold {
 
 /**
  * Turns a press into a deliberate act: nothing happens until it has been held
- * for HOLD_MS, and letting go early takes the charge with it.
+ * for its full length, and letting go early takes the charge with it.
+ *
+ * How long that is belongs to the button rather than to this hook. Throwing a
+ * bench away asks for a moment's thought; throwing a whole run away asks for
+ * rather more than that.
  */
-export function useHold(onHeld: () => void): Hold {
+export function useHold({ duration, charge, done, onHeld }: Press): Hold {
   const [isHolding, setIsHolding] = useState(false)
   const charging = useRef<number | null>(null)
 
@@ -28,25 +39,28 @@ export function useHold(onHeld: () => void): Hold {
     if (charging.current !== null) return
 
     setIsHolding(true)
-    playSound('charge')
+    playSound(charge)
+    // The press is long enough to fetch what it lands on, and one of these
+    // lands on a recorded track that would otherwise arrive after the deed.
+    warmSound(done)
 
     charging.current = window.setTimeout(() => {
       charging.current = null
-      stopSound('charge')
-      playSound('reset')
+      stopSound(charge)
+      playSound(done)
       setIsHolding(false)
       onHeld()
-    }, HOLD_MS)
-  }, [onHeld])
+    }, duration)
+  }, [duration, charge, done, onHeld])
 
   const cancel = useCallback((): void => {
     if (charging.current === null) return
 
     clearTimeout(charging.current)
     charging.current = null
-    stopSound('charge')
+    stopSound(charge)
     setIsHolding(false)
-  }, [])
+  }, [charge])
 
   // A press outliving the bench it belongs to must not go through behind it.
   useEffect(

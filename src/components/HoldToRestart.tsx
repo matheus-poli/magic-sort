@@ -1,7 +1,15 @@
 import { useId } from 'react'
 import { motion } from 'motion/react'
-import { HOLD_MS, useHold } from '../hooks/useHold'
+import { useHold } from '../hooks/useHold'
 import type { KeyboardEvent } from 'react'
+
+/**
+ * How long the press has to last. Long enough that it cannot happen by
+ * accident, short enough not to feel like a punishment — and the length of the
+ * charge sound in scripts/generate-sounds.mjs, which has to run out as the bar
+ * fills.
+ */
+const HOLD_MS = 900
 
 /** How quickly the bar drains when the apprentice changes their mind. */
 const DRAIN_SECONDS = 0.18
@@ -27,7 +35,12 @@ export function HoldToRestart({
   price,
   forfeited
 }: HoldToRestartProps) {
-  const hold = useHold(onRestart)
+  const hold = useHold({
+    duration: HOLD_MS,
+    charge: 'charge',
+    done: 'reset',
+    onHeld: onRestart
+  })
   const costId = useId()
 
   return (
