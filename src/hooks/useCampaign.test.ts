@@ -119,18 +119,60 @@ describe('useCampaign', () => {
     expect(result.current.bankedScore).toBe(900)
   })
 
-  it('puts the apprentice back at the beginning with nothing to their name', () => {
+  it('scores the atelier out of a flawless run of every bench', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    expect(result.current.perfectTotal).toBe(3000)
+  })
+
+  /*
+   * Starting over is a rebirth rather than a wipe: the apprentice carries their
+   * points back to the first bench and pays for the privilege. A wipe would
+   * make the whole run worthless, which is why nobody ever pressed it.
+   */
+  it('carries what the apprentice earned back to the first bench', () => {
     const { result } = renderHook(() => useCampaign(atelier))
 
     act(() => result.current.advance(1000))
+    act(() => result.current.advance(900))
+    act(() => result.current.startOver())
+
+    expect(result.current).toMatchObject({ level: atelier[0], position: 1 })
+  })
+
+  it('charges a flawless bench for the rebirth', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    act(() => result.current.advance(1000))
+    act(() => result.current.advance(900))
+    act(() => result.current.startOver())
+
+    expect(result.current.bankedScore).toBe(900)
+  })
+
+  it('counts a rebirth alongside what restarts have cost', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
     act(() => result.current.chargeForRestart())
     act(() => result.current.startOver())
 
-    expect(result.current).toMatchObject({
-      level: atelier[0],
-      position: 1,
-      bankedScore: 0,
-      forfeited: 0
-    })
+    expect(result.current.forfeited).toBe(1100)
+  })
+
+  it('opens another atelier to earn for the reborn apprentice', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    act(() => result.current.startOver())
+
+    expect(result.current.perfectTotal).toBe(6000)
+  })
+
+  it('lets a rebirth cost more than the apprentice has to their name', () => {
+    const { result } = renderHook(() => useCampaign(atelier))
+
+    act(() => result.current.advance(200))
+    act(() => result.current.startOver())
+
+    expect(result.current.bankedScore).toBe(-800)
   })
 })

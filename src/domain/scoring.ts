@@ -27,6 +27,28 @@ export const POINTS_LOST_PER_EXTRA_POUR = 25
  */
 export const POINTS_LOST_PER_RESTART = 100
 
+/**
+ * What being reborn costs: a flawless bench, ten times the price of restarting
+ * one. An apprentice who goes back to the first flask keeps everything they
+ * earned, so the price is the only thing making it a decision.
+ */
+export const POINTS_LOST_PER_START_OVER = 1000
+
+export interface Atelier {
+  readonly levelCount: number
+  /** How many times the apprentice has gone back to the first bench. */
+  readonly rebirths: number
+}
+
+/**
+ * The ceiling on the scoreboard's total. A rebirth hands the apprentice every
+ * bench to sort a second time while they keep the points from the first, so
+ * each one opens another atelier's worth of points to earn.
+ */
+export function perfectTotal({ levelCount, rebirths }: Atelier): number {
+  return levelCount * PERFECT_SCORE * (rebirths + 1)
+}
+
 export interface CampaignProgress {
   /** Points from the benches left behind, less what restarts have cost. */
   readonly banked: number

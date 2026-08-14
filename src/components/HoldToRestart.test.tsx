@@ -98,11 +98,17 @@ describe('HoldToRestart', () => {
     )
   })
 
-  it('owns up to what restarts have cost so far', () => {
+  /*
+   * What has been given up, not what restarts have given up: a rebirth is
+   * charged to the same tally, and naming restarts alone would have this line
+   * telling an apprentice who has never restarted that restarts cost them a
+   * thousand points.
+   */
+  it('owns up to what the campaign has given up so far', () => {
     render(<HoldToRestart onRestart={vi.fn()} forfeited={200} />)
 
     expect(holdButton()).toHaveAccessibleDescription(
-      'Restarting costs 100 points. Restarts have cost you 200 so far.'
+      'Restarting costs 100 points. You have given up 200 points so far.'
     )
   })
 })

@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { playSound } from '../audio/sounds'
+import { POINTS_LOST_PER_START_OVER } from '../domain/scoring'
 
 interface StartOverProps {
   /** Where the apprentice is, so the warning can name what is at stake. */
@@ -11,10 +12,11 @@ interface StartOverProps {
 }
 
 /**
- * Throws the whole campaign away: every bench, every point, back to the first.
- * It asks first, in a dialog that names what is about to go — and it is hand
- * rolled rather than a <dialog>, because jsdom has no showModal and this is
- * behaviour the integration tests have to be able to drive.
+ * Sends the apprentice back to the first bench of the atelier with the points
+ * they have earned still on them, for the price of a flawless bench. It asks
+ * first, in a dialog that names that price — and it is hand rolled rather than
+ * a <dialog>, because jsdom has no showModal and this is behaviour the
+ * integration tests have to be able to drive.
  */
 export function StartOver({
   position,
@@ -76,7 +78,8 @@ export function StartOver({
               </h2>
               <p className='confirm__detail' id={costId}>
                 You are on level {position} of {levelCount} with {total} points.
-                Starting over puts both back to the beginning.
+                Starting over puts you back on the first bench and costs{' '}
+                {POINTS_LOST_PER_START_OVER} points.
               </p>
 
               <div className='confirm__actions'>

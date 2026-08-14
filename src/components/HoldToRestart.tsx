@@ -9,7 +9,10 @@ const DRAIN_SECONDS = 0.18
 
 interface HoldToRestartProps {
   readonly onRestart: () => void
-  /** What restarts have already cost, so the price is never a surprise. */
+  /**
+   * What the campaign has given up so far, to restarts and to rebirths alike,
+   * so that the price of another one is never a surprise.
+   */
   readonly forfeited: number
 }
 
@@ -64,7 +67,7 @@ export function HoldToRestart({ onRestart, forfeited }: HoldToRestartProps) {
 
       <p className='restart__cost' id={costId}>
         Restarting costs {POINTS_LOST_PER_RESTART} points.
-        {forfeited > 0 && ` Restarts have cost you ${forfeited} so far.`}
+        {forfeited > 0 && ` You have given up ${forfeited} points so far.`}
       </p>
     </div>
   )

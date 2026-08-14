@@ -32,8 +32,10 @@ states its own fewest-possible count up front, so the target is never a mystery.
 What a bench earned is banked when you move on, so the total climbs across the
 atelier towards 14000 — a thousand a bench. Starting a bench over is the way out
 of a mistake, but it is not free: the button has to be held down while a bar
-fills, and it takes 100 points off the total. Throwing the whole run away is a
-separate button, and it asks first.
+fills, and it takes 100 points off the total. Going back to the very first bench
+is a separate button, and it asks first — it is a rebirth rather than a wipe, so
+everything you have earned comes with you for a price of 1000, and the atelier
+opens another 14000 to earn on the way back through it.
 
 Colour-blind mode is in the top-right corner, and the game remembers it. It
 retunes the elixirs to a palette measured against protanopia, deuteranopia and

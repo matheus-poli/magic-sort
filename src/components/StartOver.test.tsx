@@ -39,6 +39,10 @@ describe('StartOver', () => {
     expect(onStartOver).not.toHaveBeenCalled()
   })
 
+  /*
+   * The price is the whole reason the dialog exists now. A rebirth keeps the
+   * points, so a player who is not told what it costs has no way to weigh it.
+   */
   it('spells out what starting over would cost', async () => {
     const user = userEvent.setup()
     showControl()
@@ -46,7 +50,7 @@ describe('StartOver', () => {
     await user.click(trigger())
 
     expect(screen.getByRole('alertdialog')).toHaveTextContent(
-      'You are on level 3 of 5 with 2100 points. Starting over puts both back to the beginning.'
+      'You are on level 3 of 5 with 2100 points. Starting over puts you back on the first bench and costs 1000 points.'
     )
   })
 

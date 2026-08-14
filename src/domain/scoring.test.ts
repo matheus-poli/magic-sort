@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { PERFECT_SCORE, scoreFor, totalScore } from './scoring'
+import { PERFECT_SCORE, perfectTotal, scoreFor, totalScore } from './scoring'
 import type { RunProgress } from './scoring'
 
 /** A four-elixir bench, nothing sorted yet. */
@@ -80,5 +80,20 @@ describe('totalScore', () => {
 
   it('never reads below zero, however much restarting has cost', () => {
     expect(totalScore({ banked: -300, bench: 100 })).toBe(0)
+  })
+})
+
+describe('perfectTotal', () => {
+  it('is every bench of the atelier sorted flawlessly', () => {
+    expect(perfectTotal({ levelCount: 14, rebirths: 0 })).toBe(14000)
+  })
+
+  /*
+   * A reborn apprentice keeps their points and sorts the atelier again, so the
+   * ceiling has to make room for the second run of it. Leaving it where it was
+   * would put a total of 15000 out of 14000 on the scoreboard.
+   */
+  it('opens another atelier to earn every time the apprentice is reborn', () => {
+    expect(perfectTotal({ levelCount: 14, rebirths: 2 })).toBe(42000)
   })
 })

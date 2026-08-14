@@ -21,6 +21,7 @@ export function App() {
         position={campaign.position}
         levelCount={campaign.levelCount}
         bankedScore={campaign.bankedScore}
+        perfectTotal={campaign.perfectTotal}
         forfeited={campaign.forfeited}
         colourBlind={colourBlind.enabled}
         onNextLevel={campaign.hasNext ? campaign.advance : null}

@@ -19,6 +19,8 @@ interface GameProps {
   readonly levelCount: number
   /** Points earned on the benches before this one, less what restarts cost. */
   readonly bankedScore: number
+  /** The ceiling those points climb towards, which a rebirth raises. */
+  readonly perfectTotal: number
   /** What restarts have cost so far, which the restart button owns up to. */
   readonly forfeited: number
   /** Show the elixirs the accessible way: tuned colours, and a sigil each. */
@@ -39,6 +41,7 @@ export function Game({
   position,
   levelCount,
   bankedScore,
+  perfectTotal,
   forfeited,
   colourBlind,
   onNextLevel,
@@ -63,7 +66,6 @@ export function Game({
   }, [game.isSolved])
 
   const total = totalScore({ banked: bankedScore, bench: game.score })
-  const perfectTotal = levelCount * PERFECT_SCORE
   const isLastBench = onNextLevel === null
 
   const restartBench = () => {

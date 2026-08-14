@@ -89,6 +89,7 @@ const oneOfEach: Level = {
 
 interface Standing {
   readonly bankedScore?: number
+  readonly perfectTotal?: number
   readonly forfeited?: number
   readonly colourBlind?: boolean
   readonly onNextLevel?: ((score: number) => void) | null
@@ -103,6 +104,7 @@ const showBench = (level: Level, standing: Standing = {}) =>
       position={1}
       levelCount={5}
       bankedScore={standing.bankedScore ?? 0}
+      perfectTotal={standing.perfectTotal ?? 5000}
       forfeited={standing.forfeited ?? 0}
       colourBlind={standing.colourBlind ?? false}
       onNextLevel={standing.onNextLevel ?? null}
@@ -304,6 +306,7 @@ describe('Game', () => {
         position={2}
         levelCount={5}
         bankedScore={0}
+        perfectTotal={5000}
         forfeited={0}
         colourBlind={false}
         onNextLevel={null}
