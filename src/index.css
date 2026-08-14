@@ -507,12 +507,22 @@ body::before {
     var(--elixir) 45%,
     color-mix(in srgb, var(--elixir) 78%, black)
   );
-  animation: elixir-glow 4.6s ease-in-out infinite;
+  /*
+   * The glow is lit once and left alone. It used to breathe between two
+   * `color-mix` shadows, and that one line was 92% of everything the game did
+   * on an idle screen: a blurred shadow is repainted every frame it changes,
+   * on every layer of every flask, and the colour had to be mixed again each
+   * time. On a mid-range phone it cost 838ms of main thread in every three
+   * seconds of a bench nobody was touching. The breathing is not worth a
+   * third of the processor, and behind drifting bubbles nobody could see it.
+   */
+  box-shadow: 0 0 20px color-mix(in srgb, var(--elixir) 60%, transparent);
 }
 
 /*
- * Idle elixir should never sit perfectly still. Bubbles drift up through every
- * layer on their own schedule, and the glow breathes underneath them.
+ * Idle elixir should never sit perfectly still: bubbles drift up through every
+ * layer on their own schedule. They animate transform and opacity, which the
+ * compositor owns, so they move without repainting anything.
  */
 .flask__layer::before {
   content: '';
@@ -564,16 +574,6 @@ body::before {
   100% {
     transform: translateY(-95%);
     opacity: 0;
-  }
-}
-
-@keyframes elixir-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 14px color-mix(in srgb, var(--elixir) 45%, transparent);
-  }
-  50% {
-    box-shadow: 0 0 26px color-mix(in srgb, var(--elixir) 75%, transparent);
   }
 }
 
@@ -707,23 +707,48 @@ body::before {
  */
 .flask[data-sealed='true'] .flask__body {
   border-color: var(--gold);
-  animation: sealed-pulse 2.4s var(--ease-out) 0.19s infinite;
+  box-shadow:
+    inset 0 -12px 26px rgba(0, 0, 0, 0.35),
+    0 0 20px rgba(255, 200, 107, 0.35);
   transition:
     border-color 0.3s var(--ease-out) 0.19s,
     box-shadow 0.3s var(--ease-out) 0.19s;
 }
 
+/*
+ * The halo a sealed flask wears, breathing on its own element rather than on
+ * the glass. The pulse was a shadow on the glass itself, which repainted a
+ * 44px blur around every finished flask on every frame — a bench with four of
+ * them sealed cost 603ms of main thread in three idle seconds, and a late
+ * bench seals eight. Opacity is the compositor's to animate, so this costs
+ * nothing to breathe.
+ *
+ * It traces the belly from the same tokens the belly is drawn from, so the
+ * two cannot drift apart.
+ */
+.flask__bottle::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: calc(var(--layer-height) * var(--layers));
+  border-radius: var(--glass-belly);
+  box-shadow: 0 0 44px rgba(255, 200, 107, 0.75);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Held back by the settle delay, the same as the glass it wraps. */
+.flask[data-sealed='true'] .flask__bottle::after {
+  animation: sealed-pulse 2.4s var(--ease-out) 0.19s infinite;
+}
+
 @keyframes sealed-pulse {
   0%,
   100% {
-    box-shadow:
-      inset 0 -12px 26px rgba(0, 0, 0, 0.35),
-      0 0 20px rgba(255, 200, 107, 0.35);
+    opacity: 0.4;
   }
   50% {
-    box-shadow:
-      inset 0 -12px 26px rgba(0, 0, 0, 0.35),
-      0 0 44px rgba(255, 200, 107, 0.75);
+    opacity: 1;
   }
 }
 
