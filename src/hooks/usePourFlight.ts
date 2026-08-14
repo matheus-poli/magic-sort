@@ -106,12 +106,14 @@ export function usePourFlight({
           ? flightBetween(bench.current, flask, filling, board[source])
           : null
 
-      if (!flask || flight === null) {
+      if (!flask || !filling || flight === null) {
         onTap(index)
         return
       }
 
-      const pouring = pourOver(flask, flight, setStream, () => onTap(index))
+      const pouring = pourOver(flask, filling, flight, setStream, () =>
+        onTap(index)
+      )
       inFlight.current = pouring
 
       // Nothing waits on the choreography: the tap is over, and the bench is
@@ -134,6 +136,7 @@ interface Pouring {
 
 function pourOver(
   flask: HTMLElement,
+  filling: HTMLElement,
   flight: Flight,
   showStream: (stream: Stream | null) => void,
   settle: () => void
@@ -150,6 +153,12 @@ function pourOver(
     settle()
   }
 
+  const settleBench = () => {
+    flask.style.zIndex = ''
+    flask.style.pointerEvents = ''
+    filling.style.zIndex = ''
+  }
+
   const putBack = () => {
     showStream(null)
     /*
@@ -158,8 +167,7 @@ function pourOver(
      * it is left hanging over the bench where it was cut off.
      */
     animate(flask, { x: 0, y: 0, rotate: 0 }, { duration: 0 })
-    flask.style.zIndex = ''
-    flask.style.pointerEvents = ''
+    settleBench()
   }
 
   const fall = async () => {
@@ -168,6 +176,13 @@ function pourOver(
     // the player is reaching for, and must not catch a tap meant for them.
     flask.style.zIndex = '5'
     flask.style.pointerEvents = 'none'
+    /*
+     * The glass being filled rises too, above the bench but below the flask
+     * pouring into it. That is what keeps the falling elixir in front of the
+     * flasks it crosses and still behind the one it lands in — on a bench that
+     * has wrapped onto two rows, those can be different flasks.
+     */
+    filling.style.zIndex = '3'
 
     travelling = animate(
       flask,
@@ -191,8 +206,7 @@ function pourOver(
     await travelling.finished
     if (cut) return
 
-    flask.style.zIndex = ''
-    flask.style.pointerEvents = ''
+    settleBench()
   }
 
   return {
