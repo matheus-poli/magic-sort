@@ -1,7 +1,11 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useCampaign } from './useCampaign'
-import { rememberCampaign } from '../storage/savedRun'
+import {
+  readSavedRun,
+  rememberBench,
+  rememberCampaign
+} from '../storage/savedRun'
 import { benchOfGlass } from '../test/bench'
 import { lendStorage, refuseToRemember } from '../test/storage'
 import type { Level } from '../domain/levels'
@@ -283,6 +287,29 @@ describe('useCampaign', () => {
     const { result: onReturn } = renderHook(() => useCampaign(atelier))
 
     expect(onReturn.current.perfectTotal).toBe(12000)
+  })
+
+  /*
+   * Beginning again is the one way out of a run, and it has to be a clean one:
+   * the save is wiped rather than written over, so the half-sorted bench the
+   * apprentice walked away from cannot come back with the next reload.
+   */
+  it('leaves nothing of the old run behind when a new one is begun', () => {
+    lendStorage()
+    const { result } = renderHook(() => useCampaign(atelier))
+    act(() => result.current.advance(850))
+    rememberBench({
+      levelId: 'second',
+      pours: 3,
+      board: [{ capacity: 4, contents: ['crimson'] }]
+    })
+
+    act(() => result.current.beginAgain())
+
+    expect(readSavedRun()).toEqual({
+      campaign: { reached: 0, earned: 0, forfeited: 0, rebirths: 0 },
+      bench: null
+    })
   })
 
   it('opens on a bench the atelier still has when a save points past its end', () => {

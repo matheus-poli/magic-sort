@@ -2,6 +2,7 @@ import { useEffect, useId, useRef } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Flask } from './Flask'
 import { GameOver } from './GameOver'
+import { HoldToErase } from './HoldToErase'
 import { HoldToRestart } from './HoldToRestart'
 import { StartOver } from './StartOver'
 import { ScoreBoard } from './ScoreBoard'
@@ -193,6 +194,10 @@ export function Game({
         />
         {startOverControl}
       </div>
+
+      {/* Out at the edge of the atelier, well away from the controls a player
+          reaches for while they are sorting. */}
+      <HoldToErase onErase={beginAgainFromNothing} />
 
       <AnimatePresence>
         {game.isSolved && (

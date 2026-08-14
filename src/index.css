@@ -191,6 +191,77 @@ body::before {
   letter-spacing: 0.08em;
 }
 
+/* ---------- Erasing a run ---------- */
+
+/*
+ * The far corner from the wordmark, and the far side of the bench from the
+ * controls a player reaches for while they are sorting: this is the one button
+ * in the atelier nobody should arrive at by accident.
+ */
+.erase {
+  position: fixed;
+  z-index: 10;
+  right: clamp(0.75rem, 2vw, 1.25rem);
+  bottom: clamp(0.75rem, 2vw, 1.25rem);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem 0.35rem 0.4rem;
+  font-family: var(--ui);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--parchment-dim);
+  background: rgba(23, 14, 44, 0.72);
+  border: 1px solid rgba(255, 79, 109, 0.28);
+  border-radius: 999px;
+  cursor: pointer;
+  /* A long press on a touchscreen must not be taken for the start of a scroll,
+     which would slide the dial out from under the finger holding it. */
+  touch-action: none;
+  transition:
+    color 0.25s var(--ease-out),
+    border-color 0.25s var(--ease-out),
+    background 0.25s var(--ease-out);
+}
+
+.erase:hover,
+.erase:focus-visible,
+.erase[data-charging='true'] {
+  color: #ffc2cd;
+  border-color: rgba(255, 79, 109, 0.7);
+}
+
+.erase[data-charging='true'] {
+  background: rgba(72, 28, 48, 0.9);
+}
+
+.erase:focus-visible {
+  outline: 2px solid var(--rune-bright);
+  outline-offset: 3px;
+}
+
+.erase__dial {
+  display: block;
+  flex: none;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.erase__face {
+  fill: rgba(226, 214, 255, 0.1);
+  stroke: rgba(255, 79, 109, 0.35);
+}
+
+/*
+ * The wedge is a circle of half the radius stroked to twice it, so a single
+ * animated length sweeps the whole face rather than tracing a ring around it.
+ */
+.erase__wedge {
+  fill: none;
+  stroke: var(--crimson);
+}
+
 /* ---------- Header ---------- */
 
 .game__header {

@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { readSavedRun, rememberBench, rememberCampaign } from './savedRun'
+import {
+  forgetSavedRun,
+  readSavedRun,
+  rememberBench,
+  rememberCampaign
+} from './savedRun'
 import { seal } from '../domain/vault'
 import { lendStorage, refuseToRemember } from '../test/storage'
 import type { SavedBench, SavedCampaign } from './savedRun'
@@ -194,5 +199,34 @@ describe('savedRun', () => {
     rememberCampaign(halfway)
 
     expect(readSavedRun()).toBeNull()
+  })
+
+  /*
+   * Erasing a run has to take the save with it rather than write an empty one
+   * over the top: what the apprentice asked for is to be gone from the machine.
+   */
+  it('leaves nothing behind when the run is forgotten', () => {
+    const kept = lendStorage()
+    rememberCampaign(halfway)
+    rememberBench(midPour)
+
+    forgetSavedRun()
+
+    expect([...kept.entries()]).toEqual([])
+  })
+
+  it('has nothing to hand back once the run has been forgotten', () => {
+    lendStorage()
+    rememberCampaign(halfway)
+
+    forgetSavedRun()
+
+    expect(readSavedRun()).toBeNull()
+  })
+
+  it('forgets what it can where the browser refuses to be asked', () => {
+    refuseToRemember()
+
+    expect(() => forgetSavedRun()).not.toThrow()
   })
 })

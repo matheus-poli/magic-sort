@@ -66,6 +66,20 @@ export function rememberBench(bench: SavedBench): void {
   write({ campaign: readSavedRun()?.campaign ?? FRESH_CAMPAIGN, bench })
 }
 
+/**
+ * Wipes the run off the machine. An apprentice erasing their run is asking to
+ * be gone rather than to be zeroed, so the entry is removed outright — the
+ * fresh run that follows writes its own.
+ */
+export function forgetSavedRun(): void {
+  try {
+    window.localStorage.removeItem(KEPT_AS)
+  } catch {
+    // A private window or a hardened browser, which was never holding a run
+    // to forget in the first place.
+  }
+}
+
 function write(run: SavedRun): void {
   try {
     window.localStorage.setItem(KEPT_AS, seal(run))

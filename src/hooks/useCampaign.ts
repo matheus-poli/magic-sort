@@ -5,7 +5,11 @@ import {
   priceOfRebirth,
   priceOfRestart
 } from '../domain/scoring'
-import { readSavedRun, rememberCampaign } from '../storage/savedRun'
+import {
+  forgetSavedRun,
+  readSavedRun,
+  rememberCampaign
+} from '../storage/savedRun'
 import type { Level } from '../domain/levels'
 
 export interface Campaign {
@@ -31,7 +35,7 @@ export interface Campaign {
   chargeForRestart: () => void
   /** Sends the apprentice back to the first bench, points kept, for a price. */
   startOver: () => void
-  /** Opens a run from nothing, which is all a ruined apprentice has left. */
+  /** Erases the run and opens one from nothing, points and bench alike. */
   beginAgain: () => void
 }
 
@@ -95,7 +99,13 @@ export function useCampaign(levels: readonly Level[]): Campaign {
     }))
   }, [])
 
+  /*
+   * The save is wiped rather than written over. An apprentice throwing a run
+   * away is asking to be gone from the machine, and a bench left in the save
+   * would otherwise be waiting for them at the next reload.
+   */
   const beginAgain = useCallback(() => {
+    forgetSavedRun()
     setProgress(freshProgress())
   }, [])
 

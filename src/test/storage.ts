@@ -14,7 +14,8 @@ export function lendStorage(): Map<string, string> {
   const kept = new Map<string, string>()
   vi.stubGlobal('localStorage', {
     getItem: (key: string) => kept.get(key) ?? null,
-    setItem: (key: string, value: string) => kept.set(key, value)
+    setItem: (key: string, value: string) => kept.set(key, value),
+    removeItem: (key: string) => kept.delete(key)
   })
   return kept
 }
@@ -26,6 +27,9 @@ export function refuseToRemember(): void {
       throw new Error('Storage is disabled')
     },
     setItem: () => {
+      throw new Error('Storage is disabled')
+    },
+    removeItem: () => {
       throw new Error('Storage is disabled')
     }
   })

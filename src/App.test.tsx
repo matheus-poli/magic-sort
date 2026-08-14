@@ -137,6 +137,33 @@ describe('App', () => {
     expect(screen.getByText(/level 1 of/i)).toBeInTheDocument()
   })
 
+  /*
+   * The one control that reaches past the campaign to the save itself, held
+   * here for its full length on purpose: what is being proved runs from a
+   * button in the corner of the screen all the way down to the storage, and
+   * no lower layer can prove that on its own.
+   */
+  it('erases a run outright when the corner button is held long enough', async () => {
+    lendStorage()
+    rememberCampaign({ reached: 4, earned: 9000, forfeited: 0, rebirths: 0 })
+    const user = userEvent.setup()
+    render(<App />)
+    expect(screen.getByText(/level 5 of/i)).toBeInTheDocument()
+
+    await user.pointer({
+      keys: '[MouseLeft>]',
+      target: screen.getByRole('button', { name: 'Hold to erase this run' })
+    })
+
+    await waitFor(
+      () => expect(screen.getByText(/level 1 of/i)).toBeInTheDocument(),
+      { timeout: 8000 }
+    )
+    await waitFor(() =>
+      expect(screen.getByLabelText('Total')).toHaveTextContent('0 / 1275000')
+    )
+  }, 12000)
+
   it('shows the way back to the blog the game is a project of', () => {
     render(<App />)
 
