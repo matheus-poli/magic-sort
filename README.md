@@ -217,7 +217,9 @@ Kept deliberately short. Beyond React and the toolchain:
   degrades on its own when the player asks for reduced motion.
 
 The sound effects are synthesised by `scripts/generate-sounds.mjs` rather than
-downloaded, which keeps the repository self-contained and licence-free.
+downloaded, which keeps the repository self-contained. The rebirth is the one
+exception: `src/audio/revive.mp3` is a recorded track rather than a recipe, and
+the generator has no entry for it so that re-running it cannot overwrite it.
 
 ## Roadmap
 

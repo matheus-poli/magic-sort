@@ -5,7 +5,9 @@ import pickupUrl from './pickup.wav'
 import pourUrl from './pour.wav'
 import refusedUrl from './refused.wav'
 import resetUrl from './reset.wav'
-import reviveUrl from './revive.wav'
+// The one recorded sound on the bench, rather than a synthesised one. See
+// scripts/generate-sounds.mjs for why it is the exception.
+import reviveUrl from './revive.mp3'
 import victoryUrl from './victory.wav'
 
 export type SoundName =

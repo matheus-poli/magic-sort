@@ -1,8 +1,11 @@
 // Synthesises the game's sound effects into src/audio/*.wav.
 //
 // The sounds are generated rather than downloaded so the repository stays
-// self-contained and free of third-party asset licences. Re-run with
-// `npm run sounds` after editing a recipe.
+// self-contained. Re-run with `npm run sounds` after editing a recipe.
+//
+// One sound is deliberately not a recipe: the rebirth is a recorded track at
+// src/audio/revive.mp3. It has no entry here on purpose, so that regenerating
+// the bench cannot overwrite it.
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -71,9 +74,6 @@ function swell({ from, to, duration, gain = 0.5, wave = sine }) {
   }
   return samples
 }
-
-/** Played backwards: a decay becomes a swell, which is the sound of a rewind. */
-const reverse = (samples) => samples.slice().reverse()
 
 function mix(...layers) {
   const length = Math.max(...layers.map((layer) => layer.length))
@@ -149,29 +149,6 @@ const recipes = {
     mix(
       tone({ from: 540, to: 120, duration: 0.5, gain: 0.28, wave: triangle }),
       splash({ duration: 0.44, gain: 0.26 })
-    ),
-
-  // Throwing the whole run away and waking up at the beginning. The world is
-  // drawn backwards — a reversed sweep and a reversed wash rush in — two low
-  // beats land on the turn, and a bell rings out where it all starts again.
-  revive: () =>
-    mix(
-      reverse(
-        tone({ from: 300, to: 880, duration: 0.7, gain: 0.2, wave: triangle })
-      ),
-      reverse(splash({ duration: 0.7, gain: 0.22 })),
-      ...[0.68, 0.9].flatMap((delay, beat) => [
-        tone({
-          from: 96,
-          to: 62,
-          duration: 0.24,
-          gain: 0.5 - beat * 0.08,
-          delay
-        }),
-        tone({ from: 192, to: 124, duration: 0.2, gain: 0.16, delay })
-      ]),
-      tone({ from: 196, duration: 1.15, gain: 0.26, delay: 1.12 }),
-      tone({ from: 293.66, duration: 1.05, gain: 0.13, delay: 1.16 })
     ),
 
   victory: () =>
