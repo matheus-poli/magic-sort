@@ -45,20 +45,26 @@ the fiftieth is worth 50000, so a flawless atelier comes to 1275000. That ladder
 is the whole economy: pressing on into the benches that are hard to sort has to
 out-earn sorting the easy ones over and over. Starting a bench over is the way
 out of a mistake, but it is not free: the button has to be held down while a bar
-fills, and it costs a tenth of the bench being thrown away. Going back to the
-very first bench is a separate button, and it asks first — it is a rebirth
-rather than a wipe, so everything you have earned comes with you, but it costs
-the whole atelier behind you and the bench you are standing on, which is always
-more than sorting those benches again could pay back.
+fills, and it costs a tenth of the bench being thrown away, out of the points
+you have banked — the half-sorted bench goes down the drain with the elixirs on
+it. Going back to the very first bench is a separate button, and it asks first —
+it is a rebirth rather than a wipe, so everything you have earned comes with you,
+including what the bench in hand earned, but it costs the whole atelier behind
+you and the bench you are standing on, which is always more than sorting those
+benches again could pay back.
 
-That price can bury you, and so can enough restarts. Points go negative, and an
-apprentice who owes more than a flawless bench could ever clear is finished: the
-workshop closes, and all that is left is to begin again from nothing.
+Nothing here is bought on credit. The score never goes below nothing, so a price
+you cannot pay is not a debt: it is the end of the run. Hold the restart with
+less banked than it costs, or confirm a walk back you cannot afford, and the
+workshop closes — both buttons say so before you press them, and all that is
+left is to begin again from nothing. On the first bench of a fresh run there is
+nothing banked at all, so those two buttons are the way out of a run as much as
+they are a way back into it.
 
-A run can also end on the bench in front of you. A bench can be poured into a
-corner where nothing will take another drop — every glass full, and no two tops
-that match — and if throwing that one away costs more than the atelier could
-ever pay back, that is the end of the run as surely as debt is. The game works
+A run can also end on the bench in front of you, without anything being pressed.
+A bench can be poured into a corner where nothing will take another drop — every
+glass full, and no two tops that match — and if you cannot pay to lay that one
+out again, it is the end of the run as surely as the buttons are. The game works
 it out for you rather than leaving you tapping glass that will never move.
 
 The run is kept in the browser, so closing the tab is not a way out of one
@@ -70,11 +76,10 @@ inside the bundle, because the game has no server to keep a score on, and a key
 everybody has is not a secret. Making a score truly unforgeable is a different
 game to this one.
 
-There is one way to be rid of a run, in the bottom-right corner: a button held
-down for five seconds while a dial sweeps round it. It erases the save outright
-rather than zeroing it — every point and every bench, gone — and hands back a
-first visit. Five seconds because it is the one thing in the game that cannot
-be taken back.
+A run that ends is erased rather than zeroed — every point and every bench, gone
+— and the save is swept at the moment the price is refused rather than when the
+card is answered, because closing the tab must not be a way out of a run that is
+already over either.
 
 Colour-blind mode is in the top-right corner, and the game remembers it. It
 retunes the elixirs to a palette measured against protanopia, deuteranopia and
@@ -255,10 +260,10 @@ The sound effects are synthesised by `scripts/generate-sounds.mjs` rather than
 downloaded, which keeps the repository self-contained. It takes sound names on
 the command line — `npm run sounds -- defeat` — because three of the recipes are
 built on noise, and regenerating the whole bench to add one sound rewrites files
-nobody touched with fresh random samples. Three sounds are the exception to the
-recipes: the rebirth, the end of a run and a run being erased are recorded
-tracks at `src/audio/revive.mp3`, `defeat.mp3` and `wipe.mp3`, and the generator
-has no entry for them so that re-running it cannot overwrite them.
+nobody touched with fresh random samples. Two sounds are the exception to the
+recipes: the rebirth and the end of a run are recorded tracks at
+`src/audio/revive.mp3` and `defeat.mp3`, and the generator has no entry for them
+so that re-running it cannot overwrite them.
 
 ## Roadmap
 
